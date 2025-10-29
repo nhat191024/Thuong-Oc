@@ -47,7 +47,7 @@ class Kitchen extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function cookingMethod()
+    public function cookingMethods()
     {
         return $this->hasMany(KitchenCookingMethod::class);
     }

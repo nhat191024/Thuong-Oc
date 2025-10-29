@@ -57,7 +57,7 @@ class Dish extends Model
         return $this->belongsTo(CookingMethod::class);
     }
 
-    public function billDetail()
+    public function billDetails()
     {
         return $this->hasMany(BillDetail::class);
     }

@@ -40,17 +40,17 @@ class Branch extends Model
         'name',
     ];
 
-    public function kitchen()
+    public function kitchens()
     {
         return $this->hasMany(Kitchen::class);
     }
 
-    public function user()
+    public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    public function table()
+    public function tables()
     {
         return $this->hasMany(Table::class);
     }

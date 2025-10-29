@@ -32,7 +32,7 @@ class Food extends Model
         'note',
     ];
 
-    public function dish()
+    public function dishes()
     {
         return $this->hasMany(Dish::class);
     }

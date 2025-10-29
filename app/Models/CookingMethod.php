@@ -41,12 +41,12 @@ class CookingMethod extends Model
         'note',
     ];
 
-    public function dish()
+    public function dishes()
     {
         return $this->hasMany(Dish::class);
     }
 
-    public function kitchen()
+    public function kitchens()
     {
         return $this->hasMany(KitchenCookingMethod::class);
     }
