@@ -1,0 +1,58 @@
+[
+    {
+        "name": "Hấp - Luộc",
+        "branch_id": 1
+    },
+    {
+        "name": "Hấp - Luộc",
+        "branch_id": 2
+    },
+    {
+        "name": "Hấp - Luộc",
+        "branch_id": 3
+    },
+    {
+        "name": "Xào - Chiên - Rán - Rang",
+        "branch_id": 1
+    },
+    {
+        "name": "Xào - Chiên - Rán - Rang",
+        "branch_id": 2
+    },
+    {
+        "name": "Xào - Chiên - Rán - Rang",
+        "branch_id": 3
+    },
+    {
+        "name": "Nướng",
+        "branch_id": 1
+    },
+    {
+        "name": "Nướng",
+        "branch_id": 2
+    },
+    {
+        "name": "Nướng",
+        "branch_id": 3
+    },
+    {
+        "name": "Ăn vặt",
+        "branch_id": 1
+    },
+    {
+        "name": "Ăn vặt",
+        "branch_id": 2
+    },
+    {
+        "name": "Ăn vặt",
+        "branch_id": 3
+    },
+    {
+        "name": "Ăn vặt",
+        "branch_id": 2
+    },
+    {
+        "name": "Ăn vặt",
+        "branch_id": 3
+    }
+]

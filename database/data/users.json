@@ -1,0 +1,56 @@
+[
+    {
+        "username": "admin",
+        "password": "admin",
+        "role": 1,
+        "branch_id": 1
+    },
+    {
+        "username": "admin1",
+        "password": "admin1",
+        "role": 1,
+        "branch_id": 2
+    },
+    {
+        "username": "admin2",
+        "password": "admin2",
+        "role": 1,
+        "branch_id": 3
+    },
+    {
+        "username": "staff",
+        "password": "staff",
+        "role": 2,
+        "branch_id": 1
+    },
+    {
+        "username": "staff1",
+        "password": "staff1",
+        "role": 2,
+        "branch_id": 2
+    },
+    {
+        "username": "staff2",
+        "password": "staff2",
+        "role": 2,
+        "branch_id": 3
+    },
+    {
+        "username": "kitchen",
+        "password": "kitchen",
+        "role": 3,
+        "branch_id": 1
+    },
+    {
+        "username": "kitchen1",
+        "password": "kitchen1",
+        "role": 3,
+        "branch_id": 2
+    },
+    {
+        "username": "kitchen2",
+        "password": "kitchen2",
+        "role": 3,
+        "branch_id": 3
+    }
+]

@@ -1,0 +1,512 @@
+[
+    {
+        "food_id": 1,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 1,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 1,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 2,
+        "cooking_method_id": 1,
+        "additional_price": 0
+    },
+    {
+        "food_id": 2,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 2,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 2,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 3,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 3,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 3,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 4,
+        "cooking_method_id": 8,
+        "additional_price": 0
+    },
+    {
+        "food_id": 5,
+        "cooking_method_id": 1,
+        "additional_price": 0
+    },
+    {
+        "food_id": 5,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 5,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 5,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 6,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 6,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 6,
+        "cooking_method_id": 5,
+        "additional_price": 0
+    },
+    {
+        "food_id": 7,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 7,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 7,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 8,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 8,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 4,
+        "cooking_method_id": 6,
+        "additional_price": 0
+    },
+    {
+        "food_id": 4,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 4,
+        "cooking_method_id": 8,
+        "additional_price": 0
+    },
+    {
+        "food_id": 9,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 9,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 9,
+        "cooking_method_id": 9,
+        "additional_price": 0
+    },
+    {
+        "food_id": 10,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 10,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 10,
+        "cooking_method_id": 5,
+        "additional_price": 0
+    },
+    {
+        "food_id": 10,
+        "cooking_method_id": 1,
+        "additional_price": 0
+    },
+    {
+        "food_id": 10,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 5,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 8,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 9,
+        "additional_price": 0
+    },
+    {
+        "food_id": 11,
+        "cooking_method_id": 10,
+        "additional_price": 0
+    },
+    {
+        "food_id": 12,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 12,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 12,
+        "cooking_method_id": 5,
+        "additional_price": 0
+    },
+    {
+        "food_id": 12,
+        "cooking_method_id": 10,
+        "additional_price": 0
+    },
+    {
+        "food_id": 13,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 14,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 15,
+        "cooking_method_id": 11,
+        "additional_price": 0
+    },
+    {
+        "food_id": 16,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 16,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 16,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 16,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 17,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 17,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 17,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 17,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 18,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 18,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 18,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 18,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 19,
+        "cooking_method_id": 12,
+        "additional_price": 0
+    },
+    {
+        "food_id": 20,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 20,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 20,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 20,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 21,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 21,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 22,
+        "cooking_method_id": 13,
+        "additional_price": 0
+    },
+    {
+        "food_id": 23,
+        "cooking_method_id": 2,
+        "additional_price": 0
+    },
+    {
+        "food_id": 23,
+        "cooking_method_id": 3,
+        "additional_price": 0
+    },
+    {
+        "food_id": 23,
+        "cooking_method_id": 4,
+        "additional_price": 0
+    },
+    {
+        "food_id": 23,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 22,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 24,
+        "cooking_method_id": 21,
+        "additional_price": 0
+    },
+    {
+        "food_id": 25,
+        "cooking_method_id": 14,
+        "additional_price": 0
+    },
+    {
+        "food_id": 25,
+        "cooking_method_id": 14,
+        "additional_price": 0
+    },
+    {
+        "food_id": 26,
+        "cooking_method_id": 15,
+        "additional_price": 0
+    },
+    {
+        "food_id": 27,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 28,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 24,
+        "cooking_method_id": 23,
+        "additional_price": 0
+    },
+    {
+        "food_id": 29,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 30,
+        "cooking_method_id": 24,
+        "additional_price": 0
+    },
+    {
+        "food_id": 31,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 32,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 33,
+        "cooking_method_id": 16,
+        "additional_price": 0
+    },
+    {
+        "food_id": 34,
+        "cooking_method_id": 17,
+        "additional_price": 0
+    },
+    {
+        "food_id": 35,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 36,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 34,
+        "cooking_method_id": 18,
+        "additional_price": 0
+    },
+    {
+        "food_id": 37,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 38,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 39,
+        "cooking_method_id": 7,
+        "additional_price": 0
+    },
+    {
+        "food_id": 40,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 41,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 42,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 43,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 44,
+        "cooking_method_id": 19,
+        "additional_price": 0
+    },
+    {
+        "food_id": 45,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 46,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 47,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 48,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 49,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 50,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    }
+]

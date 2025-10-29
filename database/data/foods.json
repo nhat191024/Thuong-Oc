@@ -1,0 +1,252 @@
+[
+    {
+        "category_id": 1,
+        "name": "Ốc con",
+        "price": 30000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc mít",
+        "price": 90000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc ráo",
+        "price": 35000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc hương",
+        "price": 180000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc lẫn",
+        "price": 60000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc đỏ môi",
+        "price": 70000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc mút giấy",
+        "price": 60000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc ngố",
+        "price": 40000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc mút len",
+        "price": 120000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc đĩa",
+        "price": 180000
+    },
+    {
+        "category_id": 3,
+        "name": "Cà la",
+        "price": 120000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc Bông",
+        "price": 180000
+    },
+    {
+        "category_id": 1,
+        "name": "Ốc sư tử",
+        "price": 120000
+    },
+    {
+        "category_id": 2,
+        "name": "Hàu",
+        "price": 60000
+    },
+    {
+        "category_id": 2,
+        "name": "Ngao",
+        "price": 70000
+    },
+    {
+        "category_id": 2,
+        "name": "Sò mít",
+        "price": 70000
+    },
+    {
+        "category_id": 2,
+        "name": "Sò gạo",
+        "price": 80000
+    },
+    {
+        "category_id": 2,
+        "name": "Sò lông",
+        "price": 70000
+    },
+    {
+        "category_id": 2,
+        "name": "Móng tay",
+        "price": 120000
+    },
+    {
+        "category_id": 2,
+        "name": "Sò Huyết",
+        "price": 180000
+    },
+    {
+        "category_id": 2,
+        "name": "Ngao trắng",
+        "price": 70000
+    },
+    {
+        "category_id": 2,
+        "name": "Thưng",
+        "price": 120000
+    },
+    {
+        "category_id": 2,
+        "name": "Sò dưa",
+        "price": 70000
+    },
+    {
+        "category_id": 3,
+        "name": "Cút lộn",
+        "price": 50000
+    },
+    {
+        "category_id": 3,
+        "name": "Nem Hà Nội",
+        "price": 40000
+    },
+    {
+        "category_id": 3,
+        "name": "Xoài",
+        "price": 25000
+    },
+    {
+        "category_id": 3,
+        "name": "Bánh mì",
+        "price": 19000
+    },
+    {
+        "category_id": 3,
+        "name": "Củ đậu",
+        "price": 25000
+    },
+    {
+        "category_id": 3,
+        "name": "Càng cù kỳ",
+        "price": 150000
+    },
+    {
+        "category_id": 3,
+        "name": "Bề bề",
+        "price": 165000
+    },
+    {
+        "category_id": 3,
+        "name": "Cá bóng",
+        "price": 60000
+    },
+    {
+        "category_id": 3,
+        "name": "Cá chỉ vàng",
+        "price": 60000
+    },
+    {
+        "category_id": 3,
+        "name": "Ngô",
+        "price": 45000
+    },
+    {
+        "category_id": 3,
+        "name": "Chân gà",
+        "price": 70000
+    },
+    {
+        "category_id": 3,
+        "name": "Khoai môn lệ phố",
+        "price": 30000
+    },
+    {
+        "category_id": 3,
+        "name": "Khoai lang kén",
+        "price": 30000
+    },
+    {
+        "category_id": 3,
+        "name": "Khoai tây",
+        "price": 30000
+    },
+    {
+        "category_id": 3,
+        "name": "Phô mai que",
+        "price": 40000
+    },
+    {
+        "category_id": 3,
+        "name": "Mực",
+        "price": 240000
+    },
+    {
+        "category_id": 3,
+        "name": "Cá viên",
+        "price": 30000
+    },
+    {
+        "category_id": 3,
+        "name": "Chả mực xoắn",
+        "price": 40000
+    },
+    {
+        "category_id": 3,
+        "name": "Nem xù viên thập cẩm",
+        "price": 70000
+    },
+    {
+        "category_id": 3,
+        "name": "Tôm viên",
+        "price": 30000
+    },
+    {
+        "category_id": 3,
+        "name": "Bò viên",
+        "price": 30000
+    },
+    {
+        "category_id": 4,
+        "name": "Nước nhân trần",
+        "price": 5000
+    },
+    {
+        "category_id": 4,
+        "name": "Trà tắc",
+        "price": 12000
+    },
+    {
+        "category_id": 4,
+        "name": "Bia 333",
+        "price": 18000
+    },
+    {
+        "category_id": 4,
+        "name": "Coca cola",
+        "price": 12000
+    },
+    {
+        "category_id": 4,
+        "name": "Trà tắc thạch cá",
+        "price": 18000
+    },
+    {
+        "category_id": 4,
+        "name": "Cam ép",
+        "price": 25000
+    }
+]
