@@ -478,5 +478,35 @@
         "food_id": 44,
         "cooking_method_id": 19,
         "additional_price": 0
+    },
+    {
+        "food_id": 45,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 46,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 47,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 48,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 49,
+        "cooking_method_id": 22,
+        "additional_price": 0
+    },
+    {
+        "food_id": 50,
+        "cooking_method_id": 22,
+        "additional_price": 0
     }
 ]
