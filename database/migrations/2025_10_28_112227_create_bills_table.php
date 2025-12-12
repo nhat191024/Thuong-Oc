@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('total')->default(0);
             $table->integer('discount')->nullable();
             $table->integer('final_total')->default(0);
-            $table->string('payment_method');
+            $table->string('payment_method')->nullable();
             $table->string('pay_status')->default(PayStatus::UNPAID->value);
             $table->timestamps();
         });
