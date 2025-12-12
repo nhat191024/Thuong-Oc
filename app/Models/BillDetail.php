@@ -16,9 +16,8 @@ use App\Enums\BillDetailStatus;
  * @property BillDetailStatus $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Bill $bill
- * @property-read \App\Models\Dish $dish
- *
+ * @property-read \App\Models\Bill|null $bill
+ * @property-read \App\Models\Dish|null $dish
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail query()
@@ -31,7 +30,6 @@ use App\Enums\BillDetailStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class BillDetail extends Model

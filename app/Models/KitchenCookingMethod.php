@@ -12,8 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CookingMethod> $cookingMethod
  * @property-read int|null $cooking_method_count
- * @property-read \App\Models\Kitchen $kitchen
- *
+ * @property-read \App\Models\Kitchen|null $kitchen
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod query()
@@ -22,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod whereKitchenId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KitchenCookingMethod whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class KitchenCookingMethod extends Model
