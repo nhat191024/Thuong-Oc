@@ -7,6 +7,12 @@ use Illuminate\Notifications\Notifiable;
 
 use Spatie\Permission\Traits\HasRoles;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
+
+use App\Enums\Role;
+
 /**
  * @property int $id
  * @property int $branch_id
@@ -77,6 +83,21 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Determine if the user can access the Filament admin panel.
+     * @param \Filament\Panel $panel
+     * @return bool
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($panel->getId() === 'admin' && $this->hasAnyRole([
+            Role::ADMIN,
+        ])) {
+            return true;
+        }
+        return false;
     }
 
     public function branch()
