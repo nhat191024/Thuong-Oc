@@ -27,8 +27,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 use Illuminate\Support\Facades\Gate;
 
+use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
+
 use App\Enums\FilamentNavigationGroup;
-use App\Settings\AppSettings;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -61,7 +62,9 @@ class AdminPanelProvider extends PanelProvider
                 FilamentInfoWidget::class,
             ])
 
-            ->plugins([])
+            ->plugins([
+                FilamentErrorMailerPlugin::make(),
+            ])
 
             ->middleware([
                 EncryptCookies::class,
