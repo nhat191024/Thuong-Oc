@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             BranchSeeder::class,
             KitchenSeeder::class,
             TableSeeder::class,
-            SettingSeeder::class,
         ]);
     }
 }
