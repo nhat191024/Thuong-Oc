@@ -7,8 +7,8 @@ use Illuminate\Notifications\Notifiable;
 
 use Spatie\Permission\Traits\HasRoles;
 
+use Filament\Models\Contracts\HasName;
 use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 
 use App\Enums\Role;
@@ -48,7 +48,7 @@ use App\Enums\Role;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
  * @mixin \Eloquent
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasRoles, Notifiable;
 
@@ -98,6 +98,16 @@ class User extends Authenticatable
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get the name to be displayed for the user in Filament.
+     *
+     * @return string
+     */
+    public function getFilamentName(): string
+    {
+        return $this->username;
     }
 
     public function branch()
