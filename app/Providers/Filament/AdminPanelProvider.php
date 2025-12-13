@@ -29,12 +29,20 @@ use Illuminate\Support\Facades\Gate;
 
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
 
+use App\Settings\AppSettings;
 use App\Enums\FilamentNavigationGroup;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        try {
+            $settings = app(AppSettings::class);
+            $favicon = asset($settings->app_favicon);
+        } catch (\Exception $e) {
+            $favicon = asset('images/favicon.ico');
+        }
+
         return $panel
             ->default()
             ->id('admin')
@@ -44,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Red,
             ])
             ->brandName('Thương Ốc')
+            ->favicon($favicon)
             ->maxContentWidth(Width::Full)
             ->navigationGroups(FilamentNavigationGroup::class)
 
