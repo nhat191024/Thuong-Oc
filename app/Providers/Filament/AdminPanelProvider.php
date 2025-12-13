@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Gate;
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
 
 use App\Settings\AppSettings;
+use App\Filament\Pages\Login;
 use App\Enums\FilamentNavigationGroup;
 
 class AdminPanelProvider extends PanelProvider
@@ -47,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->colors([
                 'primary' => Color::Red,
             ])
