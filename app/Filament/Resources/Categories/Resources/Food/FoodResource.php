@@ -53,14 +53,15 @@ class FoodResource extends Resource
     public static function getPages(): array
     {
         return [
-            // 'create' => CreateFood::route('/create'),
-            // 'edit' => EditFood::route('/{record}/edit'),
+            'create' => CreateFood::route('/create'),
+            'edit' => EditFood::route('/{record}/edit'),
         ];
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
+            ->with(['dishes'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
