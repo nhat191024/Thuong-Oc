@@ -46,6 +46,7 @@ class Food extends Model
         'discount_price',
         'is_favorite',
         'note',
+        'order',
     ];
 
     public function dishes()

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('discount_price')->default(0);
             $table->integer('is_favorite')->default(0);
             $table->text('note')->nullable();
+            $table->integer('order')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });
