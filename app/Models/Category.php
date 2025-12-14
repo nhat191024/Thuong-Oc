@@ -35,6 +35,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'note',
+        'order',
     ];
 
     //model boot method
