@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->string('name');
             $table->integer('price');
-            $table->integer('discount_price')->nullable();
+            $table->integer('discount_price')->default(0);
             $table->integer('is_favorite')->default(0);
             $table->text('note')->nullable();
             $table->softDeletes();
