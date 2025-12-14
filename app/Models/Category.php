@@ -37,6 +37,22 @@ class Category extends Model
         'note',
     ];
 
+    //model boot method
+    protected static function booted(): void
+    {
+        static::deleting(function (Category $category) {
+            $category->foods()->delete();
+        });
+
+        static::restoring(function (Category $category) {
+            $category->foods()->withTrashed()->restore();
+        });
+
+        static::forceDeleted(function (Category $category) {
+            $category->foods()->withTrashed()->forceDelete();
+        });
+    }
+
     public function foods()
     {
         return $this->hasMany(Food::class);
