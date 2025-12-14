@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->string('name');
             $table->integer('price');
+            $table->integer('discount_price')->nullable();
             $table->text('note')->nullable();
             $table->softDeletes();
             $table->timestamps();
