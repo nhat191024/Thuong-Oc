@@ -44,6 +44,7 @@ class Food extends Model
         'name',
         'price',
         'discount_price',
+        'is_favorite',
         'note',
     ];
 
