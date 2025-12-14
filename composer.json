@@ -31,6 +31,7 @@
         "fakerphp/faker": "^1.23",
         "laradumps/laradumps": "^4.5",
         "laradumps/laradumps-core": "^3.2",
+        "laravel-lang/common": "^6.7",
         "laravel/boost": "^1.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
