@@ -43,6 +43,7 @@ class CustomerMenuController extends Controller
                             ]);
                     },
                 ])
+                ->orderBy('order')
                 ->get();
 
             return $categories->map(fn($category) => [
@@ -66,6 +67,7 @@ class CustomerMenuController extends Controller
         $categories = Cache::remember(CacheKeys::MENU_CATEGORIES->value, 3600, function () {
             return Category::select(['id', 'name'])
                 ->has('foods.dishes')
+                ->orderBy('order')
                 ->get()
                 ->map(fn($cat) => [
                     'id' => $cat->id,
