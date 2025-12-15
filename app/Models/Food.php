@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\CacheKeys;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -57,5 +60,17 @@ class Food extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    //model boot method
+    protected static function booted(): void
+    {
+        static::created(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+        });
+
+        static::updated(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+        });
     }
 }

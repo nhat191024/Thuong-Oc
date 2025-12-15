@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\CacheKeys;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -51,6 +54,16 @@ class Category extends Model
 
         static::forceDeleted(function (Category $category) {
             $category->foods()->withTrashed()->forceDelete();
+        });
+
+        static::created(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+            Cache::forget(CacheKeys::MENU_CATEGORIES->value);
+        });
+
+        static::updated(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+            Cache::forget(CacheKeys::MENU_CATEGORIES->value);
         });
     }
 
