@@ -12,6 +12,7 @@ class BranchForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('Tên chi nhánh'))
                     ->required(),
             ]);
     }
