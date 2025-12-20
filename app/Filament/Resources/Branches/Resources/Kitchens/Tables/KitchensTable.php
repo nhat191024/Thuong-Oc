@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Branches\Tables;
-
-use App\Filament\Resources\Branches\BranchResource;
+namespace App\Filament\Resources\Branches\Resources\Kitchens\Tables;
 
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -15,34 +13,32 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 
-use App\Filament\Resources\Categories\CategoryResource;
-
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 
 use Filament\Tables\Filters\TrashedFilter;
 
-class BranchesTable
+class KitchensTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('Tên chi nhánh'))
+                    ->label('Tên nhà bếp')
                     ->searchable(),
                 TextColumn::make('deleted_at')
-                    ->label(__('Đã xóa lúc'))
+                    ->label('Đã xóa lúc')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
-                    ->label(__('Tạo lúc'))
+                    ->label('Tạo lúc')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label(__('Cập nhật lúc'))
+                    ->label('Cập nhật lúc')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -52,10 +48,6 @@ class BranchesTable
                     ->default('trashed'),
             ])
             ->recordActions([
-                Action::make('manage-kitchen')
-                    ->label(__('Quản lý nhà bếp'))
-                    ->url(fn($record): string => BranchResource::getUrl('kitchen-management', ['record' => $record->id]))
-                    ->visible(fn($record): bool => $record->deleted_at === null),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
