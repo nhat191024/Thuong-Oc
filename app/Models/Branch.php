@@ -34,10 +34,32 @@ class Branch extends Model
 {
     use SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
     ];
 
+    //Model Boots
+    protected static function booted()
+    {
+        static::deleted(function ($branch) {
+            $branch->kitchens()->delete();
+            $branch->users()->delete();
+            $branch->tables()->delete();
+        });
+
+        static::restored(function ($branch) {
+            $branch->kitchens()->withTrashed()->restore();
+            $branch->users()->withTrashed()->restore();
+            $branch->tables()->withTrashed()->restore();
+        });
+    }
+
+    //Model Relations
     public function kitchens()
     {
         return $this->hasMany(Kitchen::class);
