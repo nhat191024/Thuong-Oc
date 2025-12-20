@@ -79,6 +79,11 @@ class Bill extends Model
         return $this->belongsTo(Table::class);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
