@@ -24,7 +24,7 @@ class CookingMethodResource extends Resource
 {
     protected static ?string $model = CookingMethod::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     public static function getModelLabel(): string
     {
