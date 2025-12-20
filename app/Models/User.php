@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Spatie\Permission\Traits\HasRoles;
 
@@ -50,7 +51,7 @@ use App\Enums\Role;
  */
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasRoles, Notifiable;
+    use HasRoles, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
