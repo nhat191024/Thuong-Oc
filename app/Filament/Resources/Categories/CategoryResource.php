@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Categories;
 use App\Models\Category;
 
 use BackedEnum;
-use UnitEnum;
 
 use App\Enums\FilamentNavigationGroup;
 
@@ -30,7 +29,6 @@ class CategoryResource extends Resource
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFolder;
-    protected static UnitEnum|string|null $navigationGroup = FilamentNavigationGroup::FOOD;
 
     public static function getModelLabel(): string
     {
