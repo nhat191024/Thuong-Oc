@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property string $name
- * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -24,7 +23,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CookingMethod withoutTrashed()
@@ -41,7 +39,6 @@ class CookingMethod extends Model
      */
     protected $fillable = [
         'name',
-        'note',
     ];
 
     //Model Relations

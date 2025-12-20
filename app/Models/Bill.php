@@ -17,7 +17,7 @@ use App\Enums\PayStatus;
  * @property int $total
  * @property int|null $discount
  * @property int $final_total
- * @property PaymentMethods $payment_method
+ * @property PaymentMethods|null $payment_method
  * @property PayStatus $pay_status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at

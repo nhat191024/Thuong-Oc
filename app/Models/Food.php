@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Cache;
  * @property int $category_id
  * @property string $name
  * @property int $price
+ * @property int $discount_price
+ * @property int $is_favorite
  * @property string|null $note
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -27,9 +30,12 @@ use Illuminate\Support\Facades\Cache;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereCategoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereDiscountPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereIsFavorite($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withTrashed(bool $withTrashed = true)
