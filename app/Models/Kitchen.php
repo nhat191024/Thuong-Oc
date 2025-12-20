@@ -33,11 +33,17 @@ class Kitchen extends Model
 {
     use SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
         'branch_id',
     ];
 
+    //Model Relations
     public function branch()
     {
         return $this->belongsTo(Branch::class);

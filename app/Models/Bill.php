@@ -45,6 +45,11 @@ use App\Enums\PayStatus;
  */
 class Bill extends Model
 {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'table_id',
         'branch_id',
@@ -58,11 +63,17 @@ class Bill extends Model
         'pay_status',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected $casts = [
         'payment_method' => PaymentMethods::class,
         'pay_status' => PayStatus::class,
     ];
 
+    //Model Relations
     public function table()
     {
         return $this->belongsTo(Table::class);

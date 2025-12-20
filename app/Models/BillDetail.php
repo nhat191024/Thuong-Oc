@@ -34,6 +34,11 @@ use App\Enums\BillDetailStatus;
  */
 class BillDetail extends Model
 {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'bill_id',
         'dish_id',
@@ -43,10 +48,16 @@ class BillDetail extends Model
         'status',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected $casts = [
         'status' => BillDetailStatus::class,
     ];
 
+    //Model Relations
     public function bill()
     {
         return $this->belongsTo(Bill::class);

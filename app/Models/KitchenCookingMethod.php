@@ -27,11 +27,17 @@ class KitchenCookingMethod extends Model
 {
     protected $table = 'kitchen_cooking_method';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'kitchen_id',
         'cooking_method_id',
     ];
 
+    //Model Relations
     public function kitchen()
     {
         return $this->belongsTo(Kitchen::class);

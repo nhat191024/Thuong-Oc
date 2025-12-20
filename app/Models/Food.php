@@ -42,6 +42,11 @@ class Food extends Model
 
     protected $table = 'foods';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'category_id',
         'name',
@@ -51,16 +56,6 @@ class Food extends Model
         'note',
         'order',
     ];
-
-    public function dishes()
-    {
-        return $this->hasMany(Dish::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
 
     //model boot method
     protected static function booted(): void
@@ -72,5 +67,16 @@ class Food extends Model
         static::updated(function () {
             Cache::forget(CacheKeys::MENUS->value);
         });
+    }
+
+    //Model Relations
+    public function dishes()
+    {
+        return $this->hasMany(Dish::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

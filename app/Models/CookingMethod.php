@@ -34,11 +34,17 @@ class CookingMethod extends Model
 {
     use SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
         'note',
     ];
 
+    //Model Relations
     public function dishes()
     {
         return $this->hasMany(Dish::class);

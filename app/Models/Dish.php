@@ -38,6 +38,11 @@ class Dish extends Model
 {
     use SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'food_id',
         'cooking_method_id',
@@ -45,6 +50,7 @@ class Dish extends Model
         'note',
     ];
 
+    //Model Relations
     public function food()
     {
         return $this->belongsTo(Food::class);

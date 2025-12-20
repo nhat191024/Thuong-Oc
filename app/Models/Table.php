@@ -44,6 +44,11 @@ class Table extends Model
 
     public $incrementing = false;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'table_number',
         'note',
@@ -51,10 +56,16 @@ class Table extends Model
         'is_active',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected $casts = [
         'is_active' => TableActiveStatus::class,
     ];
 
+    //Model Relations
     protected static function boot()
     {
         parent::boot();
