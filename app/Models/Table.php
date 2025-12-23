@@ -65,7 +65,7 @@ class Table extends Model
         'is_active' => TableActiveStatus::class,
     ];
 
-    //Model Relations
+    //boot method
     protected static function boot()
     {
         parent::boot();
@@ -77,6 +77,7 @@ class Table extends Model
         });
     }
 
+    //Model Relations
     public function branch()
     {
         return $this->belongsTo(Branch::class);
