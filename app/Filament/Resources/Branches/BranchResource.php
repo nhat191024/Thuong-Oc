@@ -13,6 +13,7 @@ use App\Filament\Resources\Branches\Schemas\BranchForm;
 use App\Filament\Resources\Branches\Tables\BranchesTable;
 
 use App\Filament\Resources\Branches\Pages\ManageKitchen;
+use App\Filament\Resources\Branches\Pages\ManageTable;
 
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -57,6 +58,7 @@ class BranchResource extends Resource
             // 'create' => CreateBranch::route('/create'),
             // 'edit' => EditBranch::route('/{record}/edit'),
             'kitchen-management' => ManageKitchen::route('/{record}/kitchen-management'),
+            'table-management' => ManageTable::route('/{record}/table-management'),
         ];
     }
 

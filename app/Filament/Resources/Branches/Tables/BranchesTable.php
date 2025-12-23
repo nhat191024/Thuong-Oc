@@ -50,6 +50,10 @@ class BranchesTable
                     ->default('trashed'),
             ])
             ->recordActions([
+                Action::make('manage-table')
+                    ->label(__('Quản lý bàn'))
+                    ->url(fn($record): string => BranchResource::getUrl('table-management', ['record' => $record->id]))
+                    ->visible(fn($record): bool => $record->deleted_at === null),
                 Action::make('manage-kitchen')
                     ->label(__('Quản lý nhà bếp'))
                     ->url(fn($record): string => BranchResource::getUrl('kitchen-management', ['record' => $record->id]))
