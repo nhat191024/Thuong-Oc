@@ -77,6 +77,20 @@ class Table extends Model
         });
     }
 
+    //generate table number for a branch
+    public static function generateTableNumber(int $branchId): int
+    {
+        $lastTable = self::where('branch_id', $branchId)
+            ->orderBy('table_number', 'desc')
+            ->first();
+
+        if ($lastTable) {
+            return $lastTable->table_number + 1;
+        }
+
+        return 1;
+    }
+
     //Model Relations
     public function branch()
     {
