@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install zip pdo_mysql gd bcmath intl pcntl exif \
+    && docker-php-ext-install zip pdo_mysql gd bcmath intl pcntl exif opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
