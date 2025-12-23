@@ -40,8 +40,10 @@ class AdminPanelProvider extends PanelProvider
         try {
             $settings = app(AppSettings::class);
             $favicon = asset($settings->app_favicon);
+            $appName = $settings->app_name;
         } catch (\Exception $e) {
             $favicon = asset('favicon.ico');
+            $appName = 'Thương Ốc';
         }
 
         return $panel
@@ -52,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Red,
             ])
-            ->brandName('Thương Ốc')
+            ->brandName($appName)
             ->favicon($favicon)
             ->maxContentWidth(Width::Full)
             ->navigationGroups(FilamentNavigationGroup::class)
