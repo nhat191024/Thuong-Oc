@@ -61,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
 
-            // ->viteTheme('resources/css/filament/admin/theme.css') // Uncomment to use custom theme
+            ->viteTheme('resources/css/filament/admin/theme.css')
 
             ->pages([
                 Dashboard::class,
