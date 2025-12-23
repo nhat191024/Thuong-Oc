@@ -34,7 +34,7 @@ class BillsTable
                 TextColumn::make('branch.name')
                     ->label('Chi nhánh')
                     ->sortable(),
-                TextColumn::make('user.name')
+                TextColumn::make('user.username')
                     ->label('Nhân viên')
                     ->searchable(),
                 TextColumn::make('time_in')
