@@ -15,8 +15,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 
-use App\Filament\Resources\Categories\CategoryResource;
-
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 
