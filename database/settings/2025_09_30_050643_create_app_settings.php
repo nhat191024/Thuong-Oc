@@ -6,8 +6,8 @@ return new class extends SettingsMigration
 {
     public function up(): void
     {
-        $this->migrator->add('app.app_name', 'Sự Kiện Tốt');
-        $this->migrator->add('app.app_logo', 'images/logo.svg');
-        $this->migrator->add('app.app_favicon', 'images/favicon.ico');
+        $this->migrator->add('app.app_name', 'Thương Ốc');
+        $this->migrator->add('app.app_logo', 'logo.svg');
+        $this->migrator->add('app.app_favicon', 'favicon.ico');
     }
 };
