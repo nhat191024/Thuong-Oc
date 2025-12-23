@@ -24,8 +24,6 @@ class KitchenResource extends Resource
 {
     protected static ?string $model = Kitchen::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
     protected static ?string $parentResource = BranchResource::class;
 
     public static function getModelLabel(): string
