@@ -51,7 +51,6 @@ class Table extends Model
      */
     protected $fillable = [
         'table_number',
-        'note',
         'branch_id',
         'is_active',
     ];
