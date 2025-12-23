@@ -41,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
             $settings = app(AppSettings::class);
             $favicon = asset($settings->app_favicon);
         } catch (\Exception $e) {
-            $favicon = asset('images/favicon.ico');
+            $favicon = asset('favicon.ico');
         }
 
         return $panel
