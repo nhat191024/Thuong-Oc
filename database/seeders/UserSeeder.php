@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             $user = User::create([
                 'username' => $item['username'],
                 'password' => bcrypt($item['password']),
-                'branch_id' => $item['branch_id'],
+                'branch_id' => $item['branch_id'] ?? null,
             ]);
 
             switch ($item['role']) {
