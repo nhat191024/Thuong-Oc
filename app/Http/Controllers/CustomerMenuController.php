@@ -32,12 +32,13 @@ class CustomerMenuController extends Controller
         // Cache menu data for 1 hour (3600 seconds)
         $menus = Cache::remember(CacheKeys::MENUS->value, 3600, function () {
             $categories = Category::select(['id', 'name'])
-                ->has('foods.dishes')
+                ->has('food.dishes')
                 ->with([
-                    'foods' => function ($query) {
+                    'food' => function ($query) {
                         $query->select(['id', 'category_id', 'name', 'price', 'note'])
                             ->has('dishes')
                             ->with([
+                                'media',
                                 'dishes:id,food_id,cooking_method_id,additional_price,note',
                                 'dishes.cookingMethod:id,name',
                             ]);
@@ -49,11 +50,12 @@ class CustomerMenuController extends Controller
             return $categories->map(fn($category) => [
                 'id' => $category->id,
                 'name' => $category->name,
-                'foods' => $category->foods->map(fn($food) => [
+                'foods' => $category->food->map(fn($food) => [
                     'id' => $food->id,
                     'name' => $food->name,
                     'price' => $food->price,
                     'note' => $food->note,
+                    'image' => $food->getFirstMediaUrl('default', 'preview'),
                     'dishes' => $food->dishes->map(fn($dish) => [
                         'id' => $dish->id,
                         'name' => $dish->cookingMethod?->name,
@@ -66,7 +68,7 @@ class CustomerMenuController extends Controller
 
         $categories = Cache::remember(CacheKeys::MENU_CATEGORIES->value, 3600, function () {
             return Category::select(['id', 'name'])
-                ->has('foods.dishes')
+                ->has('food.dishes')
                 ->orderBy('order')
                 ->get()
                 ->map(fn($cat) => [
