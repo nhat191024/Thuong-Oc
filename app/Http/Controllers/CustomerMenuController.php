@@ -29,8 +29,7 @@ class CustomerMenuController extends Controller
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
 
-        // Cache menu data for 1 hour (3600 seconds)
-        $menus = Cache::remember(CacheKeys::MENUS->value, 3600, function () {
+        $menus = Cache::rememberForever(CacheKeys::MENUS->value, function () {
             $categories = Category::select(['id', 'name'])
                 ->has('food.dishes')
                 ->with([
