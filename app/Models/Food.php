@@ -83,11 +83,11 @@ class Food extends Model implements HasMedia
     //model boot method
     protected static function booted(): void
     {
-        static::created(function () {
+        static::saved(function () {
             Cache::forget(CacheKeys::MENUS->value);
         });
 
-        static::updated(function () {
+        static::deleted(function () {
             Cache::forget(CacheKeys::MENUS->value);
         });
     }
