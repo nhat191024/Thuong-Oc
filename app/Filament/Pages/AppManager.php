@@ -53,36 +53,14 @@ class AppManager extends SettingsPage
                             ->image()
                             ->directory('uploads/app')
                             ->disk('public')
-                            ->visibility('public')
-                            ->formatStateUsing(fn($state) => $state ? str_replace('storage/', '', $state) : null)
-                            ->dehydrated(fn($state) => filled($state))
-                            ->dehydrateStateUsing(function ($state, $record) {
-                                if (filled($state)) {
-                                    if (str_starts_with($state, 'images/')) {
-                                        return $state;
-                                    }
-                                    return 'storage/' . $state;
-                                }
-                                return $record?->app_logo ?? null;
-                            }),
+                            ->visibility('public'),
 
                         FileUpload::make('app_favicon')
                             ->label(__(__('Favicon ứng dụng')))
                             ->image()
                             ->directory('uploads/app')
                             ->disk('public')
-                            ->visibility('public')
-                            ->formatStateUsing(fn($state) => $state ? str_replace('storage/', '', $state) : null)
-                            ->dehydrated(fn($state) => filled($state))
-                            ->dehydrateStateUsing(function ($state, $record) {
-                                if (filled($state)) {
-                                    if (str_starts_with($state, 'images/')) {
-                                        return $state;
-                                    }
-                                    return 'storage/' . $state;
-                                }
-                                return $record?->app_favicon ?? null;
-                            }),
+                            ->visibility('public'),
                     ]),
             ]);
     }
