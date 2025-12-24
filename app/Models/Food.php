@@ -20,8 +20,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string $name
  * @property int $price
  * @property int $discount_price
- * @property int $is_favorite
+ * @property bool $is_favorite
  * @property string|null $note
+ * @property int $sold_count
  * @property int $order
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -45,6 +46,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereSoldCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withoutTrashed()
@@ -68,6 +70,7 @@ class Food extends Model implements HasMedia
         'discount_price',
         'is_favorite',
         'note',
+        'sold_count',
         'order',
     ];
 
