@@ -52,15 +52,15 @@ class Category extends Model
     protected static function booted(): void
     {
         static::deleting(function (Category $category) {
-            $category->foods()->delete();
+            $category->food()->delete();
         });
 
         static::restoring(function (Category $category) {
-            $category->foods()->withTrashed()->restore();
+            $category->food()->withTrashed()->restore();
         });
 
         static::forceDeleted(function (Category $category) {
-            $category->foods()->withTrashed()->forceDelete();
+            $category->food()->withTrashed()->forceDelete();
         });
 
         static::created(function () {
@@ -75,7 +75,7 @@ class Category extends Model
     }
 
     //Model Relations
-    public function foods()
+    public function food()
     {
         return $this->hasMany(Food::class);
     }

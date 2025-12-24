@@ -14,7 +14,7 @@ class ManageCategoryFood extends ManageRelatedRecords
 {
     protected static string $resource = CategoryResource::class;
 
-    protected static string $relationship = 'foods';
+    protected static string $relationship = 'food';
 
     protected static ?string $relatedResource = FoodResource::class;
 
