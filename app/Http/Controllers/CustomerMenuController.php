@@ -59,6 +59,7 @@ class CustomerMenuController extends Controller
                     'discount_price' => $food->discount_price,
                     'note' => $food->note,
                     'image' => $food->getFirstMediaUrl('default', 'preview'),
+                    'sold_count' => $food->sold_count,
                     'dishes' => $food->dishes->map(fn($dish) => [
                         'id' => $dish->id,
                         'name' => $dish->cookingMethod?->name,
