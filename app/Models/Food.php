@@ -72,6 +72,15 @@ class Food extends Model implements HasMedia
     ];
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected $casts = [
+        'is_favorite' => 'boolean',
+    ];
+
+    /**
      * Register the media conversions.
      */
     public function registerMediaConversions(?Media $media = null): void
