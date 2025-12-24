@@ -13,6 +13,7 @@ export interface Food {
     discount_price: number;
     note: string | null;
     image: string | null;
+    sold_count: number;
     dishes: Dish[];
 }
 
