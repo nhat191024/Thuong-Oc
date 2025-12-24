@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "256aaead11d0a7cf2a428ea8755ac39c",
+    "content-hash": "d92ee9711c1fcf1b0d80337ac374a80b",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -12339,16 +12339,16 @@
         },
         {
             "name": "laradumps/laradumps-core",
-            "version": "v3.2.10",
+            "version": "v3.2.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laradumps/laradumps-core.git",
-                "reference": "adfd62ca7328d971af618fbf83e89f61f7188748"
+                "reference": "cfc91afd1a6217ec568960eb996f371c08c380eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laradumps/laradumps-core/zipball/adfd62ca7328d971af618fbf83e89f61f7188748",
-                "reference": "adfd62ca7328d971af618fbf83e89f61f7188748",
+                "url": "https://api.github.com/repos/laradumps/laradumps-core/zipball/cfc91afd1a6217ec568960eb996f371c08c380eb",
+                "reference": "cfc91afd1a6217ec568960eb996f371c08c380eb",
                 "shasum": ""
             },
             "require": {
@@ -12396,7 +12396,7 @@
             "homepage": "https://github.com/laradumps/laradumps-core",
             "support": {
                 "issues": "https://github.com/laradumps/laradumps-core/issues",
-                "source": "https://github.com/laradumps/laradumps-core/tree/v3.2.10"
+                "source": "https://github.com/laradumps/laradumps-core/tree/v3.2.11"
             },
             "funding": [
                 {
@@ -12404,7 +12404,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-25T15:35:01+00:00"
+            "time": "2025-12-11T14:41:59+00:00"
         },
         {
             "name": "laravel-lang/actions",
