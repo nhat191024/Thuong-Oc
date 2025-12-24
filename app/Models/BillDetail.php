@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Food;
+
 use App\Enums\BillDetailStatus;
 
 /**
@@ -56,6 +58,20 @@ class BillDetail extends Model
     protected $casts = [
         'status' => BillDetailStatus::class,
     ];
+
+    //model boot method
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($billDetail) {
+            $foodId = $billDetail->dish->food_id;
+            $food = Food::find($foodId);
+            if ($food) {
+                $food->increment('sold_count', $billDetail->quantity);
+            }
+        });
+    }
 
     //Model Relations
     public function bill()
