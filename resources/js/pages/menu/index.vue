@@ -57,6 +57,11 @@
                                 </p>
                             </div>
 
+                            <div v-if="food.is_favorite" class="flex items-center gap-1">
+                                <HeartIcon class="size-4 text-primary" />
+                                <p class="text-xs font-semibold text-primary">Được yêu thích</p>
+                            </div>
+
                             <div class="mt-auto flex items-end justify-between">
                                 <div>
                                     <p class="mb-0.5 text-[10px] font-medium tracking-wider text-base-content/40 uppercase">Đã bán 100+</p>
@@ -141,7 +146,7 @@ import History from './partials/history.vue';
 import Nav from './partials/nav.vue';
 
 //icons
-import { PlusIcon } from '@heroicons/vue/24/solid';
+import { HeartIcon, PlusIcon } from '@heroicons/vue/24/solid';
 
 interface Props {
     table: {
