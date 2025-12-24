@@ -1,4 +1,4 @@
-<template>
+    <template>
     <div class="flex h-dvh w-dvw flex-col bg-base-100">
         <Nav :table-number="table.table_number"></Nav>
 
@@ -40,7 +40,7 @@
                     >
                         <figure class="group relative h-28 w-28 shrink-0 overflow-hidden rounded-xl">
                             <img
-                                src="/images/demo.jpg"
+                                :src="food.image || '/images/demo.jpg'"
                                 alt="demo"
                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
