@@ -34,7 +34,7 @@ class CustomerMenuController extends Controller
                 ->has('food.dishes')
                 ->with([
                     'food' => function ($query) {
-                        $query->select(['id', 'category_id', 'name', 'price', 'note'])
+                        $query->select(['id', 'category_id', 'name', 'price', 'discount_price', 'is_favorite', 'note'])
                             ->has('dishes')
                             ->with([
                                 'media',
@@ -53,7 +53,10 @@ class CustomerMenuController extends Controller
                 'foods' => $category->food->map(fn($food) => [
                     'id' => $food->id,
                     'name' => $food->name,
+                    'is_favorite' => $food->is_favorite,
+                    'is_discounted' => $food->discount_price > 0,
                     'price' => $food->price,
+                    'discount_price' => $food->discount_price,
                     'note' => $food->note,
                     'image' => $food->getFirstMediaUrl('default', 'preview'),
                     'dishes' => $food->dishes->map(fn($dish) => [
