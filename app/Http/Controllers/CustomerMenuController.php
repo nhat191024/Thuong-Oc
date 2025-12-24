@@ -41,7 +41,8 @@ class CustomerMenuController extends Controller
                                 'media',
                                 'dishes:id,food_id,cooking_method_id,additional_price,note',
                                 'dishes.cookingMethod:id,name',
-                            ]);
+                            ])
+                            ->orderBy('order');
                     },
                 ])
                 ->orderBy('order')
