@@ -17,3 +17,9 @@ export interface User {
     created_at: string;
     updated_at: string;
 }
+
+export interface AppSettings {
+    app_name: string;
+    app_logo?: string | null;
+    app_favicon?: string | null;
+}
