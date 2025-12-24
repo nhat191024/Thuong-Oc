@@ -9,6 +9,7 @@ export interface Food {
     name: string;
     price: number;
     note: string | null;
+    image: string | null;
     dishes: Dish[];
 }
 
