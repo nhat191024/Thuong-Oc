@@ -34,7 +34,7 @@ class CustomerMenuController extends Controller
                 ->has('food.dishes')
                 ->with([
                     'food' => function ($query) {
-                        $query->select(['id', 'category_id', 'name', 'price', 'discount_price', 'is_favorite', 'note'])
+                        $query->select(['id', 'category_id', 'name', 'price', 'discount_price', 'is_favorite', 'note', 'sold_count'])
                             ->has('dishes')
                             ->with([
                                 'media',
