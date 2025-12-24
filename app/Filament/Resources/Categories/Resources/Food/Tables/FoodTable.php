@@ -46,6 +46,8 @@ class FoodTable
                     ->formatStateUsing(fn($state) => $state ? __('Có') : __('Không'))
                     ->color(fn($state): string => $state ? 'success' : 'primary')
                     ->badge(),
+                TextColumn::make('sold_count')
+                    ->label(__('Số lượng đã bán')),
                 TextColumn::make('deleted_at')
                     ->label(__('Đã xóa lúc'))
                     ->dateTime()
