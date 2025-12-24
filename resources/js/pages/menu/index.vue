@@ -1,4 +1,4 @@
-    <template>
+<template>
     <div class="flex h-dvh w-dvw flex-col bg-base-100">
         <Nav :table-number="table.table_number"></Nav>
 
@@ -60,7 +60,14 @@
                             <div class="mt-auto flex items-end justify-between">
                                 <div>
                                     <p class="mb-0.5 text-[10px] font-medium tracking-wider text-base-content/40 uppercase">Đã bán 100+</p>
-                                    <p class="text-lg leading-none font-bold text-primary">{{ formatPrice(food.price) }}</p>
+                                    <div class="flex items-baseline gap-2">
+                                        <p class="text-lg leading-none font-bold text-primary">
+                                            {{ food.is_discounted ? formatPrice(food.discount_price) : formatPrice(food.price) }}
+                                        </p>
+                                        <p v-if="food.is_discounted" class="text-sm leading-none text-base-content/50 line-through">
+                                            {{ formatPrice(food.price) }}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <button
