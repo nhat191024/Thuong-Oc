@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class FoodForm
 {
@@ -30,6 +31,15 @@ class FoodForm
                 Textarea::make('note')
                     ->label(__('Ghi chú'))
                     ->placeholder(__('Nhập ghi chú cho thực phẩm'))
+                    ->columnSpanFull(),
+                SpatieMediaLibraryFileUpload::make('image')
+                    ->label(__('Ảnh'))
+                    ->collection('default')
+                    ->conversion('preview')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->image()
+                    ->required()
                     ->columnSpanFull(),
                 Repeater::make('dishes')
                     ->label(__('Cách chế biến'))

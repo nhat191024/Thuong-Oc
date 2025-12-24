@@ -14,6 +14,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 
 use Filament\Tables\Filters\TrashedFilter;
 
@@ -25,6 +26,9 @@ class FoodTable
             ->columns([
                 TextColumn::make('order')
                     ->label(__('Thứ tự')),
+                SpatieMediaLibraryImageColumn::make('default')
+                    ->label(__('Ảnh'))
+                    ->conversion('preview'),
                 TextColumn::make('name')
                     ->label(__('Tên'))
                     ->searchable(),
