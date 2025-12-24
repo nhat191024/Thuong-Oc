@@ -15,9 +15,12 @@ class FoodSeeder extends Seeder
     public function run(): void
     {
         $data = json_decode(file_get_contents(database_path('data/foods.json')), true);
-
+        $demoImgPath = public_path('images/demo.jpg');
         foreach ($data as $item) {
-            Food::create($item);
+            $food = Food::create($item);
+            $food->addMedia($demoImgPath)
+                ->preservingOriginal()
+                ->toMediaCollection();
         }
     }
 }
