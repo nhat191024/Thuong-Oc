@@ -23,6 +23,7 @@ use App\Enums\PayStatus;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BillDetail> $billDetails
  * @property-read int|null $bill_details_count
+ * @property-read \App\Models\Branch|null $branch
  * @property-read \App\Models\Table|null $table
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill newModelQuery()

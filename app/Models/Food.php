@@ -29,6 +29,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read \App\Models\Category|null $category
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Dish> $dishes
  * @property-read int|null $dishes_count
+ * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, Media> $media
+ * @property-read int|null $media_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food onlyTrashed()

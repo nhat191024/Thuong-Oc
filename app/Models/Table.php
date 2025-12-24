@@ -11,8 +11,7 @@ use App\Enums\TableActiveStatus;
 
 /**
  * @property string $id
- * @property string $table_number
- * @property string|null $note
+ * @property int $table_number
  * @property int $branch_id
  * @property TableActiveStatus $is_active
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -29,7 +28,6 @@ use App\Enums\TableActiveStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereIsActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereTableNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table withTrashed(bool $withTrashed = true)
