@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
+use Spatie\Image\Enums\Fit;
+
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
 /**
  * @property int $id
  * @property int $category_id
@@ -42,9 +48,9 @@ use Illuminate\Support\Facades\Cache;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withoutTrashed()
  * @mixin \Eloquent
  */
-class Food extends Model
+class Food extends Model implements HasMedia
 {
-    use SoftDeletes;
+    use SoftDeletes, InteractsWithMedia;
 
     protected $table = 'foods';
 
@@ -62,6 +68,17 @@ class Food extends Model
         'note',
         'order',
     ];
+
+    /**
+     * Register the media conversions.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this
+            ->addMediaConversion('preview')
+            ->fit(Fit::Contain, 300, 300)
+            ->queued();
+    }
 
     //model boot method
     protected static function booted(): void
