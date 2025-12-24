@@ -27,7 +27,7 @@ import { ListBulletIcon, ShoppingBagIcon } from '@heroicons/vue/24/solid';
 import { computed } from 'vue';
 
 interface Props {
-    tableNumber: string;
+    tableNumber: number;
 }
 
 const props = defineProps<Props>();
