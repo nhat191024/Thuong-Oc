@@ -7,7 +7,10 @@ export interface Menu {
 export interface Food {
     id: number;
     name: string;
+    is_favorite: boolean;
+    is_discounted: boolean;
     price: number;
+    discount_price: number;
     note: string | null;
     image: string | null;
     dishes: Dish[];
