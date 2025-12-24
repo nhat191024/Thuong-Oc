@@ -64,7 +64,9 @@
 
                             <div class="mt-auto flex items-end justify-between">
                                 <div>
-                                    <p class="mb-0.5 text-[10px] font-medium tracking-wider text-base-content/40 uppercase">Đã bán 100+</p>
+                                    <p class="mb-0.5 text-[10px] font-medium tracking-wider text-base-content/40 uppercase">
+                                        Đã bán {{ formatSoldCount(food.sold_count) }}
+                                    </p>
                                     <div class="flex items-baseline gap-2">
                                         <p class="text-lg leading-none font-bold text-primary">
                                             {{ food.is_discounted ? formatPrice(food.discount_price) : formatPrice(food.price) }}
@@ -477,5 +479,23 @@ function addDish(foodId: number) {
  */
 function formatPrice(price: number): string {
     return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+}
+
+/**
+ * format sold count
+ * @param count
+ */
+function formatSoldCount(count: number): string {
+    switch (true) {
+        case count <= 1000:
+            return count.toString();
+        case count >= 1000 && count < 10000:
+            return Math.floor(count / 100) * 100 + '+';
+        case count >= 10000:
+            return '9999+';
+        default:
+            break;
+    }
+    return count.toString();
 }
 </script>
