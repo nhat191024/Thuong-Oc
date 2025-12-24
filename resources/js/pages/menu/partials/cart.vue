@@ -109,7 +109,7 @@ interface Props {
     billTemp: orderDish[];
     table: {
         id: string;
-        table_number: string;
+        table_number: number;
         branch_id: number;
     };
 }

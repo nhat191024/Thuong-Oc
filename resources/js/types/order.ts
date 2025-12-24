@@ -1,5 +1,5 @@
 export interface orderDish {
-    table: string;
+    table: number;
     foodId: number;
     dishId: number | null;
     name: string;

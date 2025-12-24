@@ -139,7 +139,7 @@ import { PlusIcon } from '@heroicons/vue/24/solid';
 interface Props {
     table: {
         id: string;
-        table_number: string;
+        table_number: number;
         branch_id: number;
     };
     categories: Category[];
@@ -196,7 +196,7 @@ function scrollTabToView(id: number) {
 function loadOrderFromLocalStorage() {
     if (orderStore.dishes.length === 0) return;
     orderStore.dishes.forEach((item: orderDish) => {
-        if (item.table === props.table.table_number) {
+        if (Number(item.table) === props.table.table_number) {
             billTemp.value.push(item);
         } else {
             orderStore.clearDishes();
@@ -319,7 +319,7 @@ function handleAddToCart(dishData: { dishId: number; quantity: number; note: str
         // Find index in orderStore.dishes to update
         const existingOrderInStore = orderStore.dishes.findIndex(
             (item: orderDish) =>
-                item.table === props.table.table_number &&
+                Number(item.table) === props.table.table_number &&
                 item.foodId === selectedFood.value.id &&
                 item.dishId === choosingDish.id &&
                 item.note === normalizedNote,
