@@ -14,6 +14,8 @@ use Filament\Panel;
 
 use App\Enums\Role;
 
+use Laravel\Sanctum\HasApiTokens;
+
 /**
  * @property int $id
  * @property int|null $branch_id
@@ -54,7 +56,7 @@ use App\Enums\Role;
  */
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasRoles, Notifiable, SoftDeletes;
+    use HasRoles, Notifiable, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
