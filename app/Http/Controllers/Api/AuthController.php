@@ -42,6 +42,10 @@ class AuthController extends Controller
             $menus = $this->menuService->getMenus();
         }
 
+        $oldTokens = $user->tokens();
+        if ($oldTokens->count() > 0) {
+            $oldTokens->delete();
+        }
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
