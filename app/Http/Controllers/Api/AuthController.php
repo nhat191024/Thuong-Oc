@@ -2,16 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Enums\Role;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthRequest;
 
-use App\Enums\Role;
+use App\Services\MenuService;
 
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    protected MenuService $menuService;
+
+    public function __construct()
+    {
+        $this->menuService = app(MenuService::class);
+    }
+
     /**
      * Handle user login and generate API token.
      * @param  \App\Http\Requests\AuthRequest  $request
@@ -27,9 +35,11 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-
+        $menus = null;
         if ($user->hasRole(Role::ADMIN->value)) {
             return response()->json(['message' => 'Access denied for admin role'], 403);
+        } else if ($user->hasRole(Role::STAFF->value)) {
+            $menus = $this->menuService->getMenus();
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
@@ -39,6 +49,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'user' => $user,
             'role' => $user->roles->pluck('name'),
+            'menus' => $menus,
         ]);
     }
 
