@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class MenuService
 {
-    public function getMenus()
+    public function getMenus() : CategoryResourceCollection
     {
         $menus = Cache::rememberForever(CacheKeys::MENUS->value, function () {
             $categories = Category::select(['id', 'name'])
