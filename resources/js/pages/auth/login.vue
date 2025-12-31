@@ -1,7 +1,7 @@
 <template>
     <Head title="Login" />
     <div class="flex min-h-screen items-center justify-center bg-base-200 px-4 py-12 sm:px-6 lg:px-8">
-        <div class="card w-full max-w-sm shrink-0 bg-base-100 shadow-2xl">
+        <div class="card w-full max-w-sm shrink-0 bg-base-100 shadow-2xl rounded-xl">
             <form class="card-body" @submit.prevent="submit">
                 <h2 class="text-center text-lg leading-9 font-bold tracking-tight">Thương ốc</h2>
                 <h2 class="mb-4 text-center text-xl leading-9 font-bold tracking-tight">Đăng nhập vào tài khoản</h2>
