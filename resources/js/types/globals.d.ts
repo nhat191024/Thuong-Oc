@@ -1,3 +1,4 @@
+import { Page, PageProps as InertiaPageProps } from '@inertiajs/core';
 import { AppPageProps } from '@/types/index';
 
 // Extend ImportMeta interface for Vite...
@@ -14,13 +15,13 @@ declare module 'vite/client' {
 }
 
 declare module '@inertiajs/core' {
-    interface PageProps extends InertiaPageProps, AppPageProps {}
+    interface PageProps extends InertiaPageProps, AppPageProps {
+        $page: Page<InertiaPageProps & AppPageProps>;
+    }
 }
 
 declare module 'vue' {
     interface ComponentCustomProperties {
-        $inertia: typeof Router;
-        $page: Page;
-        $headManager: ReturnType<typeof createHeadManager>;
+        $page: Page<InertiaPageProps & AppPageProps>;
     }
 }
