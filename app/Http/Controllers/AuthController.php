@@ -62,6 +62,8 @@ class AuthController extends Controller
             return back()->withErrors([
                 'username' => 'Access denied for admin role',
             ]);
+        } elseif ($user->hasRole(Role::STAFF->value)) {
+            return redirect()->intended('staff/');
         }
 
         return redirect()->intended('/');
