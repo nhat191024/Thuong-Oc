@@ -2,14 +2,21 @@
 @import 'tailwindcss';
 
 @plugin "daisyui" {
-    themes: light --default;
+    themes: dark --default;
+}
+
+@plugin "daisyui/theme" {
+    name: "dark";
+    prefersdark: true;
+
+    --color-primary: oklch(0.4446 0.1774 26.79);
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@theme inline {
+@theme {
     --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --color-primary: #9f0712;
+    --color-primary: oklch(0.4446 0.1774 26.79);
 }
