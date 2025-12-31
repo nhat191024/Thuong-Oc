@@ -16,7 +16,7 @@
                         type="text"
                         autocomplete="username"
                         required
-                        class="input-bordered input w-full"
+                        class="input w-full border outline-primary focus:border-primary mt-1"
                         :class="{ 'input-error': form.errors.username }"
                     />
                     <label class="label" v-if="form.errors.username">
@@ -34,7 +34,7 @@
                         type="password"
                         autocomplete="current-password"
                         required
-                        class="input-bordered input w-full"
+                        class="input w-full border outline-primary focus:border-primary mt-1"
                         :class="{ 'input-error': form.errors.password }"
                     />
                     <label class="label" v-if="form.errors.password">
