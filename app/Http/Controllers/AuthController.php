@@ -46,7 +46,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($credentials, $remember)) {
             return back()->withErrors([
-                'username' => 'The provided credentials do not match our records.',
+                'username' => 'Thông tin đăng nhập không chính xác',
             ]);
         }
 
