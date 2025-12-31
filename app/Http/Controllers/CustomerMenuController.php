@@ -37,7 +37,7 @@ class CustomerMenuController extends Controller
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
 
-        $menus = $this->menuService->getMenus();
+        $menus = $this->menuService->getMenus(useCollection: false);
 
         $categories = Cache::remember(CacheKeys::MENU_CATEGORIES->value, 3600, function () {
             return Category::select(['id', 'name'])
