@@ -1,12 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
 @import 'tailwindcss';
 
-@plugin "daisyui" {
-    themes: dark --default;
-}
+@plugin "daisyui";
 
 @plugin "daisyui/theme" {
-    name: "dark";
+    name: "light";
+    default: true;
     prefersdark: true;
 
     --color-primary: oklch(0.4446 0.1774 26.79);
