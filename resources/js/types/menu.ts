@@ -1,5 +1,5 @@
 export interface Menu {
-    id: number;
+    id: string;
     name: string;
     foods: Food[];
 }

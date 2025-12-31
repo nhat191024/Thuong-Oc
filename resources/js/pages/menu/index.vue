@@ -24,7 +24,7 @@
 
         <!-- Menu Content -->
         <div ref="menuContent" class="flex-1 overflow-y-auto scroll-smooth px-4 pb-24" @scroll="handleScroll">
-            <div v-for="menu in menus" :key="menu.id" :id="menu.id.toString()" class="category animate-fade-in py-4">
+            <div v-for="menu in menus" :key="menu.id" :id="menu.id" class="category animate-fade-in py-4">
                 <h2
                     class="sticky top-0 z-10 -mx-4 mb-4 flex items-center gap-2 bg-base-100/90 px-4 py-2 text-xl font-bold text-base-content backdrop-blur-sm"
                 >
