@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen w-full flex-col bg-base-100">
-        <Nav :center_text="'Bàn ' + props.table.table_number" :use_back_button="true" />
+        <Nav :center_text="'Bàn ' + props.table.table_number" :use_back_button="true" :back-url="route('staff.tables')" />
 
         <div class="flex flex-1 overflow-hidden">
             <!-- Left Panel: Bill & Cart -->

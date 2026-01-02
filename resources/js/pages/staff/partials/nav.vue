@@ -18,12 +18,13 @@
 <script setup lang="ts">
 import { AppPageProps } from '@/types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 interface Props {
     center_text: string;
     use_back_button?: boolean;
+    backUrl?: string;
 }
 
 const props = defineProps<Props>();
@@ -32,7 +33,11 @@ const page = usePage<AppPageProps>();
 const user = computed(() => page.props.auth.user);
 
 const goBack = () => {
-    window.history.back();
+    if (props.backUrl) {
+        router.visit(props.backUrl);
+    } else {
+        window.history.back();
+    }
 };
 
 //TODO: Add logout functionality
