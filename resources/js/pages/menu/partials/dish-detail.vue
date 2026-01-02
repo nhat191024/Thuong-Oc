@@ -11,27 +11,31 @@
             <div>
                 <h3 class="pt-2 text-center text-xl font-bold">Thêm món ăn</h3>
                 <div class="flex flex-col">
-                    <div class="my-5 grid h-24 w-full grid-cols-12 grid-rows-3 px-4 text-lg font-light">
-                        <img src="/images/demo.jpg" alt="demo" class="col-span-3 row-span-full h-full w-full rounded-lg" />
-                        <p class="col-span-full col-start-4 row-span-1 pl-3 font-medium">
-                            {{ food.name }}
-                        </p>
-                        <p class="col-span-4 row-start-3 pl-3 font-semibold text-primary">{{ formatPrice(food.price) }}</p>
-                        <div class="col-span-full col-start-10 row-start-3 flex h-full w-full items-center gap-3 place-self-center">
-                            <button
-                                @click="tempQuantity--"
-                                class="transform rounded-l-full bg-primary p-1 transition-all duration-300 active:scale-125"
-                                :disabled="tempQuantity <= 1"
-                            >
-                                <MinusIcon class="size-5 text-white" />
-                            </button>
-                            <p>{{ tempQuantity }}</p>
-                            <button
-                                @click="tempQuantity++"
-                                class="transform rounded-r-full bg-primary p-1 transition-all duration-300 active:scale-125"
-                            >
-                                <PlusIcon class="size-5 text-white" />
-                            </button>
+                    <div class="my-5 flex h-24 w-full gap-4 px-4 text-lg font-light">
+                        <img src="/images/demo.jpg" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
+                        <div class="flex flex-1 flex-col justify-between">
+                            <p class="font-medium line-clamp-2">
+                                {{ food.name }}
+                            </p>
+                            <div class="flex items-end justify-between">
+                                <p class="font-semibold text-primary">{{ formatPrice(food.price) }}</p>
+                                <div class="flex items-center gap-3">
+                                    <button
+                                        @click="tempQuantity--"
+                                        class="transform rounded-l-full bg-primary p-1 transition-all duration-300 active:scale-125"
+                                        :disabled="tempQuantity <= 1"
+                                    >
+                                        <MinusIcon class="size-5 text-white" />
+                                    </button>
+                                    <p class="w-4 text-center">{{ tempQuantity }}</p>
+                                    <button
+                                        @click="tempQuantity++"
+                                        class="transform rounded-r-full bg-primary p-1 transition-all duration-300 active:scale-125"
+                                    >
+                                        <PlusIcon class="size-5 text-white" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
