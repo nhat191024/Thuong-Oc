@@ -19,7 +19,7 @@
                         <TableCellsIcon class="mb-4 h-16 w-16" />
                         <span class="text-2xl font-bold">Bàn {{ table.table_number }}</span>
                         <span class="mt-2 text-sm">
-                            {{ table.is_active === 'active' ? 'Hoạt động' : 'Ngừng hoạt động' }}
+                            {{ table.is_active === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
                         </span>
                     </Link>
                 </div>
