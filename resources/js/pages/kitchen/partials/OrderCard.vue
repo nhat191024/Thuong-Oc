@@ -1,32 +1,23 @@
 <template>
-    <div
-        class="flex flex-col rounded-xl p-4 shadow-sm transition-colors duration-300"
-        :class="getCardColorClass(detail.created_at)"
-    >
+    <div class="flex flex-col rounded-xl p-4 shadow-sm transition-colors duration-300" :class="getCardColorClass(detail.created_at)">
         <div class="mb-2 flex items-center justify-between">
             <span class="text-lg font-bold">Bàn {{ detail.bill.table.table_number }}</span>
             <div class="flex flex-col items-end">
                 <span class="text-sm text-gray-500">{{ formatTime(detail.created_at) }}</span>
-                <span class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
+                <span v-if="showActions" class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
             </div>
         </div>
-        <div class="mb-1 flex-1 overflow-y-auto min-h-0">
+        <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
             <h3 class="text-xl font-bold text-primary">{{ detail.dish.food.name }}</h3>
             <p class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note ?? 'Không có' }}</p>
         </div>
         <div class="flex items-end justify-between">
             <span class="text-lg font-bold">SL: {{ detail.quantity }}</span>
             <div class="flex gap-2" v-if="showActions">
-                <button
-                    class="rounded-lg bg-red-500 px-3 py-1 text-white hover:bg-red-600"
-                    @click="$emit('updateStatus', detail.id, 'cancelled')"
-                >
+                <button class="rounded-lg bg-red-500 px-3 py-1 text-white hover:bg-red-600" @click="$emit('updateStatus', detail.id, 'cancelled')">
                     Hủy
                 </button>
-                <button
-                    class="rounded-lg bg-green-500 px-3 py-1 text-white hover:bg-green-600"
-                    @click="$emit('updateStatus', detail.id, 'done')"
-                >
+                <button class="rounded-lg bg-green-500 px-3 py-1 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
                     Hoàn thành
                 </button>
             </div>
@@ -47,7 +38,7 @@
 
 <script setup lang="ts">
 import { format } from 'date-fns';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 interface Food {
     id: number;
