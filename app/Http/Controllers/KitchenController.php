@@ -90,4 +90,36 @@ class KitchenController extends Controller
 
         return back();
     }
+
+    /**
+     * Get kitchen history
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Kitchen  $kitchen
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function history(Request $request, Kitchen $kitchen)
+    {
+        $user = Auth::user();
+        if ($kitchen->branch_id !== $user->branch_id) {
+            abort(403);
+        }
+
+        $cookingMethodIds = KitchenCookingMethod::where('kitchen_id', $kitchen->id)
+            ->pluck('cooking_method_id');
+
+        $history = BillDetail::query()
+            ->with(['dish.food', 'bill.table'])
+            ->whereHas('bill', function ($query) use ($kitchen) {
+                $query->where('branch_id', $kitchen->branch_id);
+            })
+            ->whereHas('dish', function ($query) use ($cookingMethodIds) {
+                $query->whereIn('cooking_method_id', $cookingMethodIds);
+            })
+            ->whereIn('status', [BillDetailStatus::DONE->value, BillDetailStatus::CANCELLED->value])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(10);
+
+        return response()->json($history);
+    }
 }

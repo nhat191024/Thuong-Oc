@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('kitchen')->name('kitchen.')->middleware('role:kitchen')->group(function () {
         Route::get('/', [KitchenController::class, 'index'])->name('index');
         Route::get('/{kitchen}', [KitchenController::class, 'show'])->name('show');
+        Route::get('/{kitchen}/history', [KitchenController::class, 'history'])->name('history');
         Route::post('/bill-detail/{billDetail}/status', [KitchenController::class, 'updateStatus'])->name('bill-detail.update-status');
     });
 
