@@ -18,15 +18,17 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::prefix('staff')->name('staff.')->group(function () {
+    Route::prefix('staff')->name('staff.')->middleware('role:staff')->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('tables');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
         Route::post('/table/{tableId}/pay', [StaffController::class, 'processPayment'])->name('table.pay');
     });
 
-    Route::prefix('kitchen')->name('kitchen.')->group(function () {
+    Route::prefix('kitchen')->name('kitchen.')->middleware('role:kitchen')->group(function () {
         Route::get('/', [KitchenController::class, 'index'])->name('index');
+        Route::get('/{kitchen}', [KitchenController::class, 'show'])->name('show');
+        Route::post('/bill-detail/{billDetail}/status', [KitchenController::class, 'updateStatus'])->name('bill-detail.update-status');
     });
 
     Route::get('/payment/result', [OrderController::class, 'paymentResult'])->name('payment.result');
