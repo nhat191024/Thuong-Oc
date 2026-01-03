@@ -120,7 +120,10 @@
                 <PaperAirplaneIcon class="size-5" />
                 Gửi Bếp ({{ cartItems.length }})
             </button>
-            <button v-else class="btn w-full btn-primary" @click="$emit('updateBill')">Cập nhật Bill</button>
+            <div v-else class="flex gap-2">
+                <button class="btn flex-1 btn-primary" @click="$emit('updateBill')">Cập nhật Bill</button>
+                <button class="btn flex-1 btn-secondary" @click="$emit('payment')">Thanh toán</button>
+            </div>
         </div>
     </div>
 </template>
@@ -145,6 +148,7 @@ defineEmits<{
     removeFromCart: [index: number];
     sendOrder: [];
     updateBill: [];
+    payment: [];
 }>();
 
 function formatPrice(price: number): string {

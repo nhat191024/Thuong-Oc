@@ -14,6 +14,7 @@
                 @remove-from-cart="removeFromCart"
                 @send-order="sendOrder"
                 @update-bill="updateBill"
+                @payment="handlePayment"
             />
 
             <!-- Right Panel: Menu -->
@@ -39,7 +40,7 @@ import { useHistoryStore } from '@/stores/history';
 import { Category } from '@/types/category';
 import { Food, Menu } from '@/types/menu';
 import { orderDish } from '@/types/order';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
 import DishDetail from '../menu/partials/dish-detail.vue';
@@ -282,5 +283,9 @@ function updateBill() {
             showNotification('Lỗi', 'Có lỗi xảy ra khi cập nhật bill!');
         },
     });
+}
+
+function handlePayment() {
+    router.visit(route('staff.table.bill', props.table.id));
 }
 </script>
