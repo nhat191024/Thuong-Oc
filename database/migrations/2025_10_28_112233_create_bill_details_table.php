@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('price');
             $table->string('note')->nullable();
-            $table->string('status')->default(BillDetailStatus::APPROVED->value);
+            $table->string('status')->default(BillDetailStatus::WAITING->value);
             $table->timestamps();
         });
     }
