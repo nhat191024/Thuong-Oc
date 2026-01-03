@@ -118,7 +118,7 @@ class KitchenController extends Controller
             })
             ->whereIn('status', [BillDetailStatus::DONE->value, BillDetailStatus::CANCELLED->value])
             ->orderBy('updated_at', 'desc')
-            ->paginate(10);
+            ->paginate(9);
 
         return response()->json($history);
     }
