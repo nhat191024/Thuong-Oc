@@ -20,5 +20,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('staff')->name('staff.')->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('tables');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
+        Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
+        Route::post('/table/{tableId}/pay', [StaffController::class, 'processPayment'])->name('table.pay');
     });
+
+    Route::get('/payment/result', [OrderController::class, 'paymentResult'])->name('payment.result');
 });
