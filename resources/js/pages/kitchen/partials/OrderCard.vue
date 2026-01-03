@@ -10,7 +10,7 @@
                 <span class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
             </div>
         </div>
-        <div class="mb-1 flex-1">
+        <div class="mb-1 flex-1 overflow-y-auto min-h-0">
             <h3 class="text-xl font-bold text-primary">{{ detail.dish.food.name }}</h3>
             <p class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note ?? 'Không có' }}</p>
         </div>
