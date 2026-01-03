@@ -54,16 +54,19 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if ($user->hasRole(Role::ADMIN->value)) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        switch (true) {
+            case $user->hasRole(Role::ADMIN->value):
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-            return back()->withErrors([
-                'username' => 'Access denied for admin role',
-            ]);
-        } elseif ($user->hasRole(Role::STAFF->value)) {
-            return redirect()->intended('staff/');
+                return back()->withErrors([
+                    'username' => 'Access denied for admin role',
+                ]);
+            case $user->hasRole(Role::STAFF->value):
+                return redirect()->intended('staff/');
+            case $user->hasRole(Role::KITCHEN->value):
+                return redirect()->intended('kitchen/');
         }
 
         return redirect()->intended('/');
