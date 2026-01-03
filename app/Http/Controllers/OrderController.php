@@ -8,8 +8,13 @@ use App\Models\Bill;
 
 use App\Enums\PayStatus;
 use App\Enums\TableActiveStatus;
+use App\Enums\PaymentMethods;
+
+use Inertia\Inertia;
 
 use App\Http\Requests\PlaceOrderRequest;
+
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -73,5 +78,46 @@ class OrderController extends Controller
         $bill->save();
 
         return redirect()->back()->with('success', 'Order placed successfully');
+    }
+
+    /**
+     * Handle payment result
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Inertia\Response
+     */
+    public function paymentResult(Request $request)
+    {
+        $orderCode = $request->input('orderCode');
+        $status = $request->input('status');
+        $cancel = $request->input('cancel');
+
+        if ($request->has('code')) {
+            $code = $request->input('code');
+            $id = $request->input('id');
+            if ($code == '00' && $cancel != 'true') {
+                $status = 'PAID';
+                $bill = Bill::find($orderCode);
+                if ($bill && $bill->pay_status !== PayStatus::PAID) {
+                    $bill->pay_status = PayStatus::PAID;
+                    $bill->payment_method = PaymentMethods::QR_CODE;
+                    $bill->time_out = now();
+                    $bill->save();
+
+                    $table = $bill->table;
+                    if ($table) {
+                        $table->is_active = TableActiveStatus::INACTIVE;
+                        $table->save();
+                    }
+                }
+            } else {
+                $status = 'CANCELLED';
+            }
+        }
+
+        return Inertia::render('Payment/Result', [
+            'orderCode' => $orderCode,
+            'status' => $status,
+        ]);
     }
 }
