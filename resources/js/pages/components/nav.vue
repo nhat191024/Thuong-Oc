@@ -10,7 +10,7 @@
         <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
             <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
-                <li><a>Đăng xuất</a></li>
+                <li><a @click="logout">Đăng xuất</a></li>
             </ul>
         </div>
     </div>
@@ -40,5 +40,7 @@ const goBack = () => {
     }
 };
 
-//TODO: Add logout functionality
+const logout = () => {
+    router.post('/logout');
+};
 </script>
