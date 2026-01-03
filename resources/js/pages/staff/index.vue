@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen flex-col">
-        <Nav :center_text="'Chi nhánh ' +props.branchName" />
+        <Nav :center_text="'Chi nhánh ' + props.branchName" />
 
         <div class="flex-1 overflow-hidden bg-gray-100">
             <div class="h-full overflow-x-auto p-4">
@@ -30,8 +30,8 @@
 <script setup lang="ts">
 import { Table } from '@/types/table';
 import { TableCellsIcon } from '@heroicons/vue/24/outline';
-    import Nav from './partials/nav.vue';
 import { Link } from '@inertiajs/vue3';
+import Nav from '../components/nav.vue';
 
 interface Props {
     tables: Table[];

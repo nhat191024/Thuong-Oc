@@ -27,11 +27,7 @@
         <!-- Confirm Order Modal -->
         <ConfirmOrderModal :item-count="cartItems.length" :total-amount="totalAmount" @confirm="placeOrder" />
 
-        <NotificationModal
-            v-model:isOpen="isNotificationOpen"
-            :title="notificationTitle"
-            :message="notificationMessage"
-        />
+        <NotificationModal v-model:isOpen="isNotificationOpen" :title="notificationTitle" :message="notificationMessage" />
     </div>
 </template>
 
@@ -40,15 +36,15 @@ import { useHistoryStore } from '@/stores/history';
 import { Category } from '@/types/category';
 import { Food, Menu } from '@/types/menu';
 import { orderDish } from '@/types/order';
-import { useForm, router } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
+import NotificationModal from '@/pages/components/NotificationModal.vue';
+import Nav from '../components/nav.vue';
 import DishDetail from '../menu/partials/dish-detail.vue';
 import ConfirmOrderModal from './partials/ConfirmOrderModal.vue';
 import MenuPanel from './partials/MenuPanel.vue';
-import Nav from './partials/nav.vue';
-    import OrderPanel from './partials/OrderPanel.vue';
-import NotificationModal from '@/pages/components/NotificationModal.vue';
+import OrderPanel from './partials/OrderPanel.vue';
 
 interface Props {
     table: {
