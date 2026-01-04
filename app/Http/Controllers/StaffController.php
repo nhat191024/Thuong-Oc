@@ -88,17 +88,22 @@ class StaffController extends Controller
         if ($table->is_active === TableActiveStatus::ACTIVE) {
             $bill = $table->bill;
             if ($bill) {
-                $currentOrder = $bill->billDetails->map(fn($detail) => [
-                    'table' => $table->table_number,
-                    'foodId' => $detail->dish->food_id,
-                    'dishId' => $detail->dish_id,
-                    'name' => $detail->dish->food->name,
-                    'quantity' => $detail->quantity,
-                    'price' => $detail->price,
-                    'cookingMethod' => $detail->dish->cookingMethod?->name,
-                    'cookingMethodId' => $detail->dish->cooking_method_id,
-                    'note' => $detail->note,
-                ]);
+                $currentOrder = $bill->billDetails->groupBy(function ($detail) {
+                    return $detail->dish_id . '_' . $detail->note;
+                })->map(function ($details) use ($table) {
+                    $detail = $details->first();
+                    return [
+                        'table' => $table->table_number,
+                        'foodId' => $detail->dish->food_id,
+                        'dishId' => $detail->dish_id,
+                        'name' => $detail->dish->food->name,
+                        'quantity' => $details->sum('quantity'),
+                        'price' => $detail->price,
+                        'cookingMethod' => $detail->dish->cookingMethod?->name,
+                        'cookingMethodId' => $detail->dish->cooking_method_id,
+                        'note' => $detail->note,
+                    ];
+                })->values();
             }
         }
 
