@@ -51,23 +51,13 @@ class OrderController extends Controller
         $billTotal = $bill->total ?? 0;
 
         foreach ($request->input('dishes') as $dish) {
-            $existingDetail = BillDetail::where('bill_id', $bill->id)
-                ->where('dish_id', $dish['dish_id'])
-                ->where('note', $dish['note'])
-                ->first();
-
-            if ($existingDetail) {
-                $existingDetail->quantity += $dish['quantity'];
-                $existingDetail->save();
-            } else {
-                BillDetail::create([
-                    'bill_id' => $bill->id,
-                    'dish_id' => $dish['dish_id'],
-                    'quantity' => $dish['quantity'],
-                    'price' => $dish['price'],
-                    'note' => $dish['note'],
-                ]);
-            }
+            BillDetail::create([
+                'bill_id' => $bill->id,
+                'dish_id' => $dish['dish_id'],
+                'quantity' => $dish['quantity'],
+                'price' => $dish['price'],
+                'note' => $dish['note'],
+            ]);
 
             $billTotal += $dish['price'] * $dish['quantity'];
 
