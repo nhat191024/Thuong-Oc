@@ -38,7 +38,7 @@ class Voucher extends BaseVoucher
      *
      * @return int|null
      */
-    public function discountPercentage(): ?int
+    private function discountPercentage(): ?int
     {
         return $this->data['discount_percent'] ?? null;
     }
@@ -48,7 +48,7 @@ class Voucher extends BaseVoucher
      *
      * @return int|null
      */
-    public function maxDiscountAmount(): ?int
+    private function maxDiscountAmount(): ?int
     {
         return $this->data['max_discount_amount'] ?? null;
     }
@@ -58,7 +58,7 @@ class Voucher extends BaseVoucher
      *
      * @return int|null
      */
-    public function minOrderAmount(): ?int
+    private function minOrderAmount(): ?int
     {
         return $this->data['min_order_amount'] ?? null;
     }
@@ -68,7 +68,7 @@ class Voucher extends BaseVoucher
      *
      * @return int|null
      */
-    public function usageLimit(): ?int
+    private function usageLimit(): ?int
     {
         return $this->data['usage_limit'] ?? null;
     }
@@ -78,7 +78,7 @@ class Voucher extends BaseVoucher
      *
      * @return int
      */
-    public function timesUsed(): int
+    private function timesUsed(): int
     {
         return $this->data['times_used'] ?? 0;
     }
@@ -88,7 +88,7 @@ class Voucher extends BaseVoucher
      *
      * @return bool
      */
-    public function isUnlimited(): bool
+    private function isUnlimited(): bool
     {
         return $this->data['is_unlimited'] ?? false;
     }
@@ -98,7 +98,7 @@ class Voucher extends BaseVoucher
      *
      * @return Carbon|null
      */
-    public function startAt(): ?Carbon
+    private function startAt(): ?Carbon
     {
         return isset($this->data['starts_at']) ? Carbon::parse($this->data['starts_at']) : null;
     }
@@ -110,16 +110,9 @@ class Voucher extends BaseVoucher
      *
      * @return object { status: bool, message: string }
      */
-    public function validate($orderTotal): object
+    private function validate($orderTotal): object
     {
         $now = Carbon::now();
-
-        if ($this->users()->wherePivot('user_id', $this->id)->exists()) {
-            return (object) [
-                'status' => false,
-                'message' => __('Mã giảm giá đã được sử dụng bởi bạn')
-            ];
-        }
 
         if ($this->expires_at && $now->greaterThan($this->expires_at)) {
             return (object) [
@@ -163,7 +156,7 @@ class Voucher extends BaseVoucher
      * @param int $orderTotal
      * @return int
      */
-    public function getDiscountAmount($orderTotal): int
+    private function getDiscountAmount($orderTotal): int
     {
         $discount = 0;
 
