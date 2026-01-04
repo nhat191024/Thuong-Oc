@@ -34,6 +34,47 @@ use BeyondCode\Vouchers\Models\Voucher as BaseVoucher;
 class Voucher extends BaseVoucher
 {
     /**
+     * Redeem the voucher
+     *
+     * @param string $code
+     * @param int $orderTotal
+     *
+     * @return object { status: bool, message: string, discountAmount: int }
+     */
+    public static function redeemVoucher(string $code, int $orderTotal): object
+    {
+        $voucher = self::where('code', $code)->first();
+
+        if (!$voucher) {
+            return (object) [
+                'status' => false,
+                'message' => __('Mã giảm giá không tồn tại'),
+                'discountAmount' => 0
+            ];
+        }
+
+        $validation = $voucher->validate($orderTotal);
+        if (!$validation->status) {
+            return (object) [
+                'status' => false,
+                'message' => $validation->message,
+                'discountAmount' => 0
+            ];
+        }
+
+        $discountAmount = $voucher->getDiscountAmount($orderTotal);
+
+        return (object) [
+            'status' => true,
+            'message' => __('Mã giảm giá hợp lệ'),
+            'voucher_id' => $voucher->id,
+            'discount_percent' => $voucher->discountPercentage(),
+            'discount_amount' => $discountAmount
+        ];
+    }
+
+
+    /**
      * Get the discount percentage from the voucher data
      *
      * @return int|null
