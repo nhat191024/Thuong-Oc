@@ -36,14 +36,20 @@ class Voucher extends BaseVoucher
     /**
      * Redeem the voucher
      *
-     * @param string $code
+     * @param string|null $code
+     * @param int|null $id
      * @param int $orderTotal
      *
      * @return object { status: bool, message: string, discountAmount: int }
      */
-    public static function redeemVoucher(string $code, int $orderTotal): object
+    public static function redeemVoucher(int $orderTotal, ?string $code = null, ?int $id = null): object
     {
-        $voucher = self::where('code', $code)->first();
+        $voucher = null;
+        if ($id) {
+            $voucher = self::find($id);
+        } else {
+            $voucher = self::where('code', $code)->first();
+        }
 
         if (!$voucher) {
             return (object) [
