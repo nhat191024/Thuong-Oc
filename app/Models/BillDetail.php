@@ -16,6 +16,7 @@ use App\Enums\BillDetailStatus;
  * @property int $quantity
  * @property int $price
  * @property string|null $note
+ * @property int|null $custom_kitchen_id
  * @property BillDetailStatus $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -27,6 +28,7 @@ use App\Enums\BillDetailStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereBillId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereCustomDishName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereCustomKitchenId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereDishId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereNote($value)
@@ -50,6 +52,7 @@ class BillDetail extends Model
         'quantity',
         'price',
         'note',
+        'custom_kitchen_id',
         'status',
     ];
 
@@ -68,10 +71,12 @@ class BillDetail extends Model
         parent::boot();
 
         static::created(function ($billDetail) {
-            $foodId = $billDetail->dish->food_id;
-            $food = Food::find($foodId);
-            if ($food) {
-                $food->increment('sold_count', $billDetail->quantity);
+            if ($billDetail->dish) {
+                $foodId = $billDetail->dish->food_id;
+                $food = Food::findOrFail($foodId);
+                if ($food) {
+                    $food->increment('sold_count', $billDetail->quantity);
+                }
             }
         });
     }

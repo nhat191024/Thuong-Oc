@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('price');
             $table->string('note')->nullable();
+            $table->unsignedBigInteger('custom_kitchen_id')->nullable();
             $table->string('status')->default(BillDetailStatus::WAITING->value);
             $table->timestamps();
         });
