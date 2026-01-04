@@ -85,7 +85,7 @@ class Voucher extends BaseVoucher
      *
      * @return int|null
      */
-    private function discountPercentage(): ?int
+    public function discountPercentage(): ?int
     {
         return $this->data['discount_percent'] ?? null;
     }
@@ -203,7 +203,7 @@ class Voucher extends BaseVoucher
      * @param int $orderTotal
      * @return int
      */
-    private function getDiscountAmount($orderTotal): int
+    public function getDiscountAmount($orderTotal): int
     {
         $discount = 0;
 
