@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
         Route::post('/table/{tableId}/pay', [StaffController::class, 'processPayment'])->name('table.pay');
+        Route::post('/table/{tableId}/move', [StaffController::class, 'moveTable'])->name('table.move');
     });
 
     Route::prefix('kitchen')->name('kitchen.')->middleware('role:kitchen')->group(function () {

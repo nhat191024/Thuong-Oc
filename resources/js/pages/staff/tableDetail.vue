@@ -9,12 +9,14 @@
                 :cart-items="cartItems"
                 v-model:active-tab="activeTab"
                 :total-amount="totalAmount"
+                :inactive-tables="inactiveTables"
                 @update-bill-quantity="updateBillQuantity"
                 @update-cart-quantity="updateCartQuantity"
                 @remove-from-cart="removeFromCart"
                 @send-order="sendOrder"
                 @update-bill="updateBill"
                 @payment="handlePayment"
+                @move-table="handleMoveTable"
             />
 
             <!-- Right Panel: Menu -->
@@ -33,10 +35,11 @@
 
 <script setup lang="ts">
 import { useHistoryStore } from '@/stores/history';
+import { AppPageProps } from '@/types';
 import { Category } from '@/types/category';
 import { Food, Menu } from '@/types/menu';
 import { orderDish } from '@/types/order';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
 import NotificationModal from '@/pages/components/NotificationModal.vue';
@@ -45,6 +48,8 @@ import DishDetail from '../menu/partials/dish-detail.vue';
 import ConfirmOrderModal from './partials/ConfirmOrderModal.vue';
 import MenuPanel from './partials/MenuPanel.vue';
 import OrderPanel from './partials/OrderPanel.vue';
+
+const page = usePage<AppPageProps>();
 
 interface Props {
     table: {
@@ -55,6 +60,7 @@ interface Props {
     menus: Menu[];
     categories: Category[];
     currentOrder: orderDish[];
+    inactiveTables?: { id: string; table_number: number }[];
 }
 
 const props = defineProps<Props>();
@@ -78,6 +84,25 @@ function showNotification(title: string, message: string) {
     notificationTitle.value = title;
     notificationMessage.value = message;
     isNotificationOpen.value = true;
+}
+
+function handleMoveTable(newTableId: string) {
+    router.post(
+        route('staff.table.move', props.table.id),
+        {
+            new_table_id: newTableId,
+        },
+        {
+            onSuccess: () => {
+                const status = page.props.flash.error ? 'Thất bại' : 'Thành công';
+                const message = page.props.flash.error ?? page.props.flash.success;
+                showNotification(status, message || '');
+            },
+            onError: (errors) => {
+                showNotification('Lỗi', errors.error || 'Có lỗi xảy ra khi chuyển bàn');
+            },
+        },
+    );
 }
 
 // Initialize

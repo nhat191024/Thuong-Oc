@@ -27,11 +27,7 @@
                 <div v-if="billItems.length === 0" class="mt-10 text-center text-base-content/50">
                     <p>Chưa có món nào trong bill</p>
                 </div>
-                <div
-                    v-for="(item, index) in billItems"
-                    :key="index"
-                    class="flex flex-col gap-2 rounded-lg border border-base-200 p-3 shadow-sm"
-                >
+                <div v-for="(item, index) in billItems" :key="index" class="flex flex-col gap-2 rounded-lg border border-base-200 p-3 shadow-sm">
                     <div class="flex justify-between">
                         <h3 class="font-bold">{{ item.name }}</h3>
                         <span class="font-semibold text-primary">{{ formatPrice(item.price * item.quantity) }}</span>
@@ -51,10 +47,7 @@
                                 <MinusIcon class="size-3" />
                             </button>
                             <span class="w-4 text-center font-bold">{{ item.quantity }}</span>
-                            <button
-                                class="btn btn-circle text-white btn-xs btn-primary"
-                                @click="$emit('updateBillQuantity', index, 1)"
-                            >
+                            <button class="btn btn-circle text-white btn-xs btn-primary" @click="$emit('updateBillQuantity', index, 1)">
                                 <PlusIcon class="size-3" />
                             </button>
                         </div>
@@ -93,10 +86,7 @@
                                 <MinusIcon class="size-3" />
                             </button>
                             <span class="w-4 text-center font-bold">{{ item.quantity }}</span>
-                            <button
-                                class="btn btn-circle text-white btn-xs btn-primary"
-                                @click="$emit('updateCartQuantity', index, 1)"
-                            >
+                            <button class="btn btn-circle text-white btn-xs btn-primary" @click="$emit('updateCartQuantity', index, 1)">
                                 <PlusIcon class="size-3" />
                             </button>
                         </div>
@@ -122,9 +112,41 @@
             </button>
             <div v-else class="flex gap-2">
                 <button class="btn flex-1 btn-primary" @click="$emit('updateBill')">Cập nhật Bill</button>
-                <button class="btn flex-1 btn-secondary" @click="$emit('payment')">Thanh toán</button>
+                <div class="dropdown dropdown-center dropdown-top flex-1">
+                    <div tabindex="0" role="button" class="btn w-full btn-success">Thao tác</div>
+                    <ul tabindex="0" class="dropdown-content menu z-50 mb-2 w-52 rounded-box border border-black bg-base-100 p-2 shadow-xl">
+                        <li><a @click="$emit('payment')">Thanh toán</a></li>
+                        <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
+
+        <!-- Move Table Modal -->
+        <dialog id="move_table_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Chuyển bàn</h3>
+                <p class="py-4">Chọn bàn muốn chuyển đến:</p>
+                <div v-if="inactiveTables && inactiveTables.length > 0" class="grid grid-cols-4 gap-2">
+                    <button
+                        v-for="table in inactiveTables"
+                        :key="table.id"
+                        class="btn btn-outline"
+                        @click="selectMoveTable(table.id)"
+                    >
+                        {{ table.table_number }}
+                    </button>
+                </div>
+                <div v-else class="text-center text-gray-500">
+                    Không có bàn trống nào.
+                </div>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Đóng</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
     </div>
 </template>
 
@@ -137,11 +159,12 @@ interface Props {
     cartItems: orderDish[];
     activeTab: 'bill' | 'cart';
     totalAmount: number;
+    inactiveTables?: { id: string; table_number: number }[];
 }
 
 defineProps<Props>();
 
-defineEmits<{
+const emit = defineEmits<{
     'update:activeTab': [value: 'bill' | 'cart'];
     updateBillQuantity: [index: number, delta: number];
     updateCartQuantity: [index: number, delta: number];
@@ -149,9 +172,21 @@ defineEmits<{
     sendOrder: [];
     updateBill: [];
     payment: [];
+    moveTable: [tableId: string];
 }>();
 
 function formatPrice(price: number): string {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+function openMoveTableModal() {
+    const modal = document.getElementById('move_table_modal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
+
+function selectMoveTable(tableId: string) {
+    emit('moveTable', tableId);
+    const modal = document.getElementById('move_table_modal') as HTMLDialogElement;
+    if (modal) modal.close();
 }
 </script>

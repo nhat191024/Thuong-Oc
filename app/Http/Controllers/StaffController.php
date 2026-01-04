@@ -20,6 +20,7 @@ use App\Services\PaymentService;
 
 use App\Http\Requests\ProcessPaymentRequest;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -101,11 +102,21 @@ class StaffController extends Controller
             }
         }
 
+        $inactiveTables = Table::where('branch_id', $table->branch_id)
+            ->where('is_active', TableActiveStatus::INACTIVE)
+            ->orderBy('table_number')
+            ->get()
+            ->map(fn($t) => [
+                'id' => $t->id,
+                'table_number' => $t->table_number,
+            ]);
+
         return Inertia::render('staff/tableDetail', [
             'table' => $table,
             'menus' => $menus,
             'categories' => $categories,
             'currentOrder' => $currentOrder,
+            'inactiveTables' => $inactiveTables,
         ]);
     }
 
@@ -225,5 +236,46 @@ class StaffController extends Controller
         }
 
         return redirect()->back();
+    }
+
+    /**
+     * Move bill to another table
+     *
+     * @param Request $request
+     * @param string $tableId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function moveTable(Request $request, string $tableId)
+    {
+        $request->validate([
+            'new_table_id' => 'required|exists:tables,id',
+        ]);
+
+        $newTableId = $request->input('new_table_id');
+        $currentTable = Table::findOrFail($tableId);
+        $newTable = Table::findOrFail($newTableId);
+
+        if ($newTable->is_active === TableActiveStatus::ACTIVE) {
+            return redirect()->back()->with('error', 'Bàn mới đang hoạt động, không thể chuyển.');
+        }
+
+        $bill = $currentTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Bàn hiện tại không có hóa đơn để chuyển.');
+        }
+
+        // Update bill
+        $bill->table_id = $newTableId;
+        $bill->save();
+
+        // Update tables status
+        $currentTable->is_active = TableActiveStatus::INACTIVE;
+        $currentTable->save();
+
+        $newTable->is_active = TableActiveStatus::ACTIVE;
+        $newTable->save();
+
+        return redirect()->route('staff.table.show', $newTableId)->with('success', 'Chuyển bàn thành công.');
     }
 }
