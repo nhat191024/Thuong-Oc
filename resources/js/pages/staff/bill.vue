@@ -170,7 +170,7 @@
 import { AppPageProps } from '@/types';
 import { ChevronLeftIcon, QrCodeIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const page = usePage<AppPageProps>();
 
@@ -203,14 +203,30 @@ interface Props {
     billDetails: BillItem[];
     totalAmount: number;
     paymentMethods: PaymentMethod[];
+    discountPercent: number;
+    discountAmount: number;
 }
 
 const props = defineProps<Props>();
 
 const discountCode = ref('');
 const isApplyingDiscount = ref(false);
-const discountAmount = ref(0);
-const discountPercent = ref(0);
+const discountAmount = ref(props.discountAmount || 0);
+const discountPercent = ref(props.discountPercent || 0);
+
+watch(
+    () => props.discountAmount,
+    (newVal) => {
+        discountAmount.value = newVal || 0;
+    },
+);
+
+watch(
+    () => props.discountPercent,
+    (newVal) => {
+        discountPercent.value = newVal || 0;
+    },
+);
 
 const finalTotal = computed(() => {
     return props.totalAmount - discountAmount.value;

@@ -203,11 +203,24 @@ class StaffController extends Controller
             'label' => $method->label(),
         ]);
 
+        $voucher = null;
+        $discountPercent = 0;
+        $discountAmount = 0;
+        if ($table->bill && $table->bill->voucher_id) {
+            $voucher = Voucher::find($table->bill->voucher_id);
+            if ($voucher) {
+                $discountPercent = $voucher->discountPercentage();
+                $discountAmount = $voucher->getDiscountAmount($totalAmount);
+            }
+        }
+
         return Inertia::render('staff/bill', [
             'table' => $table,
             'billDetails' => $billDetails,
             'totalAmount' => $totalAmount,
             'paymentMethods' => $paymentMethods,
+            'discountPercent' => $discountPercent,
+            'discountAmount' => $discountAmount,
         ]);
     }
 
