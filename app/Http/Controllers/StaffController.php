@@ -214,8 +214,6 @@ class StaffController extends Controller
                 'buyerName' => 'Khách hàng',
             ];
 
-            ds($data);
-
             try {
                 $response = $this->paymentService->processAppointmentPayment(
                     $data,

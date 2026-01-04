@@ -150,8 +150,6 @@ class PaymentService
 
         $paymentRequest['signature'] = $signature;
 
-        ds($paymentRequest);
-
         $response = $this->payOS->createPaymentLink($paymentRequest);
 
         $response['url'] = $url;
