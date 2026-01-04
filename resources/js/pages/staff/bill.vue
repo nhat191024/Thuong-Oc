@@ -1,6 +1,5 @@
 <template>
     <div class="flex min-h-screen flex-col bg-base-100">
-        <!-- Header -->
         <div class="navbar bg-base-100 shadow-sm">
             <div class="flex-none">
                 <Link :href="route('staff.table.show', table.id)" class="btn btn-square btn-ghost">
@@ -12,9 +11,7 @@
             </div>
         </div>
 
-        <!-- Content -->
         <div class="flex flex-1 flex-col p-4">
-            <!-- Flash Messages -->
             <div v-if="page.props.flash.success" role="alert" class="alert alert-success mb-4 w-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span>{{ page.props.flash.success }}</span>
@@ -25,13 +22,11 @@
             </div>
 
             <div class="flex flex-col md:flex-row md:gap-8">
-                <!-- Bill Details -->
                 <div class="flex-1 space-y-4">
                 <div class="card border border-base-200 bg-base-100 shadow-xl">
                     <div class="card-body p-4">
                         <h2 class="mb-4 card-title text-lg">Chi tiết đơn hàng</h2>
 
-                        <!-- Bill Info -->
                         <div class="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-base-200/50 p-3 text-sm">
                             <div class="text-base-content/70">Mã hóa đơn:</div>
                             <div class="text-right font-medium">#{{ table.bill?.id }}</div>
@@ -83,7 +78,6 @@
                         <p class="mb-4 text-sm text-base-content/70">Mã dành cho nhân viên quét bằng máy POS để thanh toán và in đơn</p>
 
                         <div class="rounded-xl border border-base-300 bg-white p-4 shadow-inner">
-                            <!-- Placeholder QR Code -->
                             <div class="flex h-48 w-48 items-center justify-center rounded-lg bg-base-200">
                                 <QrCodeIcon class="size-24 text-base-content/20" />
                             </div>
@@ -175,7 +169,7 @@ function confirmPayment() {
             isProcessing.value = false;
         },
         onSuccess: () => {
-            // Handle success if needed, e.g., redirect or show notification
+            //
         },
     });
 }
