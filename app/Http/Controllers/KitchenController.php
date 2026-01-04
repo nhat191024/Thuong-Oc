@@ -58,8 +58,11 @@ class KitchenController extends Controller
                 $query->where('branch_id', $kitchen->branch_id)
                     ->where('pay_status', PayStatus::UNPAID);
             })
-            ->whereHas('dish', function ($query) use ($cookingMethodIds) {
-                $query->whereIn('cooking_method_id', $cookingMethodIds);
+            ->where(function ($query) use ($cookingMethodIds, $kitchen) {
+                $query->whereHas('dish', function ($q) use ($cookingMethodIds) {
+                    $q->whereIn('cooking_method_id', $cookingMethodIds);
+                })
+                    ->orWhere('custom_kitchen_id', $kitchen->id);
             })
             ->where('status', BillDetailStatus::WAITING->value)
             ->orderBy('created_at', 'asc')
@@ -113,8 +116,11 @@ class KitchenController extends Controller
             ->whereHas('bill', function ($query) use ($kitchen) {
                 $query->where('branch_id', $kitchen->branch_id);
             })
-            ->whereHas('dish', function ($query) use ($cookingMethodIds) {
-                $query->whereIn('cooking_method_id', $cookingMethodIds);
+            ->where(function ($query) use ($cookingMethodIds, $kitchen) {
+                $query->whereHas('dish', function ($q) use ($cookingMethodIds) {
+                    $q->whereIn('cooking_method_id', $cookingMethodIds);
+                })
+                    ->orWhere('custom_kitchen_id', $kitchen->id);
             })
             ->whereIn('status', [BillDetailStatus::DONE->value, BillDetailStatus::CANCELLED->value])
             ->orderBy('updated_at', 'desc')

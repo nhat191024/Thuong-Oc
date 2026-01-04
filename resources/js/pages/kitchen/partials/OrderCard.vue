@@ -8,7 +8,7 @@
             </div>
         </div>
         <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
-            <h3 class="text-xl font-bold text-primary">{{ detail.dish.food.name }}</h3>
+            <h3 class="text-xl font-bold text-primary">{{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}</h3>
             <p class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note ?? 'Không có' }}</p>
         </div>
         <div class="flex items-end justify-between">
@@ -66,7 +66,8 @@ interface BillDetail {
     note: string | null;
     status: string;
     created_at: string;
-    dish: Dish;
+    dish: Dish | null;
+    custom_dish_name: string | null;
     bill: Bill;
 }
 
