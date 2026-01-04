@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('bill_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('bill_id');
-            $table->unsignedBigInteger('dish_id');
+            $table->unsignedBigInteger('dish_id')->nullable();
+            $table->string('custom_dish_name')->nullable();
             $table->integer('quantity');
             $table->integer('price');
             $table->string('note')->nullable();

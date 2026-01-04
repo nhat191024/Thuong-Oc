@@ -11,7 +11,8 @@ use App\Enums\BillDetailStatus;
 /**
  * @property int $id
  * @property int $bill_id
- * @property int $dish_id
+ * @property int|null $dish_id
+ * @property string|null $custom_dish_name
  * @property int $quantity
  * @property int $price
  * @property string|null $note
@@ -25,6 +26,7 @@ use App\Enums\BillDetailStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereBillId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereCustomDishName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereDishId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BillDetail whereNote($value)
@@ -44,6 +46,7 @@ class BillDetail extends Model
     protected $fillable = [
         'bill_id',
         'dish_id',
+        'custom_dish_name',
         'quantity',
         'price',
         'note',
