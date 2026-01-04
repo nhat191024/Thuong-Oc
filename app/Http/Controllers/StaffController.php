@@ -70,7 +70,6 @@ class StaffController extends Controller
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
 
-        $table_number = $table->table_number;
         $menus = $this->menuService->getMenus(useCollection: false);
 
         $categories = Cache::remember(CacheKeys::MENU_CATEGORIES->value, 3600, function () {
