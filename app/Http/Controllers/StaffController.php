@@ -84,28 +84,7 @@ class StaffController extends Controller
                 ]);
         });
 
-        $currentOrder = [];
-        if ($table->is_active === TableActiveStatus::ACTIVE) {
-            $bill = $table->bill;
-            if ($bill) {
-                $currentOrder = $bill->billDetails->groupBy(function ($detail) {
-                    return $detail->dish_id . '_' . $detail->note;
-                })->map(function ($details) use ($table) {
-                    $detail = $details->first();
-                    return [
-                        'table' => $table->table_number,
-                        'foodId' => $detail->dish->food_id,
-                        'dishId' => $detail->dish_id,
-                        'name' => $detail->dish->food->name,
-                        'quantity' => $details->sum('quantity'),
-                        'price' => $detail->price,
-                        'cookingMethod' => $detail->dish->cookingMethod?->name,
-                        'cookingMethodId' => $detail->dish->cooking_method_id,
-                        'note' => $detail->note,
-                    ];
-                })->values();
-            }
-        }
+        $currentOrder = $this->formatCurrentOrder($table);
 
         $inactiveTables = Table::where('branch_id', $table->branch_id)
             ->where('is_active', TableActiveStatus::INACTIVE)
@@ -123,6 +102,39 @@ class StaffController extends Controller
             'currentOrder' => $currentOrder,
             'inactiveTables' => $inactiveTables,
         ]);
+    }
+
+    /**
+     * Format current order for a table
+     *
+     * @param Table $table
+     * @return array
+     */
+    private function formatCurrentOrder($table): array
+    {
+        if ($table->is_active !== TableActiveStatus::ACTIVE || !$table->bill) {
+            return [];
+        }
+
+        return $table->bill->billDetails
+            ->groupBy(fn($detail) => "{$detail->dish_id}_{$detail->note}")
+            ->map(function ($details) use ($table) {
+                $detail = $details->first();
+                /** @var \App\Models\BillDetail $detail */
+                return [
+                    'table' => $table->table_number,
+                    'foodId' => $detail->dish->food_id,
+                    'dishId' => $detail->dish_id,
+                    'name' => $detail->dish->food->name,
+                    'quantity' => $details->sum('quantity'),
+                    'price' => $detail->price,
+                    'cookingMethod' => $detail->dish->cookingMethod?->name,
+                    'cookingMethodId' => $detail->dish->cooking_method_id,
+                    'note' => $detail->note,
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     /**
