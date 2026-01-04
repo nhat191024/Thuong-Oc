@@ -55,18 +55,38 @@ class CustomerMenuController extends Controller
             $bill = $table->bill;
             if ($bill) {
                 $currentOrder = $bill->billDetails->groupBy(function ($detail) {
-                    return $detail->dish_id . '_' . $detail->note;
+                    if ($detail->dish_id) {
+                        return "dish_{$detail->dish_id}_{$detail->note}";
+                    }
+                    return "custom_{$detail->custom_dish_name}_{$detail->price}_{$detail->note}";
                 })->map(function ($details) use ($table) {
                     $detail = $details->first();
+
+                    if ($detail->dish_id && $detail->dish) {
+                        return [
+                            'table' => $table->table_number,
+                            'foodId' => $detail->dish->food_id,
+                            'dishId' => $detail->dish_id,
+                            'custom_dish_name' => null,
+                            'name' => $detail->dish->food->name,
+                            'quantity' => $details->sum('quantity'),
+                            'price' => $detail->price,
+                            'cookingMethod' => $detail->dish->cookingMethod?->name,
+                            'cookingMethodId' => $detail->dish->cooking_method_id,
+                            'note' => $detail->note,
+                        ];
+                    }
+
                     return [
                         'table' => $table->table_number,
-                        'foodId' => $detail->dish->food_id,
-                        'dishId' => $detail->dish_id,
-                        'name' => $detail->dish->food->name,
+                        'foodId' => null,
+                        'dishId' => null,
+                        'custom_dish_name' => $detail->custom_dish_name,
+                        'name' => $detail->custom_dish_name,
                         'quantity' => $details->sum('quantity'),
                         'price' => $detail->price,
-                        'cookingMethod' => $detail->dish->cookingMethod?->name,
-                        'cookingMethodId' => $detail->dish->cooking_method_id,
+                        'cookingMethod' => null,
+                        'cookingMethodId' => null,
                         'note' => $detail->note,
                     ];
                 })->values();
