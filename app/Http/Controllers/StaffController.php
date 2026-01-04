@@ -329,7 +329,7 @@ class StaffController extends Controller
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
             $items = $bill->billDetails->map(function ($detail) {
                 return [
-                    'name' => $detail->dish->food->name,
+                    'name' => $detail->dish_id ? $detail->dish->food->name : $detail->custom_dish_name,
                     'quantity' => $detail->quantity,
                     'price' => $detail->price,
                 ];
