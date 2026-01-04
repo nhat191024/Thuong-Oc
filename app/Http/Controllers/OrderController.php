@@ -53,7 +53,9 @@ class OrderController extends Controller
         foreach ($request->input('dishes') as $dish) {
             BillDetail::create([
                 'bill_id' => $bill->id,
-                'dish_id' => $dish['dish_id'],
+                'dish_id' => $dish['dish_id'] ?? null,
+                'custom_dish_name' => $dish['custom_dish_name'] ?? null,
+                'custom_kitchen_id' => $dish['custom_kitchen_id'] ?? null,
                 'quantity' => $dish['quantity'],
                 'price' => $dish['price'],
                 'note' => $dish['note'],

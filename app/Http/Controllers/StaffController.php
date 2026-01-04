@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Table;
 use App\Models\Branch;
 use App\Models\Category;
+use App\Models\Kitchen;
 
 use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
@@ -94,12 +95,17 @@ class StaffController extends Controller
                 'table_number' => $t->table_number,
             ]);
 
+        $kitchens = Kitchen::where('branch_id', $table->branch_id)
+            ->select(['id', 'name'])
+            ->get();
+
         return Inertia::render('staff/tableDetail', [
             'table' => $table,
             'menus' => $menus,
             'categories' => $categories,
             'currentOrder' => $currentOrder,
             'inactiveTables' => $inactiveTables,
+            'kitchens' => $kitchens,
         ]);
     }
 
@@ -116,19 +122,41 @@ class StaffController extends Controller
         }
 
         return $table->bill->billDetails
-            ->groupBy(fn($detail) => "{$detail->dish_id}_{$detail->note}")
+            ->groupBy(function ($detail) {
+                if ($detail->dish_id) {
+                    return "dish_{$detail->dish_id}_{$detail->note}";
+                }
+                return "custom_{$detail->custom_dish_name}_{$detail->price}_{$detail->note}";
+            })
             ->map(function ($details) use ($table) {
                 $detail = $details->first();
                 /** @var \App\Models\BillDetail $detail */
+
+                if ($detail->dish_id && $detail->dish) {
+                    return [
+                        'table' => $table->table_number,
+                        'foodId' => $detail->dish->food_id,
+                        'dishId' => $detail->dish_id,
+                        'custom_dish_name' => null,
+                        'name' => $detail->dish->food->name,
+                        'quantity' => $details->sum('quantity'),
+                        'price' => $detail->price,
+                        'cookingMethod' => $detail->dish->cookingMethod?->name,
+                        'cookingMethodId' => $detail->dish->cooking_method_id,
+                        'note' => $detail->note,
+                    ];
+                }
+
                 return [
                     'table' => $table->table_number,
-                    'foodId' => $detail->dish->food_id,
-                    'dishId' => $detail->dish_id,
-                    'name' => $detail->dish->food->name,
+                    'foodId' => null,
+                    'dishId' => null,
+                    'custom_dish_name' => $detail->custom_dish_name,
+                    'name' => $detail->custom_dish_name,
                     'quantity' => $details->sum('quantity'),
                     'price' => $detail->price,
-                    'cookingMethod' => $detail->dish->cookingMethod?->name,
-                    'cookingMethodId' => $detail->dish->cooking_method_id,
+                    'cookingMethod' => null,
+                    'cookingMethodId' => null,
                     'note' => $detail->note,
                 ];
             })
@@ -158,11 +186,11 @@ class StaffController extends Controller
 
         if ($table->is_active === TableActiveStatus::ACTIVE && $table->bill) {
             $billDetails = $table->bill->billDetails->map(fn($detail) => [
-                'name' => $detail->dish->food->name,
+                'name' => $detail->dish ? $detail->dish->food->name : $detail->custom_dish_name,
                 'quantity' => $detail->quantity,
                 'price' => $detail->price,
                 'total' => $detail->quantity * $detail->price,
-                'cookingMethod' => $detail->dish->cookingMethod?->name,
+                'cookingMethod' => $detail->dish ? $detail->dish->cookingMethod?->name : null,
                 'note' => $detail->note,
             ]);
 

@@ -1,14 +1,21 @@
 <template>
     <div class="flex w-2/3 flex-col bg-base-200/50">
         <!-- Breadcrumbs / Header -->
-        <div class="flex h-14 items-center border-b border-base-300 bg-base-100 px-4 shadow-sm">
-            <div v-if="selectedMenu" class="flex items-center gap-2">
-                <button class="btn btn-circle btn-ghost btn-sm" @click="$emit('update:selectedMenu', null)">
-                    <ArrowLeftIcon class="size-5" />
-                </button>
-                <h2 class="text-lg font-bold">{{ selectedMenu.name }}</h2>
+        <div class="flex h-14 items-center justify-between border-b border-base-300 bg-base-100 px-4 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div v-if="selectedMenu" class="flex items-center gap-2">
+                    <button class="btn btn-circle btn-ghost btn-sm" @click="$emit('update:selectedMenu', null)">
+                        <ArrowLeftIcon class="size-5" />
+                    </button>
+                    <h2 class="text-lg font-bold">{{ selectedMenu.name }}</h2>
+                </div>
+                <h2 v-else class="text-lg font-bold">Danh mục món ăn</h2>
             </div>
-            <h2 v-else class="text-lg font-bold">Danh mục món ăn</h2>
+
+            <button class="btn btn-sm btn-ghost text-primary" @click="$emit('open-custom-dish')">
+                <PlusIcon class="size-5" />
+                <span class="hidden sm:inline">Món ngoài</span>
+            </button>
         </div>
 
         <!-- Content -->
@@ -90,6 +97,7 @@ defineProps<Props>();
 defineEmits<{
     'update:selectedMenu': [menu: Menu | null];
     foodClick: [food: Food];
+    'open-custom-dish': [];
 }>();
 
 function formatPrice(price: number): string {

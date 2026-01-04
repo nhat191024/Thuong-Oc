@@ -20,11 +20,14 @@
             />
 
             <!-- Right Panel: Menu -->
-            <MenuPanel :menus="menus" v-model:selected-menu="selectedMenu" @food-click="handleFoodClick" />
+            <MenuPanel :menus="menus" v-model:selected-menu="selectedMenu" @food-click="handleFoodClick" @open-custom-dish="openCustomDishModal" />
         </div>
 
         <!-- Dish Detail Modal -->
         <DishDetail v-if="selectedFood" :food="selectedFood" @add-to-cart="handleAddToCart" />
+
+        <!-- Custom Dish Modal -->
+        <CustomDishModal :kitchens="kitchens" @add-custom-dish="handleAddCustomDish" />
 
         <!-- Confirm Order Modal -->
         <ConfirmOrderModal :item-count="cartItems.length" :total-amount="totalAmount" @confirm="placeOrder" />
@@ -46,6 +49,7 @@ import NotificationModal from '@/pages/components/NotificationModal.vue';
 import Nav from '../components/nav.vue';
 import DishDetail from '../menu/partials/dish-detail.vue';
 import ConfirmOrderModal from './partials/ConfirmOrderModal.vue';
+import CustomDishModal from './partials/CustomDishModal.vue';
 import MenuPanel from './partials/MenuPanel.vue';
 import OrderPanel from './partials/OrderPanel.vue';
 
@@ -61,6 +65,7 @@ interface Props {
     categories: Category[];
     currentOrder: orderDish[];
     inactiveTables?: { id: string; table_number: number }[];
+    kitchens: { id: number; name: string }[];
 }
 
 const props = defineProps<Props>();
@@ -107,7 +112,6 @@ function handleMoveTable(newTableId: string) {
 
 // Initialize
 onMounted(() => {
-    // Deep copy to avoid mutating props directly if needed, though props are readonly
     if (props.currentOrder) {
         billItems.value = JSON.parse(JSON.stringify(props.currentOrder));
     }
@@ -124,13 +128,11 @@ const totalAmount = computed(() => {
 function handleFoodClick(food: Food) {
     if (food.dishes.length > 1) {
         selectedFood.value = food;
-        // Wait for DOM update then show modal
         setTimeout(() => {
             const modal = document.getElementById('dishDetail') as HTMLDialogElement;
             if (modal) modal.showModal();
         }, 0);
     } else {
-        // Add default dish directly
         const defaultDish = food.dishes[0];
         const newItem: orderDish = {
             table: props.table.table_number,
@@ -167,15 +169,40 @@ function handleAddToCart(dishData: { dishId: number; quantity: number; note: str
 
     addToCart(newItem);
 
-    // Close modal
     const modal = document.getElementById('dishDetail') as HTMLDialogElement;
     if (modal) modal.close();
     selectedFood.value = null;
 }
 
+function openCustomDishModal() {
+    const modal = document.getElementById('customDishModal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
+
+function handleAddCustomDish(data: { name: string; price: number; quantity: number; note: string; kitchen_id: number | null }) {
+    const newItem: orderDish = {
+        table: props.table.table_number,
+        foodId: null,
+        dishId: null,
+        custom_dish_name: data.name,
+        custom_kitchen_id: data.kitchen_id,
+        name: data.name,
+        quantity: data.quantity,
+        price: data.price,
+        cookingMethod: null,
+        cookingMethodId: null,
+        note: data.note,
+    };
+    addToCart(newItem);
+}
+
 function addToCart(item: orderDish) {
-    // Check if same item exists in cart
-    const existingItem = cartItems.value.find((i) => i.foodId === item.foodId && i.dishId === item.dishId && i.note === item.note);
+    const existingItem = cartItems.value.find((i) => {
+        if (item.custom_dish_name) {
+            return i.custom_dish_name === item.custom_dish_name && i.price === item.price && i.note === item.note;
+        }
+        return i.foodId === item.foodId && i.dishId === item.dishId && i.note === item.note;
+    });
 
     if (existingItem) {
         existingItem.quantity += item.quantity;
@@ -183,7 +210,6 @@ function addToCart(item: orderDish) {
         cartItems.value.push(item);
     }
 
-    // Switch to cart tab to show feedback
     activeTab.value = 'cart';
 }
 
@@ -224,6 +250,8 @@ function placeOrder() {
         branch_id: props.table.branch_id,
         dishes: cartItems.value.map((dish) => ({
             dish_id: dish.dishId,
+            custom_kitchen_id: dish.custom_kitchen_id,
+            custom_dish_name: dish.custom_dish_name,
             quantity: dish.quantity,
             price: dish.price,
             note: dish.note,
@@ -232,10 +260,8 @@ function placeOrder() {
 
     form.post(route('order.place'), {
         onSuccess: () => {
-            // Add to history store if needed, though this is staff view
             cartItems.value.forEach((dish) => historyStore.addHistory({ ...dish }));
 
-            // Move items to bill locally for immediate feedback
             billItems.value.push(...cartItems.value);
             cartItems.value = [];
             activeTab.value = 'bill';
@@ -253,28 +279,35 @@ function placeOrder() {
 }
 
 function updateBill() {
-    // Calculate differences to send only new/added quantities
     const itemsToAdd: any[] = [];
 
     billItems.value.forEach((currentItem) => {
-        const originalItem = props.currentOrder.find(
-            (i) => i.foodId === currentItem.foodId && i.dishId === currentItem.dishId && i.note === currentItem.note,
-        );
+        const originalItem = props.currentOrder.find((i) => {
+            if (currentItem.custom_dish_name) {
+                return (
+                    i.custom_dish_name === currentItem.custom_dish_name &&
+                    i.price === currentItem.price &&
+                    i.note === currentItem.note
+                );
+            }
+            return i.foodId === currentItem.foodId && i.dishId === currentItem.dishId && i.note === currentItem.note;
+        });
 
         if (originalItem) {
             const quantityDiff = currentItem.quantity - originalItem.quantity;
             if (quantityDiff > 0) {
                 itemsToAdd.push({
-                    dish_id: currentItem.dishId,
+                    custom_kitchen_id: currentItem.custom_kitchen_id,
                     quantity: quantityDiff,
                     price: currentItem.price,
                     note: currentItem.note,
                 });
             }
         } else {
-            // New item added directly to bill tab? (Shouldn't happen with current UI flow, but safe to handle)
             itemsToAdd.push({
                 dish_id: currentItem.dishId,
+                custom_dish_name: currentItem.custom_dish_name,
+                custom_kitchen_id: currentItem.custom_kitchen_id,
                 quantity: currentItem.quantity,
                 price: currentItem.price,
                 note: currentItem.note,
