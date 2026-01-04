@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Table;
 use App\Models\BillDetail;
 use App\Models\Bill;
+use App\Models\Voucher;
 
 use App\Enums\PayStatus;
 use App\Enums\TableActiveStatus;
@@ -91,6 +92,16 @@ class OrderController extends Controller
                 $status = 'PAID';
                 $bill = Bill::find($orderCode);
                 if ($bill && $bill->pay_status !== PayStatus::PAID) {
+                    $voucher = null;
+                    $discountAmount = 0;
+                    if ($bill->voucher_id) {
+                        $voucher = Voucher::find($bill->voucher_id);
+                        if ($voucher) {
+                            $discountAmount = $voucher->getDiscountAmount($bill->total);
+                        }
+                    }
+
+                    $bill->final_total = $bill->total - $discountAmount;
                     $bill->pay_status = PayStatus::PAID;
                     $bill->payment_method = PaymentMethods::QR_CODE;
                     $bill->time_out = now();

@@ -302,10 +302,20 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán cho bàn này.');
         }
 
+        $voucher = null;
+        $discountAmount = 0;
+        if ($table->bill && $table->bill->voucher_id) {
+            $voucher = Voucher::find($table->bill->voucher_id);
+            if ($voucher) {
+                $discountAmount = $voucher->getDiscountAmount($bill->total);
+            }
+        }
+
         if ($paymentMethod === PaymentMethods::CASH->value) {
             $bill->pay_status = PayStatus::PAID;
             $bill->payment_method = PaymentMethods::CASH;
             $bill->time_out = now();
+            $bill->final_total = $bill->total - $discountAmount;
             $bill->save();
 
             $table->is_active = TableActiveStatus::INACTIVE;
@@ -325,10 +335,22 @@ class StaffController extends Controller
                 ];
             })->toArray();
 
+            if ($discountAmount > 0) {
+                $discountItems = [
+                    'name' => 'Mã giảm giá',
+                    'quantity' => 1,
+                    'price' => $discountAmount,
+                ];
+
+                $items[] = $discountItems;
+            }
+
+            $total = $bill->total - $discountAmount;
+
             $data = [
                 'billId' => $bill->id,
                 'billCode' => (string)$bill->id,
-                'amount' => (int)$bill->total,
+                'amount' => (int)$total,
                 'items' => $items,
                 'buyerName' => 'Khách hàng',
             ];
