@@ -11,7 +11,7 @@
                         class="flex w-64 cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-4 shadow-sm transition-all duration-200"
                         :class="[
                             table.is_active === 'active'
-                                ? 'scale-105 border-primary bg-primary text-white shadow-lg shadow-primary/30'
+                                ? 'border-primary bg-primary text-white shadow-lg shadow-primary/30'
                                 : 'border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary hover:shadow-md',
                         ]"
                         :href="route('staff.table.show', { tableId: table.id })"
