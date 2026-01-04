@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('final_total')->default(0);
             $table->string('payment_method')->nullable();
             $table->string('pay_status')->default(PayStatus::UNPAID->value);
+            $table->unsignedBigInteger('voucher_id')->nullable();
             $table->timestamps();
         });
     }

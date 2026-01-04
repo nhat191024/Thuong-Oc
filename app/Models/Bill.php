@@ -19,6 +19,7 @@ use App\Enums\PayStatus;
  * @property int $final_total
  * @property PaymentMethods|null $payment_method
  * @property PayStatus $pay_status
+ * @property int|null $voucher_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BillDetail> $billDetails
@@ -42,6 +43,7 @@ use App\Enums\PayStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereVoucherId($value)
  * @mixin \Eloquent
  */
 class Bill extends Model
@@ -62,6 +64,7 @@ class Bill extends Model
         'final_total',
         'payment_method',
         'pay_status',
+        'voucher_id',
     ];
 
     /**
