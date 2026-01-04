@@ -8,6 +8,7 @@ use App\Models\Table;
 use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Kitchen;
+use App\Models\Voucher;
 
 use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
@@ -208,6 +209,67 @@ class StaffController extends Controller
             'totalAmount' => $totalAmount,
             'paymentMethods' => $paymentMethods,
         ]);
+    }
+
+    /**
+     * Apply discount code for a specific table
+     *
+     * @param Request $request
+     * @param string $tableId
+
+     */
+    public function applyDiscount(Request $request, string $tableId)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $code = $request->input('code');
+        $table = Table::findOrFail($tableId);
+
+        /** @var \App\Models\Bill $bill */
+        $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+        }
+
+        $validate = Voucher::redeemVoucher($code, $bill->total);
+
+        if (!$validate->status) {
+            return redirect()->back()->with('error', $validate->message);
+        }
+
+        $bill->voucher_id = $validate->voucher_id ?? null;
+        $bill->save();
+
+        return redirect()->back()
+            ->with('success', 'Áp dụng mã giảm giá thành công.')
+            ->with('payload', [
+                'discount_percent' => $validate->discount_percent,
+                'discount_amount' => $validate->discount_amount,
+            ]);
+    }
+
+    /**
+     * Remove discount code for a specific table
+     *
+     * @param string $tableId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeDiscount(string $tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+        }
+
+        $bill->voucher_id = null;
+        $bill->save();
+
+        return redirect()->back()->with('success', 'Đã hủy mã giảm giá thành công.');
     }
 
     /**
