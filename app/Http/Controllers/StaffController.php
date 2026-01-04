@@ -234,7 +234,7 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
-        $validate = Voucher::redeemVoucher($code, $bill->total);
+        $validate = Voucher::redeemVoucher($bill->total, code: $code);
 
         if (!$validate->status) {
             return redirect()->back()->with('error', $validate->message);
