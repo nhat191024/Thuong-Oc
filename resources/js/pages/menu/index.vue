@@ -316,8 +316,6 @@ function showDishDetail(food: any) {
 function handleAddToCart(dishData: { dishId: number; quantity: number; note: string }) {
     const choosingDish = selectedFood.value.dishes.find((dish) => dish.id === dishData.dishId);
 
-    console.log(selectedFood.value.price);
-
     if (!choosingDish) return;
 
     const normalizedNote = dishData.note || null;
