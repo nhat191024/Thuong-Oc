@@ -234,20 +234,20 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
-        $validate = Voucher::redeemVoucher($bill->total, code: $code);
+        $voucher = Voucher::redeemVoucher($bill->total, code: $code);
 
-        if (!$validate->status) {
-            return redirect()->back()->with('error', $validate->message);
+        if (!$voucher->status) {
+            return redirect()->back()->with('error', $voucher->message);
         }
 
-        $bill->voucher_id = $validate->voucher_id ?? null;
+        $bill->voucher_id = $voucher->voucher_id ?? null;
         $bill->save();
 
         return redirect()->back()
             ->with('success', 'Áp dụng mã giảm giá thành công.')
             ->with('payload', [
-                'discount_percent' => $validate->discount_percent,
-                'discount_amount' => $validate->discount_amount,
+                'discount_percent' => $voucher->discount_percent,
+                'discount_amount' => $voucher->discount_amount,
             ]);
     }
 
