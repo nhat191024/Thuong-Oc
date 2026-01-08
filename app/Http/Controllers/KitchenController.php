@@ -71,6 +71,7 @@ class KitchenController extends Controller
         return Inertia::render('kitchen/show', [
             'kitchen' => $kitchen,
             'billDetails' => $billDetails,
+            'cookingMethodIds' => $cookingMethodIds,
         ]);
     }
 
