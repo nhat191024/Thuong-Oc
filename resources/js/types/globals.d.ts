@@ -1,5 +1,14 @@
 import { Page, PageProps as InertiaPageProps } from '@inertiajs/core';
 import { AppPageProps } from '@/types/index';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+declare global {
+    interface Window {
+        Pusher: typeof Pusher;
+        Echo: Echo;
+    }
+}
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
