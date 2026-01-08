@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex-1 overflow-hidden bg-gray-100">
-            <ActiveOrders v-if="currentTab === 'active'" :bill-details="props.billDetails" />
+            <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" />
             <HistoryOrders v-else :kitchen-id="props.kitchen.id" />
         </div>
     </div>
@@ -36,7 +36,7 @@
 import { AppPageProps } from '@/types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import ActiveOrders from './partials/ActiveOrders.vue';
 import HistoryOrders from './partials/HistoryOrders.vue';
 
@@ -48,6 +48,7 @@ interface Food {
 interface Dish {
     id: number;
     food: Food;
+    cooking_method_id?: number;
 }
 
 interface Table {
@@ -58,6 +59,7 @@ interface Table {
 interface Bill {
     id: number;
     table: Table;
+    branch_id: number;
 }
 
 interface BillDetail {
@@ -68,6 +70,7 @@ interface BillDetail {
     created_at: string;
     dish: Dish;
     bill: Bill;
+    custom_kitchen_id?: number | null;
 }
 
 interface Kitchen {
@@ -79,6 +82,7 @@ interface Kitchen {
 interface Props {
     kitchen: Kitchen;
     billDetails: BillDetail[];
+    cookingMethodIds: number[];
 }
 
 const props = defineProps<Props>();
@@ -86,8 +90,36 @@ const page = usePage<AppPageProps>();
 const user = page.props.auth.user;
 
 const currentTab = ref('active');
+const billDetails = ref(props.billDetails);
 
 const goBack = () => {
     window.history.back();
 };
+
+onMounted(() => {
+    if ((window as any).Echo) {
+        console.log('Echo initialized, subscribing to channel kitchens.' + props.kitchen.branch_id);
+        (window as any).Echo.private(`kitchens.${props.kitchen.branch_id}`).listen('.new.dish.ordered', (e: any) => {
+            console.log('Event received', e);
+            const newBillDetail: BillDetail = e.billDetail;
+
+            // Logic to determine if this kitchen should handle the dish
+            const belongsToKitchen =
+                (newBillDetail.dish && props.cookingMethodIds.includes(newBillDetail.dish.cooking_method_id!)) ||
+                newBillDetail.custom_kitchen_id === props.kitchen.id;
+
+            if (belongsToKitchen) {
+                billDetails.value.push(newBillDetail);
+            }
+        });
+    } else {
+        console.error('Echo is NOT initialized');
+    }
+});
+
+onUnmounted(() => {
+    if ((window as any).Echo) {
+        (window as any).Echo.leave(`kitchens.${props.kitchen.branch_id}`);
+    }
+});
 </script>

@@ -11,6 +11,8 @@ use App\Enums\PayStatus;
 use App\Enums\TableActiveStatus;
 use App\Enums\PaymentMethods;
 
+use App\Events\NewDishOrdered;
+
 use Inertia\Inertia;
 
 use App\Http\Requests\PlaceOrderRequest;
@@ -52,7 +54,7 @@ class OrderController extends Controller
         $billTotal = $bill->total ?? 0;
 
         foreach ($request->input('dishes') as $dish) {
-            BillDetail::create([
+            $billDetail = BillDetail::create([
                 'bill_id' => $bill->id,
                 'dish_id' => $dish['dish_id'] ?? null,
                 'custom_dish_name' => $dish['custom_dish_name'] ?? null,
@@ -64,7 +66,8 @@ class OrderController extends Controller
 
             $billTotal += $dish['price'] * $dish['quantity'];
 
-            //TODO: add event new dish ordered to notify kitchen
+            $billDetail->load(['dish.food', 'bill.table']);
+            broadcast(new NewDishOrdered($billDetail));
         }
 
         $bill->total = $billTotal;
