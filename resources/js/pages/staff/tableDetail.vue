@@ -262,7 +262,26 @@ function placeOrder() {
         onSuccess: () => {
             cartItems.value.forEach((dish) => historyStore.addHistory({ ...dish }));
 
-            billItems.value.push(...cartItems.value);
+            cartItems.value.forEach((item) => {
+                console.log('Adding item to bill:', item);
+                const existingItem = billItems.value.find((i) => {
+                    console.log('Checking against bill item:', i);
+                    if (item.custom_dish_name) {
+                        return i.custom_dish_name === item.custom_dish_name && i.price === item.price && i.note === item.note;
+                    }
+                    return i.foodId === item.foodId && i.dishId === item.dishId && i.note === item.note;
+                });
+
+                console.log('Existing item found:', existingItem);
+
+                if (existingItem) {
+                    existingItem.quantity += item.quantity;
+                } else {
+                    console.log('Pushing new item to bill:', item);
+                    billItems.value.push(item);
+                }
+            });
+
             cartItems.value = [];
             activeTab.value = 'bill';
 
