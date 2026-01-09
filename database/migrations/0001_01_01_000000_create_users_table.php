@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
             $table->string('avatar')->nullable();
-            $table->integer('point')->default(0);
+            $table->integer('points')->default(0);
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
