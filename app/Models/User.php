@@ -133,6 +133,19 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->username;
     }
 
+    //Model Events
+    protected static function booted(): void
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            if (empty($user->avatar)) {
+                $name = urlencode($user->name);
+                $user->avatar = "https://ui-avatars.com/api/?name={$name}&background=random&size=512";
+            }
+        });
+    }
+
+    //Eloquent Relationships
     public function branch()
     {
         return $this->belongsTo(Branch::class);
