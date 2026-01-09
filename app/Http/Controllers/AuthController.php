@@ -16,6 +16,7 @@ use App\Services\MenuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use  \Illuminate\Support\Facades\Hash;
+use Spatie\LaravelData\Attributes\Validation\In;
 
 class AuthController extends Controller
 {
@@ -50,7 +51,7 @@ class AuthController extends Controller
      * Handle an incoming registration request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -74,7 +75,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('/');
+        return Inertia::location('/');
     }
 
     /**
