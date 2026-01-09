@@ -21,6 +21,10 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int|null $branch_id
  * @property string $username
  * @property string $password
+ * @property string|null $email
+ * @property string|null $name
+ * @property string|null $phone
+ * @property string|null $avatar
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -42,11 +46,15 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User permission($permissions, $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereBranchId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUsername($value)
@@ -69,6 +77,10 @@ class User extends Authenticatable implements FilamentUser, HasName
         'username',
         'password',
         'branch_id',
+        'email',
+        'name',
+        'phone',
+        'avatar',
     ];
 
     /**

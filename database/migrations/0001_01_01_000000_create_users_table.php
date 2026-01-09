@@ -16,6 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('branch_id')->nullable()->index();
             $table->string('username')->unique();
             $table->string('password');
+            $table->string('email')->unique()->nullable();
+            $table->string('name')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
