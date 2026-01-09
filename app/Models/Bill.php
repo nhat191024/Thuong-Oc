@@ -12,6 +12,7 @@ use App\Enums\PayStatus;
  * @property string $table_id
  * @property int $branch_id
  * @property int|null $user_id
+ * @property int|null $customer_id
  * @property string $time_in
  * @property string|null $time_out
  * @property int $total
@@ -25,6 +26,7 @@ use App\Enums\PayStatus;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BillDetail> $billDetails
  * @property-read int|null $bill_details_count
  * @property-read \App\Models\Branch|null $branch
+ * @property-read \App\Models\Customer|null $customer
  * @property-read \App\Models\Table|null $table
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill newModelQuery()
@@ -32,6 +34,7 @@ use App\Enums\PayStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereBranchId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereDiscount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereFinalTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereId($value)
