@@ -1,5 +1,6 @@
 export interface Table {
-    id: number;
+    id: string;
     table_number: number;
-    is_active: string;
+    branch_id: number;
+    is_active: string | number; // TableActiveStatus
 }
