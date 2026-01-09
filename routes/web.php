@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\KitchenController;
+use App\Http\Controllers\HistoryController;
 
 Route::get('/menu/{tableId}', [CustomerMenuController::class, 'index'])->name('customer-menu.index');
 Route::post('/order', [OrderController::class, 'placeOrder'])->name('order.place');
@@ -39,4 +40,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/payment/result', [OrderController::class, 'paymentResult'])->name('payment.result');
+
+    Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
+    Route::get('/history/detail/{id}', [HistoryController::class, 'show'])->name('history.show');
 });
