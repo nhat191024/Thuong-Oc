@@ -12,7 +12,7 @@
         </div>
 
         <div class="flex flex-1 flex-col p-4">
-            <div v-if="page.props.flash.success" role="alert" class="mb-4 alert w-full alert-success">
+            <div v-if="page.props.flash.success && showSuccess" role="alert" class="mb-4 alert w-full alert-success">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -253,6 +253,23 @@ const props = defineProps<Props>();
 
 const showError = ref(false);
 let errorTimeout: ReturnType<typeof setTimeout>;
+
+const showSuccess = ref(false);
+let successTimeout: ReturnType<typeof setTimeout>;
+
+watch(
+    () => page.props.flash.success,
+    (val) => {
+        if (val) {
+            showSuccess.value = true;
+            clearTimeout(successTimeout);
+            successTimeout = setTimeout(() => {
+                showSuccess.value = false;
+            }, 5000);
+        }
+    },
+    { immediate: true },
+);
 
 watch(
     () => page.props.flash.error,
