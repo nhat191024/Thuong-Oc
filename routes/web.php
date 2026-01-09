@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
         Route::post('/table/{tableId}/apply-discount', [StaffController::class, 'applyDiscount'])->name('table.apply-discount');
         Route::post('/table/{tableId}/remove-discount', [StaffController::class, 'removeDiscount'])->name('table.remove-discount');
+        Route::post('/table/{tableId}/attach-customer', [StaffController::class, 'attachCustomer'])->name('table.attach-customer');
         Route::post('/table/{tableId}/pay', [StaffController::class, 'processPayment'])->name('table.pay');
         Route::post('/table/{tableId}/move', [StaffController::class, 'moveTable'])->name('table.move');
     });

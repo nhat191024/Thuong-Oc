@@ -42,6 +42,11 @@
 
                                 <div class="text-base-content/70">Thời gian vào:</div>
                                 <div class="text-right font-medium">{{ formatDate(table.bill?.time_in) }}</div>
+
+                                <template v-if="table.bill?.customer">
+                                    <div class="text-base-content/70">Khách hàng:</div>
+                                    <div class="text-right font-medium">{{ table.bill.customer.name }}</div>
+                                </template>
                             </div>
 
                             <div class="overflow-x-auto">
@@ -96,26 +101,57 @@
 
                 <!-- QR Code Section -->
                 <div class="mt-4 flex flex-col items-center justify-start lg:mt-0 lg:w-1/3">
-                    <div class="card mb-4 w-full max-w-sm border border-base-200 bg-base-100 shadow-xl">
-                        <div class="card-body p-4">
-                            <h2 class="card-title text-lg">Mã giảm giá</h2>
-                            <div class="join w-full">
-                                <input
-                                    v-model="discountCode"
-                                    type="text"
-                                    placeholder="Nhập mã..."
-                                    class="input-bordered input join-item w-full focus:border-primary focus:outline-none"
-                                    :disabled="isApplyingDiscount"
-                                    @keyup.enter="applyDiscount"
-                                />
-                                <button
-                                    class="btn join-item text-white btn-primary"
-                                    @click="applyDiscount"
-                                    :disabled="!discountCode || isApplyingDiscount"
+                    <div class="collapse-arrow collapse mb-4 w-full max-w-sm border border-base-200 bg-base-100 shadow-xl">
+                        <input type="checkbox" />
+                        <div class="collapse-title text-lg font-bold">Thêm thông tin</div>
+                        <div class="collapse-content">
+                            <div class="mb-4">
+                                <label class="label pt-0 pl-0"><span class="label-text font-medium">Khách hàng thành viên</span></label>
+                                <div class="join w-full">
+                                    <input
+                                        v-model="customerPhone"
+                                        type="text"
+                                        placeholder="Nhập SĐT khách..."
+                                        class="input-bordered input input-sm join-item w-full focus:border-primary focus:outline-none"
+                                        :disabled="isAttachingCustomer"
+                                        @keyup.enter="attachCustomer"
+                                    />
+                                    <button
+                                        class="btn join-item text-white btn-sm btn-primary"
+                                        @click="attachCustomer"
+                                        :disabled="!customerPhone || isAttachingCustomer"
+                                    >
+                                        <span v-if="isAttachingCustomer" class="loading loading-xs loading-spinner"></span>
+                                        <span v-else>Tìm</span>
+                                    </button>
+                                </div>
+                                <label class="label pt-0 pl-0"
+                                    ><span class="text-xs font-medium text-base-content/70"
+                                        >Nhập khi đơn đã có khách sẽ ghi đè khách hiện tại</span
+                                    ></label
                                 >
-                                    <span v-if="isApplyingDiscount" class="loading loading-xs loading-spinner"></span>
-                                    <span v-else>Áp dụng</span>
-                                </button>
+                            </div>
+
+                            <div>
+                                <label class="label pt-0 pl-0"><span class="label-text font-medium">Mã giảm giá</span></label>
+                                <div class="join w-full">
+                                    <input
+                                        v-model="discountCode"
+                                        type="text"
+                                        placeholder="Nhập mã..."
+                                        class="input-bordered input input-sm join-item w-full focus:border-primary focus:outline-none"
+                                        :disabled="isApplyingDiscount"
+                                        @keyup.enter="applyDiscount"
+                                    />
+                                    <button
+                                        class="btn join-item text-white btn-sm btn-primary"
+                                        @click="applyDiscount"
+                                        :disabled="!discountCode || isApplyingDiscount"
+                                    >
+                                        <span v-if="isApplyingDiscount" class="loading loading-xs loading-spinner"></span>
+                                        <span v-else>Áp dụng</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -198,6 +234,12 @@ interface Props {
             user?: {
                 name: string;
             };
+            customer?: {
+                name: string;
+                phone: string;
+                id: number;
+            };
+            customer_id?: number | null;
         };
     };
     billDetails: BillItem[];
@@ -230,6 +272,28 @@ const discountCode = ref('');
 const isApplyingDiscount = ref(false);
 const discountAmount = ref(props.discountAmount || 0);
 const discountPercent = ref(props.discountPercent || 0);
+
+const customerPhone = ref('');
+const isAttachingCustomer = ref(false);
+
+function attachCustomer() {
+    if (!customerPhone.value) return;
+
+    const form = useForm({
+        phone: customerPhone.value,
+    });
+
+    isAttachingCustomer.value = true;
+    form.post(route('staff.table.attach-customer', props.table.id), {
+        preserveScroll: true,
+        onFinish: () => {
+            isAttachingCustomer.value = false;
+        },
+        onSuccess: () => {
+            customerPhone.value = '';
+        },
+    });
+}
 
 watch(
     () => props.discountAmount,

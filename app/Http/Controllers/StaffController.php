@@ -181,6 +181,7 @@ class StaffController extends Controller
                 $query->where('pay_status', PayStatus::UNPAID);
             },
             'bill.user',
+            'bill.customer',
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
@@ -225,6 +226,39 @@ class StaffController extends Controller
             'discountPercent' => $discountPercent,
             'discountAmount' => $discountAmount,
         ]);
+    }
+
+    /**
+     * Attach customer to bill by phone number
+     *
+     * @param Request $request
+     * @param string $tableId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function attachCustomer(Request $request, string $tableId)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+        ]);
+
+        $phone = $request->input('phone');
+        $table = Table::findOrFail($tableId);
+        $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+        }
+
+        $customer = Customer::where('phone', $phone)->first();
+
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Không tìm thấy khách hàng với số điện thoại này.');
+        }
+
+        $bill->customer_id = $customer->id;
+        $bill->save();
+
+        return redirect()->back()->with('success', 'Đã thêm khách hàng vào hóa đơn.');
     }
 
     /**
