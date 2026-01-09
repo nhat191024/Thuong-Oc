@@ -177,7 +177,7 @@ const billTemp = ref<orderDish[]>([]);
 const selectedFood = ref<Food>(props.menus[0]?.foods[0]);
 
 onMounted(() => {
-    if (props.currentOrder && props.currentOrder.length > 0) {
+    if (props.currentOrder) {
         historyStore.clearHistory();
         props.currentOrder.forEach((dish) => historyStore.addHistory(dish));
     }
