@@ -55,13 +55,18 @@
                         Đăng nhập
                     </button>
                 </div>
+
+                <div class="mt-4 text-center">
+                    <span class="text-sm">Chưa có tài khoản? </span>
+                    <Link href="/register" class="link link-primary no-underline font-semibold">Đăng ký ngay</Link>
+                </div>
             </form>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 
 const form = useForm({
     username: '',
