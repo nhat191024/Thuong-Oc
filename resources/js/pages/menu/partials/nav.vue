@@ -17,6 +17,7 @@
                     <li>
                         <a class="font-bold">Điểm: {{ user.points }}</a>
                     </li>
+                    <li><button class="font-bold" @click="goToHistory">Lịch sử đơn</button></li>
                     <li><Link href="/logout" method="post" as="button">Đăng xuất</Link></li>
                 </ul>
             </div>
@@ -51,7 +52,7 @@
 
 <script setup lang="ts">
 import { AppSettings, Auth } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -63,4 +64,11 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const goToHistory = () => {
+    let currentUrl = window.location.href;
+    let currentTableId = currentUrl.split('/menu/')[1];
+    localStorage.setItem('tableId', currentTableId);
+    router.visit(route('history.index'));
+};
 </script>
