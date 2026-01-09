@@ -95,15 +95,20 @@
     </dialog>
 </template>
 <script setup lang="ts">
+import { Auth } from '@/types';
+
 import { useHistoryStore } from '@/stores/history';
 import { useOrderStore } from '@/stores/order';
 import { orderDish } from '@/types/order';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 //icons
 import { ShoppingCartIcon } from '@heroicons/vue/24/outline';
 import { MinusIcon, PlusIcon } from '@heroicons/vue/24/solid';
+
+const page = usePage();
+const user = computed(() => (page.props.auth as Auth).user);
 
 interface Props {
     billTemp: orderDish[];
@@ -173,6 +178,7 @@ function placeOrder() {
     const form = useForm({
         table_id: props.table.id,
         branch_id: props.table.branch_id,
+        customer_id: user.value ? user.value.id : null,
         dishes: props.billTemp.map((dish) => ({
             dish_id: dish.dishId,
             quantity: dish.quantity,
