@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\Role;
+
 use Illuminate\Database\Seeder;
 
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Role as RoleModel;
 
 class RoleSeeder extends Seeder
 {
@@ -14,8 +15,8 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::create(['name' => 'admin']);
-        Role::create(['name' => 'staff']);
-        Role::create(['name' => 'kitchen']);
+        foreach (Role::cases() as $role) {
+            RoleModel::firstOrCreate(['name' => $role->value]);
+        }
     }
 }
