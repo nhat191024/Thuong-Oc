@@ -40,10 +40,10 @@ class OrderController extends Controller
         ])->find($request->input('table_id'));
 
         if ($table->is_active === TableActiveStatus::ACTIVE) {
-            //If table is occupied update current bill with new order
             $bill = $table->bill;
+            $bill->customer_id = $request->customer_id;
+            $bill->save();
         } else {
-            //If table is free, create new bill and add order
             $table->is_active = TableActiveStatus::ACTIVE;
             $table->save();
 
@@ -51,6 +51,7 @@ class OrderController extends Controller
                 'table_id' => $request->table_id,
                 'branch_id' => $request->branch_id,
                 'user_id' => $request->user_id,
+                'customer_id' => $request->customer_id,
             ]);
         }
 
