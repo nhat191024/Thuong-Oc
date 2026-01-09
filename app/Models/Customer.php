@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $name
  * @property string|null $phone
  * @property string|null $avatar
- * @property int $point
+ * @property int $points
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePhone($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePoint($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePoints($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereDeletedAt($value)
