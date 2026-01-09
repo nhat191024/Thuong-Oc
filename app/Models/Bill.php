@@ -57,6 +57,7 @@ class Bill extends Model
         'table_id',
         'branch_id',
         'user_id',
+        'customer_id',
         'time_in',
         'time_out',
         'total',
@@ -91,6 +92,11 @@ class Bill extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function billDetails()

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('table_id');
             $table->unsignedBigInteger('branch_id');
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->timestamp('time_in')->useCurrent();
             $table->timestamp('time_out')->nullable();
             $table->integer('total')->default(0);
