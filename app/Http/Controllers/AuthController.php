@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 
+use App\Models\Customer;
+
 use App\Enums\Role;
 
 use App\Http\Controllers\Controller;
@@ -13,6 +15,7 @@ use App\Services\MenuService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use  \Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -31,6 +34,45 @@ class AuthController extends Controller
     public function index()
     {
         return Inertia::render('auth/login');
+    }
+
+    /**
+     * Show the registration page.
+     *
+     * @return \Inertia\Response
+     */
+    public function register()
+    {
+        return Inertia::render('auth/register');
+    }
+
+    /**
+     * Handle an incoming registration request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function storeRegister(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|confirmed|min:4',
+        ]);
+
+        $user = Customer::create([
+            'name' => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'username' => $request->input('username'),
+            'password' => Hash::make($request->input('password')),
+        ]);
+
+        Auth::login($user);
+
+        return redirect('/');
     }
 
     /**
