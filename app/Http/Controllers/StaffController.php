@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Kitchen;
 use App\Models\Voucher;
+use App\Models\Customer;
 
 use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
@@ -16,6 +17,8 @@ use App\Enums\PayStatus;
 use App\Enums\PaymentMethods;
 
 use App\Http\Resources\TableResource;
+
+use App\Settings\AppSettings;
 
 use App\Services\MenuService;
 use App\Services\PaymentService;
@@ -320,6 +323,14 @@ class StaffController extends Controller
 
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
+
+            $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+            if ($customer) {
+                $pointStep = app(AppSettings::class)->point_step;
+                $pointEarned = floor($bill->final_total / $pointStep);
+                $customer->points += $pointEarned;
+                $customer->save();
+            }
 
             return redirect()->route('payment.result', [
                 'orderCode' => $bill->id,

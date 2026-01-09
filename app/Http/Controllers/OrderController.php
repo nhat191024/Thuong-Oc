@@ -6,10 +6,13 @@ use App\Models\Table;
 use App\Models\BillDetail;
 use App\Models\Bill;
 use App\Models\Voucher;
+use App\Models\Customer;
 
 use App\Enums\PayStatus;
 use App\Enums\TableActiveStatus;
 use App\Enums\PaymentMethods;
+
+use App\Settings\AppSettings;
 
 use App\Events\NewDishOrdered;
 
@@ -109,6 +112,14 @@ class OrderController extends Controller
                     $bill->payment_method = PaymentMethods::QR_CODE;
                     $bill->time_out = now();
                     $bill->save();
+
+                    $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+                    if ($customer) {
+                        $pointStep = app(AppSettings::class)->point_step;
+                        $pointEarned = floor($bill->final_total / $pointStep);
+                        $customer->points += $pointEarned;
+                        $customer->save();
+                    }
 
                     $table = $bill->table;
                     if ($table) {
