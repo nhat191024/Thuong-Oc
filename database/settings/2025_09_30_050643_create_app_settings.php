@@ -9,5 +9,6 @@ return new class extends SettingsMigration
         $this->migrator->add('app.app_name', 'Thương Ốc');
         $this->migrator->add('app.app_logo', 'logo.svg');
         $this->migrator->add('app.app_favicon', 'favicon.ico');
+        $this->migrator->add('app.point_step', '1000');
     }
 };

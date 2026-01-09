@@ -43,6 +43,13 @@ class AppManager extends SettingsPage
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
+                        TextInput::make('point_step')
+                            ->label(__('Quy đổi điểm thưởng'))
+                            ->helperText(__('Số tiền quy đổi ra 1 điểm. Ví dụ: 1000 đồng = 1 điểm, đơn 10000 đồng sẽ được 10 điểm thưởng.'))
+                            ->columnSpanFull()
+                            ->required()
+                            ->numeric(),
+
                         TextInput::make('app_name')
                             ->label(__(__('Tên ứng dụng')))
                             ->columnSpanFull()
