@@ -155,4 +155,9 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return $this->hasMany(Bill::class);
     }
+
+    public function vouchers()
+    {
+        return $this->hasMany(Voucher::class, 'model_id');
+    }
 }
