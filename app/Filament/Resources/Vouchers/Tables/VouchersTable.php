@@ -28,33 +28,35 @@ class VouchersTable
                 TextColumn::make('data.discount_percent')
                     ->label(__('Phần trăm giảm giá'))
                     ->formatStateUsing(fn($state) => $state . '%')
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder(__('Giảm theo số tiền')),
                 TextColumn::make('data.max_discount_amount')
                     ->label(__('Số tiền giảm tối đa'))
                     ->formatStateUsing(fn($state) => '₫' . number_format($state, 0, ',', '.'))
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder(__('Giảm theo %')),
                 TextColumn::make('data.min_order_amount')
                     ->label(__('Giá trị đơn hàng tối thiểu'))
                     ->formatStateUsing(fn($state) =>  '₫' . number_format($state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('data.usage_limit')
                     ->label(__('Giới hạn số lần sử dụng'))
-                    ->sortable(),
+                    ->sortable()
+                    ->default(__('Không giới hạn')),
                 TextColumn::make('data.times_used')
                     ->label(__('Số lần đã sử dụng'))
-                    ->sortable(),
-                TextColumn::make('data.is_unlimited')
-                    ->label(__('Không giới hạn số lần sử dụng?'))
-                    ->formatStateUsing(fn($state) => $state ? __('Có') : __('Không'))
-                    ->sortable(),
+                    ->sortable()
+                    ->default(0),
                 TextColumn::make('data.starts_at')
                     ->label(__('Ngày bắt đầu'))
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('expires_at')
                     ->label(__('Ngày kết thúc'))
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label(__('Ngày tạo'))
                     ->dateTime()
