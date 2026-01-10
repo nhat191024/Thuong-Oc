@@ -1,5 +1,7 @@
 <?php
 
+use Inertia\Inertia;
+
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\CustomerMenuController;
@@ -10,6 +12,10 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\VoucherController;
+
+Route::get('/', function () {
+    return Inertia::render('Landing');
+})->name('home');
 
 Route::get('/menu/{tableId}', [CustomerMenuController::class, 'index'])->name('customer-menu.index');
 Route::post('/order', [OrderController::class, 'placeOrder'])->name('order.place');
