@@ -75,14 +75,20 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return Inertia::location('/');
+        $url = url()->previous();
+
+        if (str_contains($url, '/login') || str_contains($url, '/register')) {
+            $url = '/';
+        }
+
+        return Inertia::location($url);
     }
 
     /**
      * Handle user login.
      * @param  \App\Http\Requests\AuthRequest  $request
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function login(AuthRequest $request)
     {
@@ -121,8 +127,13 @@ class AuthController extends Controller
 
                 return redirect()->intended('kitchen/');
         }
+        $url = url()->previous();
 
-        return redirect()->intended('/');
+        if (str_contains($url, '/login') || str_contains($url, '/register')) {
+            $url = '/';
+        }
+
+        return Inertia::location($url);
     }
 
     /**
