@@ -406,6 +406,11 @@ class StaffController extends Controller
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
 
+            $voucher = $bill->voucher_id ? Voucher::find($bill->voucher_id) : null;
+            if ($voucher) {
+                $voucher->increment('used_count');
+            }
+
             $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
             if ($customer) {
                 $pointStep = app(AppSettings::class)->point_step;
