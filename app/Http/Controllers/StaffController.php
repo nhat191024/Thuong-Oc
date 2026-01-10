@@ -262,6 +262,27 @@ class StaffController extends Controller
     }
 
     /**
+     * Remove customer from the bill
+     *
+     * @param string $tableId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeCustomer(string $tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$bill) {
+            return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+        }
+
+        $bill->customer_id = null;
+        $bill->save();
+
+        return redirect()->back()->with('success', 'Đã xóa thông tin khách hàng.');
+    }
+
+    /**
      * Apply discount code for a specific table
      *
      * @param Request $request
@@ -314,6 +335,11 @@ class StaffController extends Controller
 
         if (!$bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+        }
+
+        // Check if voucher exists before removing
+        if (!$bill->voucher_id) {
+             return redirect()->back()->with('error', 'Hóa đơn chưa áp dụng mã giảm giá.');
         }
 
         $bill->voucher_id = null;

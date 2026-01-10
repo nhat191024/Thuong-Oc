@@ -78,17 +78,7 @@
 
                             <div v-if="discountAmount > 0" class="flex items-center justify-between text-sm">
                                 <span>Giảm giá ({{ discountPercent }}%):</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-error">-{{ formatPrice(discountAmount) }}</span>
-                                    <button
-                                        @click="removeDiscount"
-                                        class="btn text-error btn-ghost btn-xs"
-                                        :disabled="isRemovingDiscount"
-                                        title="Hủy mã giảm giá"
-                                    >
-                                        <XMarkIcon class="size-4" />
-                                    </button>
-                                </div>
+                                <span class="text-error">-{{ formatPrice(discountAmount) }}</span>
                             </div>
 
                             <div class="flex items-center justify-between text-xl font-bold">
@@ -153,6 +143,27 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <div class="mt-4 flex gap-2">
+                                <button
+                                    v-if="table.bill?.customer"
+                                    class="btn flex-1 btn-outline btn-sm btn-error"
+                                    @click="removeCustomer"
+                                    :disabled="isRemovingCustomer"
+                                >
+                                    <span v-if="isRemovingCustomer" class="loading loading-xs loading-spinner"></span>
+                                    <span v-else>Xóa khách</span>
+                                </button>
+                                <button
+                                    v-if="discountAmount > 0"
+                                    class="btn flex-1 btn-outline btn-sm btn-error"
+                                    @click="removeDiscount"
+                                    :disabled="isRemovingDiscount"
+                                >
+                                    <span v-if="isRemovingDiscount" class="loading loading-xs loading-spinner"></span>
+                                    <span v-else>Xóa Voucher</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -199,12 +210,14 @@
                 </div>
             </div>
         </div>
+        <ConfirmModal :is-open="showConfirmModal" :title="confirmTitle" :message="confirmMessage" @update:is-open="showConfirmModal = $event" @confirm="onConfirm" />
     </div>
 </template>
 
 <script setup lang="ts">
+import ConfirmModal from '@/pages/components/ConfirmModal.vue';
 import { AppPageProps } from '@/types';
-import { ChevronLeftIcon, QrCodeIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { ChevronLeftIcon, QrCodeIcon } from '@heroicons/vue/24/outline';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -354,28 +367,70 @@ function applyDiscount() {
     });
 }
 
+// Confirm Modal Logic
+const showConfirmModal = ref(false);
+const confirmTitle = ref('');
+const confirmMessage = ref('');
+const confirmAction = ref<(() => void) | null>(null);
+
+function openConfirmModal(title: string, message: string, action: () => void) {
+    confirmTitle.value = title;
+    confirmMessage.value = message;
+    confirmAction.value = action;
+    showConfirmModal.value = true;
+}
+
+function onConfirm() {
+    if (confirmAction.value) {
+        confirmAction.value();
+    }
+    showConfirmModal.value = false;
+}
+
 const isRemovingDiscount = ref(false);
 
 function removeDiscount() {
-    if (!confirm('Bạn có chắc muốn hủy mã giảm giá này?')) return;
-
-    isRemovingDiscount.value = true;
-    router.post(
-        route('staff.table.remove-discount', props.table.id),
-        {},
-        {
-            preserveScroll: true,
-            onFinish: () => {
-                isRemovingDiscount.value = false;
+    openConfirmModal('Xác nhận xóa mã giảm giá', 'Bạn có chắc muốn hủy mã giảm giá này?', () => {
+        isRemovingDiscount.value = true;
+        router.post(
+            route('staff.table.remove-discount', props.table.id),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    isRemovingDiscount.value = false;
+                },
+                onSuccess: () => {
+                    discountAmount.value = 0;
+                    discountPercent.value = 0;
+                    discountCode.value = '';
+                },
             },
-            onSuccess: () => {
-                discountAmount.value = 0;
-                discountPercent.value = 0;
-                discountCode.value = '';
-            },
-        },
-    );
+        );
+    });
 }
+
+const isRemovingCustomer = ref(false);
+
+function removeCustomer() {
+    openConfirmModal('Xác nhận xóa khách hàng', 'Bạn có chắc muốn xóa khách hàng khỏi đơn này?', () => {
+        isRemovingCustomer.value = true;
+        router.post(
+            route('staff.table.remove-customer', props.table.id),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    isRemovingCustomer.value = false;
+                },
+                onSuccess: () => {
+                    customerPhone.value = '';
+                },
+            },
+        );
+    });
+}
+
 
 const selectedPaymentMethod = ref('');
 const isProcessing = ref(false);
