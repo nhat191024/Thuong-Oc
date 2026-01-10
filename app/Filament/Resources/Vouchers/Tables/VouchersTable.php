@@ -47,6 +47,9 @@ class VouchersTable
                     ->label(__('Số lần đã sử dụng'))
                     ->sortable()
                     ->default(0),
+                TextColumn::make('customer.name')
+                    ->label(__('Áp dụng cho'))
+                    ->default(__('Tất cả khách hàng')),
                 TextColumn::make('data.starts_at')
                     ->label(__('Ngày bắt đầu'))
                     ->dateTime()
