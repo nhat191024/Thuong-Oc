@@ -28,20 +28,16 @@ class VouchersTable
                 TextColumn::make('data.discount_percent')
                     ->label(__('Phần trăm giảm giá'))
                     ->formatStateUsing(fn($state) => $state . '%')
-                    ->sortable()
                     ->placeholder(__('Giảm theo số tiền')),
                 TextColumn::make('data.max_discount_amount')
                     ->label(__('Số tiền giảm tối đa'))
                     ->formatStateUsing(fn($state) => '₫' . number_format($state, 0, ',', '.'))
-                    ->sortable()
                     ->placeholder(__('Giảm theo %')),
                 TextColumn::make('data.min_order_amount')
                     ->label(__('Giá trị đơn hàng tối thiểu'))
-                    ->formatStateUsing(fn($state) =>  '₫' . number_format($state, 0, ',', '.'))
-                    ->sortable(),
+                    ->formatStateUsing(fn($state) =>  '₫' . number_format($state, 0, ',', '.')),
                 TextColumn::make('data.usage_limit')
                     ->label(__('Giới hạn số lần sử dụng'))
-                    ->sortable()
                     ->default(__('Không giới hạn')),
                 TextColumn::make('data.times_used')
                     ->label(__('Số lần đã sử dụng'))
