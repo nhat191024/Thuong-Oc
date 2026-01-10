@@ -32,218 +32,52 @@
 
             <div class="flex flex-col md:gap-8 lg:flex-row">
                 <div class="flex-1 space-y-4">
-                    <div class="card border border-base-200 bg-base-100 shadow-xl">
-                        <div class="card-body p-4">
-                            <h2 class="mb-4 card-title text-lg">Chi tiết đơn hàng</h2>
-
-                            <div class="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-base-200/50 p-3 text-sm">
-                                <div class="text-base-content/70">Mã hóa đơn:</div>
-                                <div class="text-right font-medium">#{{ table.bill?.id }}</div>
-
-                                <div class="text-base-content/70">Thời gian vào:</div>
-                                <div class="text-right font-medium">{{ formatDate(table.bill?.time_in) }}</div>
-
-                                <template v-if="table.bill?.customer">
-                                    <div class="text-base-content/70">Khách hàng:</div>
-                                    <div class="text-right font-medium">{{ table.bill.customer.name }}</div>
-                                </template>
-                            </div>
-
-                            <div class="overflow-x-auto">
-                                <table class="table w-full table-zebra">
-                                    <thead>
-                                        <tr>
-                                            <th>Món</th>
-                                            <th class="text-center">SL</th>
-                                            <th class="text-right">Đơn giá</th>
-                                            <th class="text-right">Thành tiền</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(item, index) in billDetails" :key="index">
-                                            <td>
-                                                <div class="font-bold">{{ item.name }}</div>
-                                                <div v-if="item.cookingMethod" class="text-xs opacity-70">{{ item.cookingMethod }}</div>
-                                                <div v-if="item.note" class="text-xs italic opacity-60">{{ item.note }}</div>
-                                            </td>
-                                            <td class="text-center">{{ item.quantity }}</td>
-                                            <td class="text-right">{{ formatPrice(item.price) }}</td>
-                                            <td class="text-right font-semibold">{{ formatPrice(item.total) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="divider my-2"></div>
-
-                            <div v-if="discountAmount > 0" class="flex items-center justify-between text-sm">
-                                <span>Giảm giá ({{ discountPercent }}%):</span>
-                                <span class="text-error">-{{ formatPrice(discountAmount) }}</span>
-                            </div>
-
-                            <div class="flex items-center justify-between text-xl font-bold">
-                                <span>Tổng cộng:</span>
-                                <span class="text-primary">{{ formatPrice(finalTotal) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- QR Code Section -->
-                <div class="mt-4 flex flex-col items-center justify-start lg:mt-0 lg:w-1/3">
-                    <div class="collapse-arrow collapse mb-4 w-full max-w-sm border border-base-200 bg-base-100 shadow-xl">
-                        <input type="checkbox" />
-                        <div class="collapse-title text-lg font-bold">Thêm thông tin</div>
-                        <div class="collapse-content">
-                            <div class="mb-4">
-                                <label class="label pt-0 pl-0"><span class="label-text font-medium">Khách hàng thành viên</span></label>
-                                <div class="join w-full">
-                                    <input
-                                        v-model="customerPhone"
-                                        type="text"
-                                        placeholder="Nhập SĐT khách..."
-                                        class="input-bordered input input-sm join-item w-full focus:border-primary focus:outline-none"
-                                        :disabled="isAttachingCustomer"
-                                        @keyup.enter="attachCustomer"
-                                    />
-                                    <button
-                                        class="btn join-item text-white btn-sm btn-primary"
-                                        @click="attachCustomer"
-                                        :disabled="!customerPhone || isAttachingCustomer"
-                                    >
-                                        <span v-if="isAttachingCustomer" class="loading loading-xs loading-spinner"></span>
-                                        <span v-else>Tìm</span>
-                                    </button>
-                                </div>
-                                <label class="label pt-0 pl-0"
-                                    ><span class="text-xs font-medium text-base-content/70"
-                                        >Nhập khi đơn đã có khách sẽ ghi đè khách hiện tại</span
-                                    ></label
-                                >
-                            </div>
-
-                            <div>
-                                <label class="label pt-0 pl-0"><span class="label-text font-medium">Mã giảm giá</span></label>
-                                <div class="join w-full">
-                                    <input
-                                        v-model="discountCode"
-                                        type="text"
-                                        placeholder="Nhập mã..."
-                                        class="input-bordered input input-sm join-item w-full focus:border-primary focus:outline-none"
-                                        :disabled="isApplyingDiscount"
-                                        @keyup.enter="applyDiscount"
-                                    />
-                                    <button
-                                        class="btn join-item text-white btn-sm btn-primary"
-                                        @click="applyDiscount"
-                                        :disabled="!discountCode || isApplyingDiscount"
-                                    >
-                                        <span v-if="isApplyingDiscount" class="loading loading-xs loading-spinner"></span>
-                                        <span v-else>Áp dụng</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="mt-4 flex gap-2">
-                                <button
-                                    v-if="table.bill?.customer"
-                                    class="btn flex-1 btn-outline btn-sm btn-error"
-                                    @click="removeCustomer"
-                                    :disabled="isRemovingCustomer"
-                                >
-                                    <span v-if="isRemovingCustomer" class="loading loading-xs loading-spinner"></span>
-                                    <span v-else>Xóa khách</span>
-                                </button>
-                                <button
-                                    v-if="discountAmount > 0"
-                                    class="btn flex-1 btn-outline btn-sm btn-error"
-                                    @click="removeDiscount"
-                                    :disabled="isRemovingDiscount"
-                                >
-                                    <span v-if="isRemovingDiscount" class="loading loading-xs loading-spinner"></span>
-                                    <span v-else>Xóa Voucher</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card w-full max-w-sm border border-base-200 bg-base-100 shadow-xl">
-                        <div class="card-body items-center text-center">
-                            <h2 class="card-title">Quét mã thanh toán</h2>
-                            <p class="mb-4 text-sm text-base-content/70">Mã dành cho nhân viên quét bằng máy POS để thanh toán và in đơn</p>
-
-                            <div class="rounded-xl border border-base-300 bg-white p-4 shadow-inner">
-                                <div class="flex h-48 w-48 items-center justify-center rounded-lg bg-base-200">
-                                    <QrCodeIcon class="size-24 text-base-content/20" />
-                                </div>
-                            </div>
-
-                            <div class="mt-4 text-xs text-base-content/50">Mã đơn: #{{ table.bill?.id || '---' }}</div>
-
-                            <div class="divider w-full">Hoặc</div>
-
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-medium">Thanh toán nhanh (Không in đơn)</span>
-                                </label>
-                                <div class="mt-1 flex gap-2">
-                                    <select
-                                        class="select-bordered select flex-1 outline-primary focus:border-primary"
-                                        v-model="selectedPaymentMethod"
-                                    >
-                                        <option disabled selected value="">Chọn phương thức</option>
-                                        <option v-for="method in paymentMethods" :key="method.value" :value="method.value">
-                                            {{ method.label }}
-                                        </option>
-                                    </select>
-                                    <button
-                                        class="btn text-white btn-primary"
-                                        :disabled="!selectedPaymentMethod || isProcessing"
-                                        @click="confirmPayment"
-                                    >
-                                        Xác nhận
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <dialog ref="createCustomerDialog" class="modal">
-            <div class="modal-box">
-                <h3 class="text-lg font-bold text-warning">Khách hàng chưa tồn tại</h3>
-                <p class="py-4">
-                    Số điện thoại <strong>{{ customerPhone }}</strong> chưa có trong hệ thống. Vui lòng nhập tên để tạo tài khoản mới.
-                </p>
-
-                <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text font-medium">Tên khách hàng</span>
-                    </label>
-                    <input
-                        v-model="customerName"
-                        type="text"
-                        placeholder="Nhập tên khách hàng..."
-                        class="input-bordered input w-full focus:outline-primary"
-                        @keyup.enter="attachCustomer"
+                    <BillTableDetails
+                        :table="table"
+                        :bill-details="billDetails"
+                        :discount-amount="discountAmount"
+                        :discount-percent="discountPercent"
+                        :final-total="finalTotal"
                     />
                 </div>
 
-                <div class="mt-2 text-xs text-base-content/60">* Mật khẩu mặc định sẽ là số điện thoại</div>
+                <!-- Right Column -->
+                <div class="mt-4 flex flex-col items-center justify-start lg:mt-0 lg:w-1/3">
+                    <BillAdditionalInfo
+                        :table="table"
+                        v-model:customer-phone="customerPhone"
+                        v-model:discount-code="discountCode"
+                        :is-attaching-customer="isAttachingCustomer"
+                        :is-applying-discount="isApplyingDiscount"
+                        :discount-amount="discountAmount"
+                        :is-removing-customer="isRemovingCustomer"
+                        :is-removing-discount="isRemovingDiscount"
+                        @attach-customer="attachCustomer"
+                        @apply-discount="applyDiscount"
+                        @remove-customer="removeCustomer"
+                        @remove-discount="removeDiscount"
+                    />
 
-                <div class="modal-action">
-                    <button class="btn" @click="cancelCreateCustomer" :disabled="isAttachingCustomer">Hủy</button>
-                    <button class="btn text-white btn-primary" @click="attachCustomer" :disabled="!customerName || isAttachingCustomer">
-                        <span v-if="isAttachingCustomer" class="loading loading-spinner"></span>
-                        Tạo & Thêm
-                    </button>
+                    <BillPayment
+                        :table="table"
+                        :payment-methods="paymentMethods"
+                        v-model:selected-payment-method="selectedPaymentMethod"
+                        :is-processing="isProcessing"
+                        @confirm-payment="confirmPayment"
+                    />
                 </div>
             </div>
-            <form method="dialog" class="modal-backdrop">
-                <button @click="cancelCreateCustomer">close</button>
-            </form>
-        </dialog>
+        </div>
+
+        <CreateCustomerDialog
+            :visible="shouldCreateCustomer"
+            :customer-phone="customerPhone"
+            v-model:customer-name="customerName"
+            :is-attaching-customer="isAttachingCustomer"
+            @confirm="attachCustomer"
+            @cancel="cancelCreateCustomer"
+        />
+
         <ConfirmModal
             :is-open="showConfirmModal"
             :title="confirmTitle"
@@ -257,9 +91,13 @@
 <script setup lang="ts">
 import ConfirmModal from '@/pages/components/ConfirmModal.vue';
 import { AppPageProps } from '@/types';
-import { ChevronLeftIcon, QrCodeIcon } from '@heroicons/vue/24/outline';
+import { ChevronLeftIcon } from '@heroicons/vue/24/outline';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import BillAdditionalInfo from './partials/BillAdditionalInfo.vue';
+import BillPayment from './partials/BillPayment.vue';
+import BillTableDetails from './partials/BillTableDetails.vue';
+import CreateCustomerDialog from './partials/CreateCustomerDialog.vue';
 
 const page = usePage<AppPageProps>();
 
@@ -347,13 +185,6 @@ const customerPhone = ref('');
 const customerName = ref('');
 const shouldCreateCustomer = ref(false);
 const isAttachingCustomer = ref(false);
-const createCustomerDialog = ref<HTMLDialogElement | null>(null);
-
-onMounted(() => {
-    if (shouldCreateCustomer.value) {
-        createCustomerDialog.value?.showModal();
-    }
-});
 
 watch(
     () => page.props.flash.payload,
@@ -369,17 +200,6 @@ watch(
         }
     },
     { immediate: true },
-);
-
-watch(
-    () => shouldCreateCustomer.value,
-    (val) => {
-        if (val) {
-            createCustomerDialog.value?.showModal();
-        } else {
-            createCustomerDialog.value?.close();
-        }
-    },
 );
 
 function cancelCreateCustomer() {
@@ -542,20 +362,6 @@ function confirmPayment() {
         onSuccess: () => {
             //
         },
-    });
-}
-
-function formatPrice(price: number): string {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-}
-
-function formatDate(dateString?: string): string {
-    if (!dateString) return '---';
-    return new Date(dateString).toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
     });
 }
 </script>
