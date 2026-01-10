@@ -358,7 +358,7 @@ class StaffController extends Controller
 
         // Check if voucher exists before removing
         if (!$bill->voucher_id) {
-             return redirect()->back()->with('error', 'Hóa đơn chưa áp dụng mã giảm giá.');
+            return redirect()->back()->with('error', 'Hóa đơn chưa áp dụng mã giảm giá.');
         }
 
         $bill->voucher_id = null;
