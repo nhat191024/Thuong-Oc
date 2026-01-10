@@ -15,6 +15,7 @@ use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
 use App\Enums\PayStatus;
 use App\Enums\PaymentMethods;
+use App\Enums\Role;
 
 use App\Http\Resources\TableResource;
 
@@ -267,6 +268,8 @@ class StaffController extends Controller
                 $customer->username = $phone;
                 $customer->password = Hash::make($phone);
                 $customer->save();
+
+                $customer->assignRole(Role::CUSTOMER);
             } else {
                 return redirect()->back()
                     ->with('error', 'Khách hàng không tồn tại. Vui lòng nhập tên để tạo mới.')
