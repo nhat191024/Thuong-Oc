@@ -17,6 +17,7 @@
                     <li>
                         <a class="font-bold">Điểm: {{ user.points }}</a>
                     </li>
+                    <li><button class="font-bold" @click="goToVouchers">Kho Voucher</button></li>
                     <li><button class="font-bold" @click="goToHistory">Lịch sử đơn</button></li>
                     <li><Link href="/logout" method="post" as="button">Đăng xuất</Link></li>
                 </ul>
@@ -67,8 +68,21 @@ const props = defineProps<Props>();
 
 const goToHistory = () => {
     let currentUrl = window.location.href;
-    let currentTableId = currentUrl.split('/menu/')[1];
-    localStorage.setItem('tableId', currentTableId);
+    if (currentUrl.includes('/menu/')) {
+        let currentTableId = currentUrl.split('/menu/')[1];
+        localStorage.setItem('tableId', currentTableId);
+    }
     router.visit(route('history.index'));
+};
+
+const goToVouchers = () => {
+    let currentUrl = window.location.href;
+    if (currentUrl.includes('/menu/')) {
+        let currentTableId = currentUrl.split('/menu/')[1];
+        if (currentTableId) {
+            localStorage.setItem('tableId', currentTableId);
+        }
+    }
+    router.visit(route('vouchers.index'));
 };
 </script>
