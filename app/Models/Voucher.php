@@ -69,7 +69,16 @@ class Voucher extends BaseVoucher
 
         //if voucher have model != 0, check if user id match
         if ($voucher->model_id != 0) {
-            if ($userId && $voucher->model_id !== $userId) {
+
+            if ($userId === null) {
+                return (object) [
+                    'status' => false,
+                    'message' => __('Mã giảm giá không áp dụng cho khách hàng này'),
+                    'discountAmount' => 0
+                ];
+            }
+
+            if ($voucher->model_id !== $userId) {
                 return (object) [
                     'status' => false,
                     'message' => __('Mã giảm giá không áp dụng cho khách hàng này'),
