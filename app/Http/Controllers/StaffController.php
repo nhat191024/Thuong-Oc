@@ -28,6 +28,7 @@ use App\Http\Requests\ProcessPaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 
 class StaffController extends Controller
 {
@@ -239,9 +240,12 @@ class StaffController extends Controller
     {
         $request->validate([
             'phone' => 'required|string',
+            'name' => 'nullable|string',
         ]);
 
         $phone = $request->input('phone');
+        $name = $request->input('name');
+
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
@@ -252,7 +256,22 @@ class StaffController extends Controller
         $customer = Customer::where('phone', $phone)->first();
 
         if (!$customer) {
-            return redirect()->back()->with('error', 'Không tìm thấy khách hàng với số điện thoại này.');
+            if ($name) {
+                if (Customer::where('username', $phone)->exists()) {
+                    return redirect()->back()->with('error', 'Tài khoản đã tồn tại.');
+                }
+
+                $customer = new Customer();
+                $customer->name = $name;
+                $customer->phone = $phone;
+                $customer->username = $phone;
+                $customer->password = Hash::make($phone);
+                $customer->save();
+            } else {
+                return redirect()->back()
+                    ->with('error', 'Khách hàng không tồn tại. Vui lòng nhập tên để tạo mới.')
+                    ->with('payload', ['action' => 'customer_not_found', 'phone' => $phone]);
+            }
         }
 
         $bill->customer_id = $customer->id;

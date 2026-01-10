@@ -210,7 +210,47 @@
                 </div>
             </div>
         </div>
-        <ConfirmModal :is-open="showConfirmModal" :title="confirmTitle" :message="confirmMessage" @update:is-open="showConfirmModal = $event" @confirm="onConfirm" />
+        <dialog ref="createCustomerDialog" class="modal">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold text-warning">Khách hàng chưa tồn tại</h3>
+                <p class="py-4">
+                    Số điện thoại <strong>{{ customerPhone }}</strong> chưa có trong hệ thống. Vui lòng nhập tên để tạo tài khoản mới.
+                </p>
+
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-medium">Tên khách hàng</span>
+                    </label>
+                    <input
+                        v-model="customerName"
+                        type="text"
+                        placeholder="Nhập tên khách hàng..."
+                        class="input-bordered input w-full focus:outline-primary"
+                        @keyup.enter="attachCustomer"
+                    />
+                </div>
+
+                <div class="mt-2 text-xs text-base-content/60">* Mật khẩu mặc định sẽ là số điện thoại</div>
+
+                <div class="modal-action">
+                    <button class="btn" @click="cancelCreateCustomer" :disabled="isAttachingCustomer">Hủy</button>
+                    <button class="btn text-white btn-primary" @click="attachCustomer" :disabled="!customerName || isAttachingCustomer">
+                        <span v-if="isAttachingCustomer" class="loading loading-spinner"></span>
+                        Tạo & Thêm
+                    </button>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button @click="cancelCreateCustomer">close</button>
+            </form>
+        </dialog>
+        <ConfirmModal
+            :is-open="showConfirmModal"
+            :title="confirmTitle"
+            :message="confirmMessage"
+            @update:is-open="showConfirmModal = $event"
+            @confirm="onConfirm"
+        />
     </div>
 </template>
 
@@ -219,7 +259,7 @@ import ConfirmModal from '@/pages/components/ConfirmModal.vue';
 import { AppPageProps } from '@/types';
 import { ChevronLeftIcon, QrCodeIcon } from '@heroicons/vue/24/outline';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const page = usePage<AppPageProps>();
 
@@ -304,14 +344,62 @@ const discountAmount = ref(props.discountAmount || 0);
 const discountPercent = ref(props.discountPercent || 0);
 
 const customerPhone = ref('');
+const customerName = ref('');
+const shouldCreateCustomer = ref(false);
 const isAttachingCustomer = ref(false);
+const createCustomerDialog = ref<HTMLDialogElement | null>(null);
+
+onMounted(() => {
+    if (shouldCreateCustomer.value) {
+        createCustomerDialog.value?.showModal();
+    }
+});
+
+watch(
+    () => page.props.flash.payload,
+    (payload: any) => {
+        if (payload && payload.action === 'customer_not_found') {
+            shouldCreateCustomer.value = true;
+            if (payload.phone) {
+                customerPhone.value = payload.phone;
+            }
+        } else {
+            shouldCreateCustomer.value = false;
+            customerName.value = '';
+        }
+    },
+    { immediate: true },
+);
+
+watch(
+    () => shouldCreateCustomer.value,
+    (val) => {
+        if (val) {
+            createCustomerDialog.value?.showModal();
+        } else {
+            createCustomerDialog.value?.close();
+        }
+    },
+);
+
+function cancelCreateCustomer() {
+    shouldCreateCustomer.value = false;
+    customerPhone.value = '';
+    customerName.value = '';
+}
 
 function attachCustomer() {
     if (!customerPhone.value) return;
 
-    const form = useForm({
+    const data: any = {
         phone: customerPhone.value,
-    });
+    };
+
+    if (shouldCreateCustomer.value && customerName.value) {
+        data.name = customerName.value;
+    }
+
+    const form = useForm(data);
 
     isAttachingCustomer.value = true;
     form.post(route('staff.table.attach-customer', props.table.id), {
@@ -320,7 +408,11 @@ function attachCustomer() {
             isAttachingCustomer.value = false;
         },
         onSuccess: () => {
-            customerPhone.value = '';
+            if (!page.props.flash.error) {
+                customerPhone.value = '';
+                customerName.value = '';
+                shouldCreateCustomer.value = false;
+            }
         },
     });
 }
@@ -430,7 +522,6 @@ function removeCustomer() {
         );
     });
 }
-
 
 const selectedPaymentMethod = ref('');
 const isProcessing = ref(false);
