@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Vouchers\Schemas;
 
+use App\Models\Customer;
+
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DateTimePicker;
@@ -60,6 +62,32 @@ class VoucherForm
                     ->default(false)
                     ->live()
                     ->afterStateUpdated(fn($state, $set) => $state ? $set('data.usage_limit', null) : null),
+                Select::make('model_id')
+                    ->label(__('Mã dành cho khách hàng cụ thể'))
+                    ->searchable()
+                    ->default(0)
+                    ->getOptionLabelUsing(fn($value): ?string => $value ? Customer::find($value)?->name : 'Tất cả khách hàng')
+                    ->options(
+                        fn() => [0 => 'Tất cả khách hàng'] + Customer::with('roles')
+                            ->whereHas('roles', function ($query) {
+                                $query->where('name', 'customer');
+                            })
+                            ->orderBy('created_at', 'desc')
+                            ->limit(10)
+                            ->pluck('name', 'id')
+                            ->toArray()
+                    )
+                    ->getSearchResultsUsing(
+                        fn(string $search): array =>
+                        [0 => 'Tất cả khách hàng'] + Customer::with('roles')
+                            ->whereHas('roles', function ($query) {
+                                $query->where('name', 'customer');
+                            })
+                            ->where('name', 'like', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray()
+                    ),
 
                 Grid::make(2)
                     ->columnSpanFull()
