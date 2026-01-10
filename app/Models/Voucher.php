@@ -33,6 +33,12 @@ use BeyondCode\Vouchers\Models\Voucher as BaseVoucher;
  */
 class Voucher extends BaseVoucher
 {
+    //addition relationships
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'model_id');
+    }
+
     /**
      * Redeem the voucher
      *
@@ -42,7 +48,7 @@ class Voucher extends BaseVoucher
      *
      * @return object { status: bool, message: string, discountAmount: int }
      */
-    public static function redeemVoucher(int $orderTotal, ?string $code = null, ?int $id = null): object
+    public static function redeemVoucher(int $orderTotal, ?string $code = null, ?int $id = null, ?int $userId = null): object
     {
         $voucher = null;
         if ($id) {
@@ -60,6 +66,18 @@ class Voucher extends BaseVoucher
         }
 
         $validation = $voucher->validate($orderTotal);
+
+        //if voucher have model != 0, check if user id match
+        if ($voucher->model_id != 0) {
+            if ($userId && $voucher->model_id !== $userId) {
+                return (object) [
+                    'status' => false,
+                    'message' => __('Mã giảm giá không áp dụng cho khách hàng này'),
+                    'discountAmount' => 0
+                ];
+            }
+        }
+
         if (!$validation->status) {
             return (object) [
                 'status' => false,
