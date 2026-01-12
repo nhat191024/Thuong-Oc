@@ -39,7 +39,7 @@ class AuthController extends Controller
         if ($user->hasRole(Role::ADMIN->value)) {
             return response()->json(['message' => 'Access denied for admin role'], 403);
         } else if ($user->hasRole(Role::STAFF->value)) {
-            $menus = $this->menuService->getMenus();
+            $menus = $this->menuService->getMenus(true);
         }
 
         $oldTokens = $user->tokens();
@@ -52,7 +52,6 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'user' => $user,
-            'role' => $user->roles->pluck('name'),
             'menus' => $menus,
         ]);
     }
