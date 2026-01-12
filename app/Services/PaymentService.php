@@ -26,7 +26,7 @@ class PaymentService
      * @param bool $isAppRequest
      * @return array
      */
-    public function processAppointmentPayment(
+    public function processPayment(
         array $data,
         $paymentMethod,
         bool $isAppRequest,
