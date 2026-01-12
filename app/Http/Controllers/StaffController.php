@@ -406,9 +406,11 @@ class StaffController extends Controller
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
 
-            $voucher = $bill->voucher_id ? Voucher::find($bill->voucher_id) : null;
-            if ($voucher) {
-                $voucher->increment('used_count');
+            if ($bill->voucher_id) {
+                $voucher = Voucher::find($bill->voucher_id);
+                if ($voucher) {
+                    $voucher->increment('used_count');
+                }
             }
 
             $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
@@ -425,9 +427,14 @@ class StaffController extends Controller
                 'amount' => $bill->final_total ?? $bill->total
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
+
             $items = $bill->billDetails->map(function ($detail) {
+                $name = $detail->custom_dish_name;
+                if ($detail->dish) {
+                    $name = $detail->dish->food->name;
+                }
                 return [
-                    'name' => $detail->dish_id ? $detail->dish->food->name : $detail->custom_dish_name,
+                    'name' => $name,
                     'quantity' => $detail->quantity,
                     'price' => $detail->price,
                 ];
@@ -454,7 +461,7 @@ class StaffController extends Controller
             ];
 
             try {
-                $response = $this->paymentService->processAppointmentPayment(
+                $response = $this->paymentService->processPayment(
                     $data,
                     'qr_transfer',
                     false,
