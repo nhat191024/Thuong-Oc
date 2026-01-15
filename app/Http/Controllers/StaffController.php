@@ -34,12 +34,10 @@ use Illuminate\Support\Facades\Hash;
 class StaffController extends Controller
 {
     protected MenuService $menuService;
-    protected PaymentService $paymentService;
 
     public function __construct()
     {
         $this->menuService = app(MenuService::class);
-        $this->paymentService = app(PaymentService::class);
     }
 
     /**
@@ -452,8 +450,11 @@ class StaffController extends Controller
 
             $total = $bill->total - $discountAmount;
 
+            $timestamp = time();
+            $billId = $bill->id . $timestamp;
+
             $data = [
-                'billId' => $bill->id,
+                'billId' => $billId,
                 'billCode' => (string)$bill->id,
                 'amount' => (int)$total,
                 'items' => $items,
@@ -461,7 +462,8 @@ class StaffController extends Controller
             ];
 
             try {
-                $response = $this->paymentService->processPayment(
+                $paymentService = app(PaymentService::class);
+                $response = $paymentService->processPayment(
                     $data,
                     'qr_transfer',
                     false,
