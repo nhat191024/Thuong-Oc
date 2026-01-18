@@ -5,8 +5,8 @@
             <p class="mb-4 text-sm text-base-content/70">Mã dành cho nhân viên quét bằng máy POS để thanh toán và in đơn</p>
 
             <div class="rounded-xl border border-base-300 bg-white p-4 shadow-inner">
-                <div class="flex h-48 w-48 items-center justify-center rounded-lg bg-base-200">
-                    <QrCodeIcon class="size-24 text-base-content/20" />
+                <div class="flex h-48 w-48 items-center justify-center rounded-lg bg-white">
+                    <QrcodeVue :value="qrCodeValue" :size="180" level="H" />
                 </div>
             </div>
 
@@ -43,7 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import { QrCodeIcon } from '@heroicons/vue/24/outline';
+import QrcodeVue from 'qrcode.vue';
+import { computed } from 'vue';
 
 interface PaymentMethod {
     value: string;
@@ -60,4 +61,6 @@ interface Props {
 const props = defineProps<Props>();
 
 defineEmits(['update:selectedPaymentMethod', 'confirmPayment']);
+
+const qrCodeValue = computed(() => `thuongoc://table_bill?id=${props.table.id}`);
 </script>
