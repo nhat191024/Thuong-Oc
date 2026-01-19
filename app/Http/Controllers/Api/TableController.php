@@ -22,7 +22,7 @@ class TableController extends Controller
     {
         $branchId = $request->input('branch_id');
 
-        $tables = Table::where('branch_id', $branchId)->get();
+        $tables = Table::where('branch_id', $branchId)->orderBy('table_number')->get();
         $data = TableResource::collection($tables);
 
         return response()->json($data);
