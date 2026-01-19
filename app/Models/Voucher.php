@@ -106,6 +106,18 @@ class Voucher extends BaseVoucher
         ];
     }
 
+    /**
+     * Increment the times used count in the voucher data
+     *
+     * @return void
+     */
+    public function incrementTimesUsed(): void
+    {
+        $timesUsed = $this->timesUsed();
+        $this->data = array_merge($this->data ?? [], ['times_used' => $timesUsed + 1]);
+        $this->save();
+    }
+
 
     /**
      * Get the discount percentage from the voucher data
