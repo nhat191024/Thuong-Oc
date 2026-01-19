@@ -451,7 +451,8 @@ class StaffController extends Controller
             $total = $bill->total - $discountAmount;
 
             $timestamp = time();
-            $billId = $bill->id . $timestamp;
+            $randomNum = rand(1000, 9999);
+            $billId = $bill->id . $timestamp . $randomNum;
 
             $data = [
                 'billId' => $billId,
