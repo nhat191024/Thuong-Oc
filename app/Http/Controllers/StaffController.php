@@ -407,7 +407,7 @@ class StaffController extends Controller
             if ($bill->voucher_id) {
                 $voucher = Voucher::find($bill->voucher_id);
                 if ($voucher) {
-                    $voucher->increment('used_count');
+                    $voucher->incrementTimesUsed();
                 }
             }
 

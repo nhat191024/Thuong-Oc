@@ -281,7 +281,7 @@ class BillController extends Controller
                 $voucher = Voucher::find($bill->voucher_id);
                 if ($voucher) {
                     $discountAmount = $voucher->getDiscountAmount($bill->total);
-                    $voucher->increment('used_count');
+                    $voucher->incrementTimesUsed();
                 }
             }
             $finalTotal = $bill->total - $discountAmount;
