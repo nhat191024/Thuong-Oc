@@ -3,13 +3,7 @@
         <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
                 <div class="grid h-full w-full grid-cols-3 grid-rows-3 gap-4 pl-4">
-                    <OrderCard
-                        v-for="detail in page"
-                        :key="detail.id"
-                        :detail="detail"
-                        :show-actions="false"
-                        class="h-full w-full"
-                    />
+                    <OrderCard v-for="detail in page" :key="detail.id" :detail="detail" :show-actions="false" class="h-full w-full" />
                 </div>
             </div>
             <div v-if="loading" class="carousel-item flex h-full w-full items-center justify-center">
@@ -19,7 +13,7 @@
                 <p class="text-gray-500">Chưa có lịch sử đơn hàng</p>
             </div>
         </div>
-        <div class="flex justify-center gap-2 mb-2" v-if="pages.length > 1">
+        <div class="mb-2 flex justify-center gap-2" v-if="pages.length > 1">
             <template v-for="(p, index) in visiblePages" :key="index">
                 <button
                     v-if="typeof p === 'number'"
@@ -29,7 +23,7 @@
                 >
                     {{ p + 1 }}
                 </button>
-                <span v-else class="btn btn-xs btn-ghost btn-disabled">...</span>
+                <span v-else class="btn btn-disabled btn-ghost btn-xs">...</span>
             </template>
         </div>
     </div>
@@ -68,6 +62,8 @@ interface BillDetail {
     created_at: string;
     dish: Dish;
     bill: Bill;
+    custom_kitchen_id?: number | null;
+    custom_dish_name: string | null;
 }
 
 const props = defineProps<{
