@@ -102,18 +102,36 @@ const props = defineProps<{
 const emit = defineEmits(['updateStatus', 'restore']);
 
 const target = ref<HTMLElement | null>(null);
+const isRemoving = ref(false);
+
+import { toast } from 'vue3-toastify';
 
 const { lengthX, isSwiping } = useSwipe(target, {
     threshold: 10,
     onSwipeEnd() {
         if (props.showActions && lengthX.value > 100) {
-            emit('updateStatus', props.detail.id, 'done');
+            isRemoving.value = true;
+            setTimeout(() => {
+                toast.success('Đã hoàn thành món ăn', {
+                    autoClose: 1000,
+                    position: toast.POSITION.BOTTOM_RIGHT,
+                });
+                emit('updateStatus', props.detail.id, 'done');
+            }, 300);
         }
     },
 });
 
 const cardStyle = computed(() => {
     if (!props.showActions) return {};
+
+    if (isRemoving.value) {
+        return {
+            transform: 'translateX(-100%)',
+            opacity: 0,
+            transition: 'all 0.3s ease-out',
+        };
+    }
 
     if (isSwiping.value) {
         // Swipe left means lengthX is positive
@@ -123,6 +141,7 @@ const cardStyle = computed(() => {
         return {
             transform: `translateX(${translateX}px)`,
             opacity: 1 - lengthX.value / 300,
+            transition: 'none', // Remove transition during swipe for direct control
         };
     }
 
