@@ -1,4 +1,5 @@
 import '../css/app.css';
+import 'vue3-toastify/dist/index.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -9,6 +10,7 @@ import { createPinia } from 'pinia';
 import { configureEcho } from '@laravel/echo-vue';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify';
 
 window.Pusher = Pusher;
 
@@ -40,6 +42,9 @@ createInertiaApp({
             .use(plugin)
             .use(pinia)
             .use(ZiggyVue)
+            .use(Vue3Toastify, {
+                autoClose: 3000,
+            } as ToastContainerOptions)
             .mount(el);
     },
     progress: {
