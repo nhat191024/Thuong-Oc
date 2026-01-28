@@ -36,7 +36,7 @@
 import { AppPageProps } from '@/types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import { Link, usePage } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import ActiveOrders from './partials/ActiveOrders.vue';
 import HistoryOrders from './partials/HistoryOrders.vue';
 
@@ -91,6 +91,13 @@ const user = page.props.auth.user;
 
 const currentTab = ref('active');
 const billDetails = ref(props.billDetails);
+
+watch(
+    () => props.billDetails,
+    (newVal) => {
+        billDetails.value = newVal;
+    },
+);
 
 const goBack = () => {
     window.history.back();

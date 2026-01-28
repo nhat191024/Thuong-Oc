@@ -34,9 +34,9 @@
 
     <ConfirmModal
         v-model:isOpen="isConfirmModalOpen"
-        title="Xác nhận hủy món"
-        message="Bạn có chắc chắn muốn hủy món này không? Hành động này không thể hoàn tác."
-        @confirm="handleConfirmCancel"
+        :title="modalTitle"
+        :message="modalMessage"
+        @confirm="handleConfirmAction"
     />
 </template>
 
@@ -145,22 +145,28 @@ const scrollToPage = (index: number) => {
 };
 
 const isConfirmModalOpen = ref(false);
-const itemToCancel = ref<number | null>(null);
+const itemToProcess = ref<number | null>(null);
+const actionStatus = ref<string>('');
+const modalTitle = ref('');
+const modalMessage = ref('');
 
 const updateStatus = (detailId: number, status: string) => {
     if (status === 'cancelled') {
-        itemToCancel.value = detailId;
+        itemToProcess.value = detailId;
+        actionStatus.value = status;
+        modalTitle.value = 'Xác nhận hủy món';
+        modalMessage.value = 'Bạn có chắc chắn muốn hủy món này không? Hành động này không thể hoàn tác.';
         isConfirmModalOpen.value = true;
-        return;
+    } else {
+        submitUpdateStatus(detailId, status);
     }
-
-    submitUpdateStatus(detailId, status);
 };
 
-const handleConfirmCancel = () => {
-    if (itemToCancel.value) {
-        submitUpdateStatus(itemToCancel.value, 'cancelled');
-        itemToCancel.value = null;
+const handleConfirmAction = () => {
+    if (itemToProcess.value && actionStatus.value) {
+        submitUpdateStatus(itemToProcess.value, actionStatus.value);
+        itemToProcess.value = null;
+        actionStatus.value = '';
     }
 };
 
