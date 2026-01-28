@@ -71,6 +71,7 @@ interface BillDetail {
     dish: Dish;
     bill: Bill;
     custom_kitchen_id?: number | null;
+    custom_dish_name: string | null;
 }
 
 interface Kitchen {

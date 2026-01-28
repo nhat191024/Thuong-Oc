@@ -74,6 +74,7 @@ interface BillDetail {
     created_at: string;
     dish: Dish;
     bill: Bill;
+    custom_dish_name: string | null;
 }
 
 const props = defineProps<{
