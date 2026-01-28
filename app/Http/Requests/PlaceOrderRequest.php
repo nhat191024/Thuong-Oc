@@ -30,7 +30,7 @@ class PlaceOrderRequest extends FormRequest
             'table_id' => 'required|string|exists:tables,id',
             'branch_id' => 'required|integer|exists:branches,id',
             'user_id' => 'integer|exists:users,id',
-            'customer_id' => 'integer|exists:users,id',
+            'customer_id' => 'nullable|integer|exists:users,id',
             'dishes' => 'required|array|min:1',
             'dishes.*.dish_id' => 'nullable|integer|exists:dishes,id|required_without:dishes.*.custom_dish_name',
             'dishes.*.custom_dish_name' => 'nullable|string|max:255|required_without:dishes.*.dish_id',
