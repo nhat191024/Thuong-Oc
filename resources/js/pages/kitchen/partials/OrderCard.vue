@@ -21,7 +21,7 @@
                     Hoàn thành
                 </button>
             </div>
-            <div v-else>
+            <div v-else class="flex flex-col items-end gap-1">
                 <span
                     class="rounded-full px-3 py-1 text-xs font-bold"
                     :class="{
@@ -31,6 +31,13 @@
                 >
                     {{ detail.status === 'done' ? 'Đã hoàn thành' : 'Đã hủy' }}
                 </span>
+                <button
+                    v-if="showRestore"
+                    class="rounded-lg bg-blue-500 px-3 py-1 text-xs text-white hover:bg-blue-600"
+                    @click="$emit('restore', detail.id)"
+                >
+                    Khôi phục
+                </button>
             </div>
         </div>
     </div>
@@ -74,9 +81,10 @@ interface BillDetail {
 const props = defineProps<{
     detail: BillDetail;
     showActions?: boolean;
+    showRestore?: boolean;
 }>();
 
-defineEmits(['updateStatus']);
+defineEmits(['updateStatus', 'restore']);
 
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval>;

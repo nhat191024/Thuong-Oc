@@ -3,7 +3,15 @@
         <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
                 <div class="grid h-full w-full grid-cols-3 grid-rows-3 gap-4 pl-4">
-                    <OrderCard v-for="detail in page" :key="detail.id" :detail="detail" :show-actions="false" class="h-full w-full" />
+                    <OrderCard
+                        v-for="detail in page"
+                        :key="detail.id"
+                        :detail="detail"
+                        :show-actions="false"
+                        :show-restore="true"
+                        class="h-full w-full"
+                        @restore="handleRestore"
+                    />
                 </div>
             </div>
             <div v-if="loading" class="carousel-item flex h-full w-full items-center justify-center">
@@ -27,11 +35,20 @@
             </template>
         </div>
     </div>
+
+    <ConfirmModal
+        v-model:isOpen="isConfirmModalOpen"
+        title="Xác nhận khôi phục"
+        message="Bạn có chắc chắn muốn khôi phục đơn này về danh sách chờ làm không?"
+        @confirm="submitRestore"
+    />
 </template>
 
 <script setup lang="ts">
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
+import ConfirmModal from '../../components/ConfirmModal.vue';
 import OrderCard from './OrderCard.vue';
 
 interface Food {
@@ -76,6 +93,8 @@ const loading = ref(false);
 const hasMore = ref(true);
 const carouselRef = ref<HTMLElement | null>(null);
 const currentPage = ref(0);
+const isConfirmModalOpen = ref(false);
+const itemToRestore = ref<number | null>(null);
 
 const pages = computed(() => {
     const items = historyDetails.value;
@@ -169,6 +188,39 @@ const scrollToPage = (index: number) => {
             behavior: 'smooth',
         });
     }
+};
+
+const handleRestore = (detailId: number) => {
+    itemToRestore.value = detailId;
+    isConfirmModalOpen.value = true;
+};
+
+const submitRestore = () => {
+    if (itemToRestore.value === null) return;
+
+    const detailId = itemToRestore.value;
+
+    // Optimistically update the UI
+    const detailIndex = historyDetails.value.findIndex((d) => d.id === detailId);
+    if (detailIndex !== -1) {
+        historyDetails.value.splice(detailIndex, 1);
+    }
+
+    router.post(
+        route('kitchen.bill-detail.update-status', { billDetail: detailId }),
+        {
+            status: 'waiting',
+        },
+        {
+            preserveScroll: true,
+            onError: (errors) => {
+                console.error('Error restoring order:', errors);
+                fetchHistory();
+            },
+        },
+    );
+
+    itemToRestore.value = null;
 };
 
 onMounted(() => {
