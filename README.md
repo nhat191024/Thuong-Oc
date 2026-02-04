@@ -18,7 +18,7 @@ A comprehensive restaurant management web application built with Laravel, Inerti
 - **User Permissions**: Role-based access control with Spatie Permission
 - **Voucher System**: Discount vouchers and promotion management
 - **Admin Panel**: Powerful Filament-based administration interface
-- **Real-time Updates**: Laravel Reverb for WebSocket connections
+- **Real-time Updates**: socket.io (Pusher compatible) for WebSocket connections
 - **Modern UI**: Built with Inertia.js (Laravel + Vue 3) and Tailwind CSS v4
 
 ## 🛠️ Tech Stack
@@ -28,7 +28,7 @@ A comprehensive restaurant management web application built with Laravel, Inerti
 - **Framework**: Laravel 12
 - **PHP**: 8.2+
 - **Authentication**: Laravel Fortify
-- **Real-time**: Laravel Reverb
+- **Real-time**: socket.io (Pusher compatible)
 - **Cache/Queue**: Redis (Predis)
 
 ### Frontend
@@ -118,30 +118,18 @@ A comprehensive restaurant management web application built with Laravel, Inerti
 
 ### Method 2: Docker Deployment
 
-1. **Ensure Docker network exists**
-
+1. **Environment configuration**
     ```bash
-    docker network create web-network
+    cp .env.example .env
     ```
 
 2. **Build and start containers**
-
     ```bash
     docker-compose up -d
     ```
 
-3. **Access the container and setup**
-
-    ```bash
-    docker exec -it thuong_oc bash
-    composer install
-    php artisan key:generate
-    php artisan migrate --seed
-    npm install && npm run build
-    ```
-
-4. **Access the application**
-    - Application: `http://localhost:10010`
+3. **Access the application**
+    - Application: `http://localhost:10011`
 
 ## 🏃 Development
 
@@ -169,7 +157,7 @@ php artisan queue:listen --tries=1
 # Start Vite dev server
 npm run dev
 
-# Start Reverb WebSocket server
+# Start WebSocket server (socket.io/pusher compatible)
 php artisan reverb:start
 ```
 
@@ -249,6 +237,7 @@ PAYOS_CLIENT_ID=your_client_id
 PAYOS_API_KEY=your_api_key
 PAYOS_CHECKSUM_KEY=your_checksum_key
 
+# WebSocket (socket.io/pusher)
 REVERB_APP_ID=your_app_id
 REVERB_APP_KEY=your_app_key
 REVERB_APP_SECRET=your_app_secret
