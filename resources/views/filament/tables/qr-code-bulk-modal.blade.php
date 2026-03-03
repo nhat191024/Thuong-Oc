@@ -29,10 +29,10 @@
         this.progress = 0;
 
         this.loadScripts(async () => {
-                // Inject a temporary style to neutralise Filament/Tailwind artifacts during capture
-                const tmpStyle = document.createElement('style');
-                tmpStyle.id = 'qr-capture-reset-bulk';
-                tmpStyle.textContent = `
+            // Inject a temporary style to neutralise Filament/Tailwind artifacts during capture
+            const tmpStyle = document.createElement('style');
+            tmpStyle.id = 'qr-capture-reset-bulk';
+            tmpStyle.textContent = `
                 .qr-print-card-bulk,
                 .qr-print-card-bulk * {
                     text-decoration: none !important;
@@ -52,58 +52,62 @@
                     border: none !important;
                 }
             `;
-                document.head.appendChild(tmpStyle);
+            document.head.appendChild(tmpStyle);
 
-                const zip = new JSZip();
-                const cards = document.querySelectorAll('.qr-print-card-bulk');
+            const zip = new JSZip();
+            const cards = document.querySelectorAll('.qr-print-card-bulk');
 
-                for (let i = 0; i < cards.length; i++) {
-                    const card = cards[i];
-                    const tableNumber = card.getAttribute('data-table');
+            for (let i = 0; i < cards.length; i++) {
+                const card = cards[i];
+                const tableNumber = card.getAttribute('data-table');
 
-                    // Show card momentarily for capture
-                    card.style.opacity = '1';
-                    card.style.zIndex = '1';
+                // Show card momentarily for capture
+                card.style.opacity = '1';
+                card.style.zIndex = '1';
 
-                    try {
-                        // Chờ một chút để trình duyệt kịp render
-                        await new Promise(resolve => setTimeout(resolve, 50));
+                try {
+                    // Chờ một chút để trình duyệt kịp render
+                    await new Promise(resolve => setTimeout(resolve, 50));
 
-                        const dataUrl = await domtoimage.toPng(card, {
-                            scale: 3,
-                            bgcolor: '#ffffff',
-                            width: card.offsetWidth,
-                            height: card.offsetHeight,
-                            style: {
-                                transform: 'scale(1)',
-                                transformOrigin: 'top left'
-                            }
-                        });
+                    const dataUrl = await domtoimage.toPng(card, {
+                        scale: 3,
+                        bgcolor: '#ffffff',
+                        width: card.offsetWidth,
+                        height: card.offsetHeight,
+                        style: {
+                            transform: 'scale(1)',
+                            transformOrigin: 'top left'
+                        }
+                    });
 
-                        // remove data:image/png;base64,
-                        const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-                        zip.file(`Ban_${tableNumber}.png`, base64Data, { base64: true });
-                    } catch (e) {
-                        console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, e);
-                    }
+                    // remove data:image/png;base64,
+                    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                    zip.file(`Ban_${tableNumber}.png`, base64Data, { base64: true });
+                } catch (e) {
+                    console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, e);
+                }
 
-                    // Hide card again
-                    card.style.opacity = '0';
-                    card.style.zIndex = '-1';
-                    if (document.getElementById('qr-capture-reset-bulk')) {
-                        document.head.removeChild(tmpStyle);
-                    }
+                // Hide card again
+                card.style.opacity = '0';
+                card.style.zIndex = '-1';
+                this.progress = i + 1;
+            }
 
-                    // Create download link for ZIP
-                    const link = document.createElement('a');
-                    link.download = 'QR_Ban_Zip.zip';
-                    link.href = URL.createObjectURL(content);
-                    link.click();
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+                if (document.getElementById('qr-capture-reset-bulk')) {
+                    document.head.removeChild(tmpStyle);
+                }
 
-                    this.downloading = false;
-                });
+                // Create download link for ZIP
+                const link = document.createElement('a');
+                link.download = 'QR_Ban_Zip.zip';
+                link.href = URL.createObjectURL(content);
+                link.click();
+
+                this.downloading = false;
+            });
         });
-}
+    }
 }">
 
     <div class="flex flex-col items-center justify-center gap-4 py-8">
