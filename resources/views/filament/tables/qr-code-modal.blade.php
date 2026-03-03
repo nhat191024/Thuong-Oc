@@ -57,6 +57,7 @@
                 #qr-print-card-{{ $tableNumber }} h3,
                 #qr-print-card-{{ $tableNumber }} span {
                     box-shadow: none !important;
+                    border: none !important;
                 }
             `;
             document.head.appendChild(tmpStyle);
