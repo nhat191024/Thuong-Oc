@@ -23,6 +23,8 @@ use Filament\Tables\Columns\TextColumn;
 
 use Filament\Tables\Filters\TrashedFilter;
 
+use Filament\Notifications\Notification;
+
 use App\Settings\AppSettings;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -96,7 +98,7 @@ class TablesTable
                         $records = $table->getLivewire()->getFilteredTableQuery()->get();
 
                         if ($records->isEmpty()) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title(__('Không có bàn nào để tải'))
                                 ->warning()
                                 ->send();
