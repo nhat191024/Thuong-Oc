@@ -15,12 +15,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg62-turbo-dev \
     libwebp-dev \
     libicu-dev \
+    libmagickwand-dev \
     supervisor \
     procps \
     curl \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install zip pdo_mysql gd bcmath intl pcntl exif opcache \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
