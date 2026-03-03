@@ -28,22 +28,24 @@
 
 <div class="flex flex-col items-center gap-4 py-2" x-data="{
     downloading: false,
-    loadHtml2Canvas(callback) {
-        if (window.html2canvas) { callback(); return; }
+    loadLib(callback) {
+        if (window.domtoimage) { callback(); return; }
         const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.src = 'https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js';
         s.onload = callback;
         document.head.appendChild(s);
     },
     downloadCard() {
         this.downloading = true;
-        this.loadHtml2Canvas(() => {
+        this.loadLib(() => {
             const card = document.getElementById('qr-print-card-{{ $tableNumber }}');
-            html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' }).then((canvas) => {
+            domtoimage.toPng(card, { scale: 3, bgcolor: '#ffffff' }).then((dataUrl) => {
                 const link = document.createElement('a');
                 link.download = 'QR-Ban-{{ $tableNumber }}.png';
-                link.href = canvas.toDataURL('image/png');
+                link.href = dataUrl;
                 link.click();
+                this.downloading = false;
+            }).catch(() => {
                 this.downloading = false;
             });
         });
