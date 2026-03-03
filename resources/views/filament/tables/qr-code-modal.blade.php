@@ -40,10 +40,25 @@
         this.loadLib(() => {
             const card = document.getElementById('qr-print-card-{{ $tableNumber }}');
 
-            // Inject a temporary style to neutralise Filament's trashed-record line-through
+            // Inject a temporary style to neutralise Filament/Tailwind artifacts during capture
             const tmpStyle = document.createElement('style');
             tmpStyle.id = 'qr-capture-reset';
-            tmpStyle.textContent = '#qr-print-card-{{ $tableNumber }}, #qr-print-card-{{ $tableNumber }} * { text-decoration: none !important; }';
+            tmpStyle.textContent = `
+                #qr-print-card-{{ $tableNumber }},
+                #qr-print-card-{{ $tableNumber }} * {
+                    text-decoration: none !important;
+                    outline: none !important;
+                    outline-offset: 0 !important;
+                    -webkit-text-decoration: none !important;
+                }
+                #qr-print-card-{{ $tableNumber }} p,
+                #qr-print-card-{{ $tableNumber }} h1,
+                #qr-print-card-{{ $tableNumber }} h2,
+                #qr-print-card-{{ $tableNumber }} h3,
+                #qr-print-card-{{ $tableNumber }} span {
+                    box-shadow: none !important;
+                }
+            `;
             document.head.appendChild(tmpStyle);
 
             domtoimage.toPng(card, {
