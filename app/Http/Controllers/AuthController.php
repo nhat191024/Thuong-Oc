@@ -93,7 +93,9 @@ class AuthController extends Controller
     public function login(AuthRequest $request)
     {
         $credentials = $request->only('username', 'password');
-        $remember = $request->boolean('remember');
+
+        // Luôn luôn ghi nhớ đăng nhập (hoặc theo checkbox nếu bạn muốn: $request->boolean('remember'))
+        $remember = true;
 
         if (!Auth::attempt($credentials, $remember)) {
             return back()->withErrors([
