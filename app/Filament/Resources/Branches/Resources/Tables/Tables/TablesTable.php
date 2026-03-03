@@ -23,6 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 
 use Filament\Tables\Filters\TrashedFilter;
 
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TablesTable
 {
@@ -37,7 +38,7 @@ class TablesTable
                     ->label(__('Số Bàn'))
                     ->searchable(),
                 TextColumn::make('is_active')
-                    ->formatStateUsing(fn($state) => $state?->label())
+                    ->formatStateUsing(fn ($state) => $state?->label())
                     ->label(__('Trạng Thái'))
                     ->badge()
                     ->searchable(),
@@ -62,9 +63,20 @@ class TablesTable
                     ->default('trashed'),
             ])
             ->recordActions([
+                Action::make('qr_code')
+                    ->label(__('Mã QR'))
+                    ->icon('heroicon-o-qr-code')
+                    ->modalHeading(fn (TableModel $record): string => __('Mã QR - Bàn :number', ['number' => $record->table_number]))
+                    ->modalContent(fn (TableModel $record) => view('filament.tables.qr-code-modal', [
+                        'qrCode' => base64_encode(QrCode::format('png')->size(300)->generate(route('customer-menu.index', ['tableId' => $record->id]))),
+                        'url' => route('customer-menu.index', ['tableId' => $record->id]),
+                        'tableNumber' => $record->table_number,
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel(__('Đóng')),
                 DeleteAction::make()
-                    ->disabled(fn(TableModel $record): bool => $record->is_active == TableActiveStatus::ACTIVE)
-                    ->tooltip(fn(TableModel $record): ?string => $record->is_active == TableActiveStatus::ACTIVE ? __('Không thể ẩn bàn đang hoạt động') : null),
+                    ->disabled(fn (TableModel $record): bool => $record->is_active == TableActiveStatus::ACTIVE)
+                    ->tooltip(fn (TableModel $record): ?string => $record->is_active == TableActiveStatus::ACTIVE ? __('Không thể ẩn bàn đang hoạt động') : null),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ])
