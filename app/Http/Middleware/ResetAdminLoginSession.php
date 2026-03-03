@@ -10,9 +10,12 @@ class ResetAdminLoginSession
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $isAdminEntry = $request->is('admin');
+        $isAdminLogin = $request->routeIs('filament.admin.auth.login');
+
         if (
             $request->isMethod('GET')
-            && $request->routeIs('filament.admin.auth.login')
+            && ($isAdminEntry || $isAdminLogin)
             && ! auth()->check()
         ) {
             $request->session()->invalidate();
