@@ -1,4 +1,197 @@
-<div x-data="qrBulkDownloader({{ count($records) }})">
+<div
+    x-data='{
+        downloading: false,
+        progress: 0,
+        failedTables: [],
+        total: {{ count($records) }},
+        captureRoot: null,
+        ensureScript(src, globalKey) {
+            if (window[globalKey]) {
+                return Promise.resolve();
+            }
+
+            const existing = document.querySelector(`script[data-lib="${globalKey}"]`);
+
+            if (existing) {
+                return new Promise((resolve, reject) => {
+                    existing.addEventListener("load", () => resolve(), { once: true });
+                    existing.addEventListener("error", () => reject(new Error(`Không thể tải ${globalKey}`)), { once: true });
+                });
+            }
+
+            return new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.src = src;
+                script.async = true;
+                script.dataset.lib = globalKey;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Không thể tải ${globalKey}`));
+                document.head.appendChild(script);
+            });
+        },
+        async loadScripts() {
+            await Promise.all([
+                this.ensureScript("https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js", "domtoimage"),
+                this.ensureScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "JSZip"),
+            ]);
+        },
+        sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        },
+        async preloadImages(container) {
+            const images = Array.from(container.querySelectorAll("img"));
+
+            await Promise.all(
+                images.map((img) => {
+                    if (img.complete && img.naturalWidth > 0) {
+                        return Promise.resolve();
+                    }
+
+                    return new Promise((resolve) => {
+                        img.addEventListener("load", () => resolve(), { once: true });
+                        img.addEventListener("error", () => resolve(), { once: true });
+                    });
+                }),
+            );
+        },
+        getCaptureRoot() {
+            if (this.captureRoot && document.body.contains(this.captureRoot)) {
+                return this.captureRoot;
+            }
+
+            this.captureRoot = document.createElement("div");
+            this.captureRoot.id = "qr-capture-root";
+            this.captureRoot.style.position = "fixed";
+            this.captureRoot.style.left = "-10000px";
+            this.captureRoot.style.top = "0";
+            this.captureRoot.style.pointerEvents = "none";
+            this.captureRoot.style.zIndex = "-9999";
+            this.captureRoot.style.background = "#ffffff";
+            document.body.appendChild(this.captureRoot);
+
+            return this.captureRoot;
+        },
+        async captureCard(card) {
+            const root = this.getCaptureRoot();
+            const clone = card.cloneNode(true);
+            clone.style.display = "block";
+            clone.style.visibility = "visible";
+            root.appendChild(clone);
+
+            try {
+                await this.sleep(80);
+                await this.preloadImages(clone);
+                await this.sleep(40);
+
+                const width = clone.scrollWidth || clone.offsetWidth;
+                const height = clone.scrollHeight || clone.offsetHeight;
+
+                return await window.domtoimage.toPng(clone, {
+                    scale: 3,
+                    cacheBust: true,
+                    bgcolor: "#ffffff",
+                    width,
+                    height,
+                });
+            } finally {
+                root.removeChild(clone);
+            }
+        },
+        sanitizeFileName(fileName) {
+            return String(fileName).replace(/[\\/:*?"<>|]/g, "_");
+        },
+        cleanupCaptureRoot() {
+            if (this.captureRoot && document.body.contains(this.captureRoot)) {
+                this.captureRoot.remove();
+            }
+
+            this.captureRoot = null;
+        },
+        async downloadAll() {
+            if (this.downloading) {
+                return;
+            }
+
+            this.downloading = true;
+            this.progress = 0;
+            this.failedTables = [];
+
+            if (this.total === 0) {
+                this.downloading = false;
+
+                return;
+            }
+
+            const tmpStyle = document.createElement("style");
+            tmpStyle.id = "qr-capture-reset-bulk";
+            tmpStyle.textContent = `
+                .qr-print-card-bulk,
+                .qr-print-card-bulk * {
+                    text-decoration: none !important;
+                    outline: none !important;
+                    outline-offset: 0 !important;
+                    -webkit-text-decoration: none !important;
+                }
+                .qr-print-card-bulk *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
+                    border: none !important;
+                }
+                .qr-print-card-bulk p,
+                .qr-print-card-bulk h1,
+                .qr-print-card-bulk h2,
+                .qr-print-card-bulk h3,
+                .qr-print-card-bulk span {
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+            `;
+            document.head.appendChild(tmpStyle);
+
+            try {
+                await this.loadScripts();
+
+                const zip = new window.JSZip();
+                const cards = Array.from(document.querySelectorAll(".qr-print-card-bulk"));
+
+                for (let i = 0; i < cards.length; i++) {
+                    const card = cards[i];
+                    const tableNumber = card.getAttribute("data-table") ?? `${i + 1}`;
+
+                    try {
+                        const dataUrl = await this.captureCard(card);
+                        const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+                        const fileName = this.sanitizeFileName(`Ban_${tableNumber}.png`);
+                        zip.file(fileName, base64Data, { base64: true });
+                    } catch (error) {
+                        console.error("Lỗi khi tạo ảnh cho bàn " + tableNumber, error);
+                        this.failedTables.push(tableNumber);
+                    }
+
+                    this.progress = i + 1;
+                    await this.sleep(20);
+                }
+
+                if (Object.keys(zip.files).length > 0) {
+                    const content = await zip.generateAsync({ type: "blob" });
+                    const link = document.createElement("a");
+                    const objectUrl = URL.createObjectURL(content);
+                    link.download = "QR_Ban_Zip.zip";
+                    link.href = objectUrl;
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách mã QR", error);
+                alert("Không thể tạo tệp ZIP lúc này. Vui lòng thử lại hoặc kiểm tra kết nối mạng/CDN.");
+            } finally {
+                if (document.getElementById("qr-capture-reset-bulk")) {
+                    document.head.removeChild(tmpStyle);
+                }
+
+                this.cleanupCaptureRoot();
+                this.downloading = false;
+            }
+        },
+    }'>
 
     <div class="flex flex-col items-center justify-center gap-4 py-8">
         <div class="bg-primary-50 mb-2 rounded-full p-4">
@@ -91,201 +284,3 @@
         @endforeach
     </div>
 </div>
-
-<script>
-    window.qrBulkDownloader = window.qrBulkDownloader || function (total) {
-        return {
-            downloading: false,
-            progress: 0,
-            failedTables: [],
-            total,
-            captureRoot: null,
-            ensureScript(src, globalKey) {
-                if (window[globalKey]) {
-                    return Promise.resolve();
-                }
-
-                const existing = document.querySelector(`script[data-lib="${globalKey}"]`);
-
-                if (existing) {
-                    return new Promise((resolve, reject) => {
-                        existing.addEventListener('load', () => resolve(), { once: true });
-                        existing.addEventListener('error', () => reject(new Error(`Không thể tải ${globalKey}`)), { once: true });
-                    });
-                }
-
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.async = true;
-                    script.dataset.lib = globalKey;
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error(`Không thể tải ${globalKey}`));
-                    document.head.appendChild(script);
-                });
-            },
-            async loadScripts() {
-                await Promise.all([
-                    this.ensureScript('https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js', 'domtoimage'),
-                    this.ensureScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'JSZip'),
-                ]);
-            },
-            sleep(ms) {
-                return new Promise((resolve) => setTimeout(resolve, ms));
-            },
-            async preloadImages(container) {
-                const images = Array.from(container.querySelectorAll('img'));
-
-                await Promise.all(
-                    images.map((img) => {
-                        if (img.complete && img.naturalWidth > 0) {
-                            return Promise.resolve();
-                        }
-
-                        return new Promise((resolve) => {
-                            img.addEventListener('load', () => resolve(), { once: true });
-                            img.addEventListener('error', () => resolve(), { once: true });
-                        });
-                    }),
-                );
-            },
-            getCaptureRoot() {
-                if (this.captureRoot && document.body.contains(this.captureRoot)) {
-                    return this.captureRoot;
-                }
-
-                this.captureRoot = document.createElement('div');
-                this.captureRoot.id = 'qr-capture-root';
-                this.captureRoot.style.position = 'fixed';
-                this.captureRoot.style.left = '-10000px';
-                this.captureRoot.style.top = '0';
-                this.captureRoot.style.pointerEvents = 'none';
-                this.captureRoot.style.zIndex = '-9999';
-                this.captureRoot.style.background = '#ffffff';
-                document.body.appendChild(this.captureRoot);
-
-                return this.captureRoot;
-            },
-            async captureCard(card) {
-                const root = this.getCaptureRoot();
-                const clone = card.cloneNode(true);
-                clone.style.display = 'block';
-                clone.style.visibility = 'visible';
-                root.appendChild(clone);
-
-                try {
-                    await this.sleep(80);
-                    await this.preloadImages(clone);
-                    await this.sleep(40);
-
-                    const width = clone.scrollWidth || clone.offsetWidth;
-                    const height = clone.scrollHeight || clone.offsetHeight;
-
-                    return await window.domtoimage.toPng(clone, {
-                        scale: 3,
-                        cacheBust: true,
-                        bgcolor: '#ffffff',
-                        width,
-                        height,
-                    });
-                } finally {
-                    root.removeChild(clone);
-                }
-            },
-            sanitizeFileName(fileName) {
-                return String(fileName).replace(/[\\/:*?"<>|]/g, '_');
-            },
-            cleanupCaptureRoot() {
-                if (this.captureRoot && document.body.contains(this.captureRoot)) {
-                    this.captureRoot.remove();
-                }
-
-                this.captureRoot = null;
-            },
-            async downloadAll() {
-                if (this.downloading) {
-                    return;
-                }
-
-                this.downloading = true;
-                this.progress = 0;
-                this.failedTables = [];
-
-                if (this.total === 0) {
-                    this.downloading = false;
-
-                    return;
-                }
-
-                const tmpStyle = document.createElement('style');
-                tmpStyle.id = 'qr-capture-reset-bulk';
-                tmpStyle.textContent = `
-                    .qr-print-card-bulk,
-                    .qr-print-card-bulk * {
-                        text-decoration: none !important;
-                        outline: none !important;
-                        outline-offset: 0 !important;
-                        -webkit-text-decoration: none !important;
-                    }
-                    .qr-print-card-bulk *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
-                        border: none !important;
-                    }
-                    .qr-print-card-bulk p,
-                    .qr-print-card-bulk h1,
-                    .qr-print-card-bulk h2,
-                    .qr-print-card-bulk h3,
-                    .qr-print-card-bulk span {
-                        box-shadow: none !important;
-                        border: none !important;
-                    }
-                `;
-                document.head.appendChild(tmpStyle);
-
-                try {
-                    await this.loadScripts();
-
-                    const zip = new window.JSZip();
-                    const cards = Array.from(document.querySelectorAll('.qr-print-card-bulk'));
-
-                    for (let i = 0; i < cards.length; i++) {
-                        const card = cards[i];
-                        const tableNumber = card.getAttribute('data-table') ?? `${i + 1}`;
-
-                        try {
-                            const dataUrl = await this.captureCard(card);
-                            const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-                            const fileName = this.sanitizeFileName(`Ban_${tableNumber}.png`);
-                            zip.file(fileName, base64Data, { base64: true });
-                        } catch (error) {
-                            console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, error);
-                            this.failedTables.push(tableNumber);
-                        }
-
-                        this.progress = i + 1;
-                        await this.sleep(20);
-                    }
-
-                    if (Object.keys(zip.files).length > 0) {
-                        const content = await zip.generateAsync({ type: 'blob' });
-                        const link = document.createElement('a');
-                        const objectUrl = URL.createObjectURL(content);
-                        link.download = 'QR_Ban_Zip.zip';
-                        link.href = objectUrl;
-                        link.click();
-                        setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
-                    }
-                } catch (error) {
-                    console.error('Lỗi khi tải danh sách mã QR', error);
-                    alert('Không thể tạo tệp ZIP lúc này. Vui lòng thử lại hoặc kiểm tra kết nối mạng/CDN.');
-                } finally {
-                    if (document.getElementById('qr-capture-reset-bulk')) {
-                        document.head.removeChild(tmpStyle);
-                    }
-
-                    this.cleanupCaptureRoot();
-                    this.downloading = false;
-                }
-            },
-        };
-    };
-</script>
