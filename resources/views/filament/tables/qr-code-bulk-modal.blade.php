@@ -6,11 +6,12 @@
         let loaded = 0;
         const checkDone = () => { if (++loaded === 2) callback(); };
 
-        if (window.html2canvas) {
+        if (window.domtoimage) {
             checkDone();
         } else {
             const s1 = document.createElement('script');
-            s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            // Sử dụng dom-to-image-more là bản fork fix rất nhiều lỗi của dom-to-image gốc
+            s1.src = 'https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js';
             s1.onload = checkDone;
             document.head.appendChild(s1);
         }
@@ -61,33 +62,33 @@
                 const card = cards[i];
                 const tableNumber = card.getAttribute('data-table');
 
-                // Show card momentarily for capture
-                card.style.opacity = '1';
-                card.style.zIndex = '1';
+                // Bật hiển thị cho card hiện tại
+                card.style.display = 'block';
 
                 try {
-                    // Tăng thêm thời gian chờ xíu để trình duyệt kịp tính toán xong layout
+                    // Chờ một chút để trình duyệt kịp tính toán xong layout
                     await new Promise(resolve => setTimeout(resolve, 150));
 
-                    const canvas = await html2canvas(card, {
+                    const dataUrl = await domtoimage.toPng(card, {
                         scale: 3,
-                        backgroundColor: '#ffffff',
-                        useCORS: true,
-                        allowTaint: true,
-                        logging: false
+                        bgcolor: '#ffffff',
+                        width: card.offsetWidth,
+                        height: card.offsetHeight,
+                        style: {
+                            transform: 'scale(1)',
+                            transformOrigin: 'top left'
+                        }
                     });
 
                     // Remove data:image/png;base64,
-                    const dataUrl = canvas.toDataURL('image/png');
                     const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
                     zip.file(`Ban_${tableNumber}.png`, base64Data, { base64: true });
                 } catch (e) {
                     console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, e);
                 }
 
-                // Hide card again
-                card.style.opacity = '0';
-                card.style.zIndex = '-1';
+                // Ẩn lại card sau khi chụp xong
+                card.style.display = 'none';
                 this.progress = i + 1;
             }
 
@@ -142,8 +143,8 @@
     </div>
 
     {{-- Cards mapping --}}
-    {{-- Đặt khung ở vị trí cố định trên màn hình (nhưng bị mất nền và không click được) để đảm bảo thẻ ở trong Viewport, tránh lỗi dom-to-image chụp ảnh trắng --}}
-    <div style="position: fixed; left: 0; top: 0; pointer-events: none; z-index: -9999; opacity: 0.01;">
+    {{-- Đặt div cố định để chứa code, sử dụng visibility hidden thay vì opacity để nó có thể tính toán height/width bình thường, nhưng không hiển thị chướng mắt --}}
+    <div style="position: fixed; left: 0; top: 0; pointer-events: none; z-index: -9999; visibility: hidden;">
         @foreach ($records as $index => $record)
             @php
                 $tableNumber = $record->table_number;
@@ -151,7 +152,7 @@
                 $url = route('customer-menu.index', ['tableId' => $record->id]);
                 $qrCode = base64_encode(SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(400)->generate($url));
             @endphp
-            <div class="qr-print-card-bulk flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700" data-table="{{ $tableNumber }}" style="position: absolute; top: 0; left: 0; opacity: 0; z-index: -1;">
+            <div class="qr-print-card-bulk flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700" data-table="{{ $tableNumber }}" style="display: none;">
                 {{-- Header --}}
                 <div class="bg-primary-600 flex w-full flex-col items-center gap-2 px-5 py-4">
                     @if ($appLogo)
