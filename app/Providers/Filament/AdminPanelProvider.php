@@ -9,9 +9,6 @@ use Filament\Pages\Dashboard;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
-
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -25,13 +22,12 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-use Illuminate\Support\Facades\Gate;
-
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
 
 use App\Settings\AppSettings;
 use App\Filament\Pages\Login;
 use App\Enums\FilamentNavigationGroup;
+use App\Http\Middleware\ResetAdminLoginSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -81,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                ResetAdminLoginSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
