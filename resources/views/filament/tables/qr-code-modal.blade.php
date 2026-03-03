@@ -26,7 +26,29 @@
     }
 </style>
 
-<div class="flex flex-col items-center gap-4 py-2">
+<div class="flex flex-col items-center gap-4 py-2" x-data="{
+    downloading: false,
+    loadHtml2Canvas(callback) {
+        if (window.html2canvas) { callback(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = callback;
+        document.head.appendChild(s);
+    },
+    downloadCard() {
+        this.downloading = true;
+        this.loadHtml2Canvas(() => {
+            const card = document.getElementById('qr-print-card-{{ $tableNumber }}');
+            html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' }).then((canvas) => {
+                const link = document.createElement('a');
+                link.download = 'QR-Ban-{{ $tableNumber }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                this.downloading = false;
+            });
+        });
+    },
+}">
 
     {{-- Print card --}}
     <div id="qr-print-card-{{ $tableNumber }}" class="w-full max-w-xs overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700">
@@ -76,12 +98,15 @@
 
     {{-- Action buttons --}}
     <div class="no-print flex w-full max-w-xs items-center gap-3">
-        <button id="btn-download-card-{{ $tableNumber }}" class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-            onclick="downloadQrCard('qr-print-card-{{ $tableNumber }}', 'QR-Ban-{{ $tableNumber }}.png', this)">
-            <svg class="h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-60" :disabled="downloading" @click="downloadCard()">
+            <svg class="h-4 w-4 text-gray-500" x-show="!downloading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            {{ __('Tải Ảnh') }}
+            <svg class="h-4 w-4 animate-spin text-gray-400" x-show="downloading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span x-text="downloading ? '{{ __('Đang tải...') }}' : '{{ __('Tải Ảnh') }}'"></span>
         </button>
         <button class="bg-primary-600 hover:bg-primary-700 flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm transition" onclick="window.print()">
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -90,43 +115,5 @@
             {{ __('In') }}
         </button>
     </div>
-
-    @script
-        <script>
-            function loadHtml2Canvas(callback) {
-                if (window.html2canvas) {
-                    callback();
-                    return;
-                }
-                var s = document.createElement('script');
-                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                s.onload = callback;
-                document.head.appendChild(s);
-            }
-
-            window.downloadQrCard = function(cardId, filename, btn) {
-                var originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML =
-                    '<svg class="h-4 w-4 animate-spin text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>&nbsp;{{ __('Đang tải...') }}';
-
-                loadHtml2Canvas(function() {
-                    var card = document.getElementById(cardId);
-                    html2canvas(card, {
-                        scale: 3,
-                        useCORS: true,
-                        backgroundColor: '#ffffff'
-                    }).then(function(canvas) {
-                        var link = document.createElement('a');
-                        link.download = filename;
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    });
-                });
-            };
-        </script>
-    @endscript
 
 </div>
