@@ -39,13 +39,27 @@
         this.downloading = true;
         this.loadLib(() => {
             const card = document.getElementById('qr-print-card-{{ $tableNumber }}');
-            domtoimage.toPng(card, { scale: 3, bgcolor: '#ffffff' }).then((dataUrl) => {
+
+            // Inject a temporary style to neutralise Filament's trashed-record line-through
+            const tmpStyle = document.createElement('style');
+            tmpStyle.id = 'qr-capture-reset';
+            tmpStyle.textContent = '#qr-print-card-{{ $tableNumber }}, #qr-print-card-{{ $tableNumber }} * { text-decoration: none !important; }';
+            document.head.appendChild(tmpStyle);
+
+            domtoimage.toPng(card, {
+                scale: 3,
+                bgcolor: '#ffffff',
+                width: card.offsetWidth,
+                height: card.offsetHeight,
+            }).then((dataUrl) => {
+                document.head.removeChild(tmpStyle);
                 const link = document.createElement('a');
                 link.download = 'QR-Ban-{{ $tableNumber }}.png';
                 link.href = dataUrl;
                 link.click();
                 this.downloading = false;
             }).catch(() => {
+                document.head.removeChild(tmpStyle);
                 this.downloading = false;
             });
         });
