@@ -1,0 +1,190 @@
+<div x-data="{
+    downloading: false,
+    progress: 0,
+    total: {{ count($records) }},
+    loadScripts(callback) {
+        let loaded = 0;
+        const checkDone = () => { if (++loaded === 2) callback(); };
+
+        if (window.domtoimage) {
+            checkDone();
+        } else {
+            const s1 = document.createElement('script');
+            s1.src = 'https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js';
+            s1.onload = checkDone;
+            document.head.appendChild(s1);
+        }
+
+        if (window.JSZip) {
+            checkDone();
+        } else {
+            const s2 = document.createElement('script');
+            s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            s2.onload = checkDone;
+            document.head.appendChild(s2);
+        }
+    },
+    async downloadAll() {
+        this.downloading = true;
+        this.progress = 0;
+
+        this.loadScripts(async () => {
+            // Inject a temporary style to neutralise Filament/Tailwind artifacts during capture
+            const tmpStyle = document.createElement('style');
+            tmpStyle.id = 'qr-capture-reset-bulk';
+            tmpStyle.textContent = `
+                .qr-print-card-bulk,
+                .qr-print-card-bulk * {
+                    text-decoration: none !important;
+                    outline: none !important;
+                    outline-offset: 0 !important;
+                    -webkit-text-decoration: none !important;
+                }
+                .qr-print-card-bulk *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
+                    border: none !important;
+                }
+                .qr-print-card-bulk p,
+                .qr-print-card-bulk h1,
+                .qr-print-card-bulk h2,
+                .qr-print-card-bulk h3,
+                .qr-print-card-bulk span {
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+            `;
+            document.head.appendChild(tmpStyle);
+
+            const zip = new JSZip();
+            const cards = document.querySelectorAll('.qr-print-card-bulk');
+
+            for (let i = 0; i < cards.length; i++) {
+                const card = cards[i];
+                const tableNumber = card.getAttribute('data-table');
+
+                try {
+                    const dataUrl = await domtoimage.toPng(card, {
+                        scale: 3,
+                        bgcolor: '#ffffff',
+                        width: card.offsetWidth,
+                        height: card.offsetHeight,
+                        style: {
+                            transform: 'scale(1)',
+                            transformOrigin: 'top left'
+                        }
+                    });
+
+                    // remove data:image/png;base64,
+                    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                    zip.file(`Ban_${tableNumber}.png`, base64Data, {base64: true});
+                } catch (e) {
+                    console.error('Lỗi khi mạo ảnh cho bàn ' + tableNumber, e);
+                }
+                this.progress = i + 1;
+            }
+
+            zip.generateAsync({type:'blob'}).then((content) => {
+                if (document.getElementById('qr-capture-reset-bulk')) {
+                    document.head.removeChild(tmpStyle);
+                }
+
+                // Create download link for ZIP
+                const link = document.createElement('a');
+                link.download = 'QR_Ban_Zip.zip';
+                link.href = URL.createObjectURL(content);
+                link.click();
+
+                this.downloading = false;
+            });
+        });
+    }
+}">
+
+    <div class="flex flex-col items-center justify-center gap-4 py-8">
+        <div class="bg-primary-50 rounded-full p-4 mb-2">
+            <svg class="w-8 h-8 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+            </svg>
+        </div>
+
+        <h2 class="text-xl font-bold text-center">{{ __('Tải xuống các mã QR đã phối') }}</h2>
+        <p class="text-gray-500 text-center text-sm mb-4">
+            {{ __('Số lượng mã QR sẽ tạo:') }} <span class="font-bold text-black border border-gray-200 px-2 py-0.5 rounded-md dark:text-white" x-text="total"></span>
+        </p>
+
+        <div x-show="downloading" class="w-full max-w-xs transition-all duration-300">
+            <div class="mb-1 flex justify-between text-xs font-semibold">
+                <span>{{ __('Đang xử lý...') }}</span>
+                <span x-text="`${progress} / ${total}`"></span>
+            </div>
+            <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div class="bg-primary-600 h-full rounded-full transition-all duration-300 ease-out" :style="`width: ${(progress / total) * 100}%`"></div>
+            </div>
+            <p class="mt-4 text-center text-xs text-orange-500 font-medium">⚠️ {{ __('Vui lòng để yên cửa sổ này để quá trình không bị gián đoạn') }}</p>
+        </div>
+
+        <div x-show="!downloading" class="mt-2 w-full max-w-xs">
+            <button class="bg-primary-600 hover:bg-primary-700 flex w-full items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all active:scale-95" @click="downloadAll()">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                {{ __('Bắt đầu tạo & Tải tệp ZIP') }}
+            </button>
+        </div>
+    </div>
+
+    {{-- Cards mapping --}}
+    {{-- We place them statically on screen but behind viewport using translate, because display: none or opacity 0 sometimes causes canvas bugs in dom-to-image on certain browsers --}}
+    <div style="position: absolute; left: -9999px; top: -9999px; pointer-events: none; z-index: -999; display: flex; flex-direction: column; gap: 20px;">
+        @foreach($records as $index => $record)
+            @php
+                $tableNumber = $record->table_number;
+                $branchName = $record->branch->name ?? null;
+                $url = route('customer-menu.index', ['tableId' => $record->id]);
+                $qrCode = base64_encode(SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(400)->generate($url));
+            @endphp
+            <div data-table="{{ $tableNumber }}" class="qr-print-card-bulk flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700">
+                {{-- Header --}}
+                <div class="bg-primary-600 flex flex-col items-center gap-2 px-5 py-4 w-full">
+                    @if ($appLogo)
+                        <img class="h-14 w-14 rounded-full border-2 border-white/50 object-cover shadow" src="{{ $appLogo }}" alt="Logo" />
+                    @else
+                        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white/20">
+                            <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M7 13L5.4 5M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z" />
+                            </svg>
+                        </div>
+                    @endif
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold leading-tight text-white">{{ $appName }}</h2>
+                        @if ($branchName)
+                            <p class="mt-0.5 text-xs text-white/75">{{ $branchName }}</p>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- QR Code area --}}
+                <div class="flex flex-col items-center gap-3 bg-white px-6 py-5 w-full">
+                    <div class="border-primary-100 rounded-xl border-4 bg-white p-1 shadow-inner">
+                        <img class="h-52 w-52 max-w-none" src="data:image/png;base64,{{ $qrCode }}" alt="{{ __('Mã QR Bàn :number', ['number' => $tableNumber]) }}" />
+                    </div>
+
+                    {{-- Table number badge --}}
+                    <div class="bg-primary-50 border-primary-200 w-full rounded-xl border px-6 py-2 text-center">
+                        <p class="text-primary-500 text-xs font-medium uppercase tracking-widest">{{ __('Số Bàn') }}</p>
+                        <p class="text-primary-700 text-4xl font-extrabold leading-tight">{{ $tableNumber }}</p>
+                    </div>
+
+                    <p class="text-center text-xs text-gray-400">{{ __('Quét mã để xem thực đơn & gọi món') }}</p>
+
+                    {{-- URL small --}}
+                    <p class="break-all text-center text-[10px] leading-tight text-gray-300 w-full">{{ $url }}</p>
+                </div>
+
+                {{-- Footer --}}
+                <div class="border-t border-gray-100 bg-gray-50 px-5 py-2 text-center w-full">
+                    <p class="text-[10px] text-gray-400">{{ __('Cảm ơn quý khách!') }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
