@@ -6,11 +6,11 @@
         let loaded = 0;
         const checkDone = () => { if (++loaded === 2) callback(); };
 
-        if (window.domtoimage) {
+        if (window.html2canvas) {
             checkDone();
         } else {
             const s1 = document.createElement('script');
-            s1.src = 'https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js';
+            s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
             s1.onload = checkDone;
             document.head.appendChild(s1);
         }
@@ -66,21 +66,19 @@
                 card.style.zIndex = '1';
 
                 try {
-                    // Chờ một chút để trình duyệt kịp render
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    // Tăng thêm thời gian chờ xíu để trình duyệt kịp tính toán xong layout
+                    await new Promise(resolve => setTimeout(resolve, 150));
 
-                    const dataUrl = await domtoimage.toPng(card, {
+                    const canvas = await html2canvas(card, {
                         scale: 3,
-                        bgcolor: '#ffffff',
-                        width: card.offsetWidth,
-                        height: card.offsetHeight,
-                        style: {
-                            transform: 'scale(1)',
-                            transformOrigin: 'top left'
-                        }
+                        backgroundColor: '#ffffff',
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
                     });
 
-                    // remove data:image/png;base64,
+                    // Remove data:image/png;base64,
+                    const dataUrl = canvas.toDataURL('image/png');
                     const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
                     zip.file(`Ban_${tableNumber}.png`, base64Data, { base64: true });
                 } catch (e) {
