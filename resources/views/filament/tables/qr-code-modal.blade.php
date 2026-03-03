@@ -51,6 +51,9 @@
                     outline-offset: 0 !important;
                     -webkit-text-decoration: none !important;
                 }
+                #qr-print-card-{{ $tableNumber }} *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
+                    border: none !important;
+                }
                 #qr-print-card-{{ $tableNumber }} p,
                 #qr-print-card-{{ $tableNumber }} h1,
                 #qr-print-card-{{ $tableNumber }} h2,
