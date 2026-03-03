@@ -86,8 +86,63 @@ class TablesTable
                 ForceDeleteAction::make(),
             ])
             ->toolbarActions([
+                //
+            ])
+            ->headerActions([
+                Action::make('download_all_qrs')
+                    ->label(__('Tải tất cả mã QR'))
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function (Table $table) {
+                        $records = $table->getLivewire()->getFilteredTableQuery()->get();
+
+                        if ($records->isEmpty()) {
+                            \Filament\Notifications\Notification::make()
+                                ->title(__('Không có bàn nào để tải'))
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        $zipFileName = 'qrcodes_' . time() . '.zip';
+                        $zipPath = storage_path('app/' . $zipFileName);
+                        $zip = new \ZipArchive();
+
+                        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+                            foreach ($records as $record) {
+                                $qrContent = QrCode::format('png')->size(400)->generate(route('customer-menu.index', ['tableId' => $record->id]));
+                                $fileName = 'Ban_' . $record->table_number . '.png';
+                                $zip->addFromString($fileName, $qrContent);
+                            }
+                            $zip->close();
+                        }
+
+                        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+                    }),
+            ])
+            ->toolbarActions([
                 BulkActionGroup::make([
-                    //
+                    Action::make('download_qrs')
+                        ->label(__('Tải mã QR các bàn đã chọn'))
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $zipFileName = 'qrcodes_selected_' . time() . '.zip';
+                            $zipPath = storage_path('app/' . $zipFileName);
+                            $zip = new \ZipArchive();
+
+                            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+                                foreach ($records as $record) {
+                                    $qrContent = QrCode::format('png')->size(400)->generate(route('customer-menu.index', ['tableId' => $record->id]));
+                                    $fileName = 'Ban_' . $record->table_number . '.png';
+                                    $zip->addFromString($fileName, $qrContent);
+                                }
+                                $zip->close();
+                            }
+
+                            return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+                        }),
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('table_number', 'asc');
