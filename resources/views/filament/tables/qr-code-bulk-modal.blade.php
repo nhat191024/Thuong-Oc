@@ -1,111 +1,191 @@
 <div x-data="{
     downloading: false,
     progress: 0,
+    failedTables: [],
     total: {{ count($records) }},
-    loadScripts(callback) {
-        let loaded = 0;
-        const checkDone = () => { if (++loaded === 2) callback(); };
-
-        if (window.domtoimage) {
-            checkDone();
-        } else {
-            const s1 = document.createElement('script');
-            // Sử dụng dom-to-image-more là bản fork fix rất nhiều lỗi của dom-to-image gốc
-            s1.src = 'https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js';
-            s1.onload = checkDone;
-            document.head.appendChild(s1);
+    captureRoot: null,
+    ensureScript(src, globalKey) {
+        if (window[globalKey]) {
+            return Promise.resolve();
         }
 
-        if (window.JSZip) {
-            checkDone();
-        } else {
-            const s2 = document.createElement('script');
-            s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-            s2.onload = checkDone;
-            document.head.appendChild(s2);
+        const existing = document.querySelector(`script[data-lib=\"${globalKey}\"]`);
+
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                existing.addEventListener('error', () => reject(new Error(`Không thể tải ${globalKey}`)), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.dataset.lib = globalKey;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`Không thể tải ${globalKey}`));
+            document.head.appendChild(script);
+        });
+    },
+    async loadScripts() {
+        await Promise.all([
+            this.ensureScript('https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js', 'domtoimage'),
+            this.ensureScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'JSZip'),
+        ]);
+    },
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    async preloadImages(container) {
+        const images = Array.from(container.querySelectorAll('img'));
+
+        await Promise.all(
+            images.map((img) => {
+                if (img.complete && img.naturalWidth > 0) {
+                    return Promise.resolve();
+                }
+
+                return new Promise((resolve) => {
+                    img.addEventListener('load', () => resolve(), { once: true });
+                    img.addEventListener('error', () => resolve(), { once: true });
+                });
+            })
+        );
+    },
+    getCaptureRoot() {
+        if (this.captureRoot && document.body.contains(this.captureRoot)) {
+            return this.captureRoot;
+        }
+
+        this.captureRoot = document.createElement('div');
+        this.captureRoot.id = 'qr-capture-root';
+        this.captureRoot.style.position = 'fixed';
+        this.captureRoot.style.left = '-10000px';
+        this.captureRoot.style.top = '0';
+        this.captureRoot.style.pointerEvents = 'none';
+        this.captureRoot.style.zIndex = '-9999';
+        this.captureRoot.style.background = '#ffffff';
+        document.body.appendChild(this.captureRoot);
+
+        return this.captureRoot;
+    },
+    async captureCard(card) {
+        const root = this.getCaptureRoot();
+        const clone = card.cloneNode(true);
+        clone.style.display = 'block';
+        clone.style.visibility = 'visible';
+        root.appendChild(clone);
+
+        try {
+            await this.sleep(80);
+            await this.preloadImages(clone);
+            await this.sleep(40);
+
+            const width = clone.scrollWidth || clone.offsetWidth;
+            const height = clone.scrollHeight || clone.offsetHeight;
+
+            return await window.domtoimage.toPng(clone, {
+                scale: 3,
+                cacheBust: true,
+                bgcolor: '#ffffff',
+                width,
+                height,
+            });
+        } finally {
+            root.removeChild(clone);
         }
     },
+    sanitizeFileName(fileName) {
+        return String(fileName).replace(/[\\/:*?\"<>|]/g, '_');
+    },
+    cleanupCaptureRoot() {
+        if (this.captureRoot && document.body.contains(this.captureRoot)) {
+            this.captureRoot.remove();
+        }
+
+        this.captureRoot = null;
+    },
     async downloadAll() {
+        if (this.downloading) {
+            return;
+        }
+
         this.downloading = true;
         this.progress = 0;
+        this.failedTables = [];
 
-        this.loadScripts(async () => {
-            // Inject a temporary style to neutralise Filament/Tailwind artifacts during capture
-            const tmpStyle = document.createElement('style');
-            tmpStyle.id = 'qr-capture-reset-bulk';
-            tmpStyle.textContent = `
-                .qr-print-card-bulk,
-                .qr-print-card-bulk * {
-                    text-decoration: none !important;
-                    outline: none !important;
-                    outline-offset: 0 !important;
-                    -webkit-text-decoration: none !important;
-                }
-                .qr-print-card-bulk *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
-                    border: none !important;
-                }
-                .qr-print-card-bulk p,
-                .qr-print-card-bulk h1,
-                .qr-print-card-bulk h2,
-                .qr-print-card-bulk h3,
-                .qr-print-card-bulk span {
-                    box-shadow: none !important;
-                    border: none !important;
-                }
-            `;
-            document.head.appendChild(tmpStyle);
+        if (this.total === 0) {
+            this.downloading = false;
 
-            const zip = new JSZip();
-            const cards = document.querySelectorAll('.qr-print-card-bulk');
+            return;
+        }
+
+        const tmpStyle = document.createElement('style');
+        tmpStyle.id = 'qr-capture-reset-bulk';
+        tmpStyle.textContent = `
+            .qr-print-card-bulk,
+            .qr-print-card-bulk * {
+                text-decoration: none !important;
+                outline: none !important;
+                outline-offset: 0 !important;
+                -webkit-text-decoration: none !important;
+            }
+            .qr-print-card-bulk *:not(.border):not(.border-4):not(.border-t):not(.border-2) {
+                border: none !important;
+            }
+            .qr-print-card-bulk p,
+            .qr-print-card-bulk h1,
+            .qr-print-card-bulk h2,
+            .qr-print-card-bulk h3,
+            .qr-print-card-bulk span {
+                box-shadow: none !important;
+                border: none !important;
+            }
+        `;
+        document.head.appendChild(tmpStyle);
+
+        try {
+            await this.loadScripts();
+
+            const zip = new window.JSZip();
+            const cards = Array.from(document.querySelectorAll('.qr-print-card-bulk'));
 
             for (let i = 0; i < cards.length; i++) {
                 const card = cards[i];
-                const tableNumber = card.getAttribute('data-table');
-
-                // Bật hiển thị cho card hiện tại
-                card.style.display = 'block';
+                const tableNumber = card.getAttribute('data-table') ?? `${i + 1}`;
 
                 try {
-                    // Chờ một chút để trình duyệt kịp tính toán xong layout
-                    await new Promise(resolve => setTimeout(resolve, 150));
-
-                    const dataUrl = await domtoimage.toPng(card, {
-                        scale: 3,
-                        bgcolor: '#ffffff',
-                        width: card.offsetWidth,
-                        height: card.offsetHeight,
-                        style: {
-                            transform: 'scale(1)',
-                            transformOrigin: 'top left'
-                        }
-                    });
-
-                    // Remove data:image/png;base64,
+                    const dataUrl = await this.captureCard(card);
                     const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-                    zip.file(`Ban_${tableNumber}.png`, base64Data, { base64: true });
-                } catch (e) {
-                    console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, e);
+                    const fileName = this.sanitizeFileName(`Ban_${tableNumber}.png`);
+                    zip.file(fileName, base64Data, { base64: true });
+                } catch (error) {
+                    console.error('Lỗi khi tạo ảnh cho bàn ' + tableNumber, error);
+                    this.failedTables.push(tableNumber);
                 }
 
-                // Ẩn lại card sau khi chụp xong
-                card.style.display = 'none';
                 this.progress = i + 1;
+                await this.sleep(20);
             }
 
-            zip.generateAsync({ type: 'blob' }).then((content) => {
-                if (document.getElementById('qr-capture-reset-bulk')) {
-                    document.head.removeChild(tmpStyle);
-                }
-
-                // Create download link for ZIP
+            if (Object.keys(zip.files).length > 0) {
+                const content = await zip.generateAsync({ type: 'blob' });
                 const link = document.createElement('a');
+                const objectUrl = URL.createObjectURL(content);
                 link.download = 'QR_Ban_Zip.zip';
-                link.href = URL.createObjectURL(content);
+                link.href = objectUrl;
                 link.click();
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+            }
+        } finally {
+            if (document.getElementById('qr-capture-reset-bulk')) {
+                document.head.removeChild(tmpStyle);
+            }
 
-                this.downloading = false;
-            });
-        });
+            this.cleanupCaptureRoot();
+            this.downloading = false;
+        }
     }
 }">
 
@@ -116,10 +196,12 @@
             </svg>
         </div>
 
-        <h2 class="text-center text-xl font-bold">{{ __('Tải xuống các mã QR đã phối') }}</h2>
+        <h2 class="text-center text-xl font-bold">{{ __('Tải xuống các mã QR đã chọn') }}</h2>
         <p class="mb-4 text-center text-sm text-gray-500">
             {{ __('Số lượng mã QR sẽ tạo:') }} <span class="rounded-md border border-gray-200 px-2 py-0.5 font-bold text-black dark:text-white" x-text="total"></span>
         </p>
+
+        <p class="mb-2 text-center text-xs font-medium text-amber-600" x-show="failedTables.length > 0" x-text="`Không tạo được ${failedTables.length} mã QR: Bàn ${failedTables.join(', ')}`"></p>
 
         <div class="w-full max-w-xs transition-all duration-300" x-show="downloading">
             <div class="mb-1 flex justify-between text-xs font-semibold">
