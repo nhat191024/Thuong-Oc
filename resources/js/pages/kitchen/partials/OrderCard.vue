@@ -21,7 +21,7 @@
 
                 <button
                     v-if="showActions"
-                    class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                    class="flex h-14 w-14 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
                     @click="$emit('updateStatus', detail.id, 'cancelled')"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -47,7 +47,7 @@
             <div class="flex items-end justify-between">
                 <span class="text-lg font-bold">SL: {{ totalQuantity ?? detail.quantity }}</span>
                 <div class="flex gap-2" v-if="showActions">
-                    <button class="rounded-lg bg-green-500 px-3 py-1 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
+                    <button class="rounded-lg bg-green-500 px-6 py-3 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
                         Hoàn thành
                     </button>
                 </div>
@@ -63,7 +63,7 @@
                     </span>
                     <button
                         v-if="showRestore"
-                        class="rounded-lg bg-blue-500 px-3 py-1 text-xs text-white hover:bg-blue-600"
+                        class="rounded-lg bg-blue-500 px-6 py-3 text-xs text-white hover:bg-blue-600"
                         @click="$emit('restore', detail.id)"
                     >
                         Khôi phục
