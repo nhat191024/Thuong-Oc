@@ -10,12 +10,28 @@
             :class="getCardColorClass(detail.created_at)"
             :style="cardStyle"
         >
-            <div class="mb-2 flex items-center justify-between">
-                <span class="text-lg font-bold">Bàn {{ detail.bill.table.table_number }}</span>
-                <div class="flex flex-col items-end">
-                    <span class="text-sm text-gray-500">{{ formatTime(detail.created_at) }}</span>
-                    <span v-if="showActions" class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
+            <div class="mb-2 flex items-start justify-between">
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex flex-col items-start">
+                        <span class="text-lg font-bold">Bàn {{ detail.bill.table.table_number }}</span>
+                        <span class="text-sm text-gray-500">{{ formatTime(detail.created_at) }}</span>
+                        <span v-if="showActions" class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
+                    </div>
                 </div>
+
+                <button
+                    v-if="showActions"
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                    @click="$emit('updateStatus', detail.id, 'cancelled')"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                            fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                </button>
             </div>
             <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
                 <h3 class="text-xl font-bold text-primary">{{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}</h3>
@@ -24,12 +40,6 @@
             <div class="flex items-end justify-between">
                 <span class="text-lg font-bold">SL: {{ detail.quantity }}</span>
                 <div class="flex gap-2" v-if="showActions">
-                    <button
-                        class="rounded-lg bg-red-500 px-3 py-1 text-white hover:bg-red-600"
-                        @click="$emit('updateStatus', detail.id, 'cancelled')"
-                    >
-                        Hủy
-                    </button>
                     <button class="rounded-lg bg-green-500 px-3 py-1 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
                         Hoàn thành
                     </button>
