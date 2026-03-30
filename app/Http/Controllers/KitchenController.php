@@ -53,7 +53,7 @@ class KitchenController extends Controller
             ->pluck('cooking_method_id');
 
         $billDetails = BillDetail::query()
-            ->with(['dish.food', 'bill.table'])
+            ->with(['dish.food', 'dish.cookingMethod', 'bill.table'])
             ->whereHas('bill', function ($query) use ($kitchen) {
                 $query->where('branch_id', $kitchen->branch_id)
                     ->where('pay_status', PayStatus::UNPAID);
@@ -113,7 +113,7 @@ class KitchenController extends Controller
             ->pluck('cooking_method_id');
 
         $history = BillDetail::query()
-            ->with(['dish.food', 'bill.table'])
+            ->with(['dish.food', 'dish.cookingMethod', 'bill.table'])
             ->whereHas('bill', function ($query) use ($kitchen) {
                 $query->where('branch_id', $kitchen->branch_id);
             })

@@ -49,6 +49,7 @@ interface Dish {
     id: number;
     food: Food;
     cooking_method_id?: number;
+    cooking_method?: { id: number; name: string } | null;
 }
 
 interface Table {
