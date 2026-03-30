@@ -39,7 +39,10 @@
                     <span v-if="detail.dish?.cooking_method" class="text-xl font-bold text-primary">{{ detail.dish.cooking_method.name }}</span>
                 </h3>
 
-                <p v-if="detail.note" class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note }}</p>
+                <div v-if="detail.note" class="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1">
+                    <p class="text-xs font-semibold tracking-wide text-red-400 uppercase">Ghi chú</p>
+                    <p class="text-sm wrap-break-word whitespace-pre-wrap text-red-600 italic">{{ detail.note }}</p>
+                </div>
             </div>
             <div class="flex items-end justify-between">
                 <span class="text-lg font-bold">SL: {{ totalQuantity ?? detail.quantity }}</span>
