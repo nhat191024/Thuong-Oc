@@ -2,7 +2,7 @@
     <div class="flex h-full flex-col gap-2">
         <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
-                <div class="grid h-full w-full grid-cols-3 grid-rows-3 gap-4 pl-4">
+                <div class="grid h-full w-full grid-cols-3 grid-rows-2 gap-4 pl-4">
                     <OrderCard
                         v-for="detail in page"
                         :key="detail.id"
@@ -99,7 +99,7 @@ const itemToRestore = ref<number | null>(null);
 
 const pages = computed(() => {
     const items = historyDetails.value;
-    const chunkSize = 9;
+    const chunkSize = 6;
     const result = [];
     for (let i = 0; i < items.length; i += chunkSize) {
         result.push(items.slice(i, i + chunkSize));
