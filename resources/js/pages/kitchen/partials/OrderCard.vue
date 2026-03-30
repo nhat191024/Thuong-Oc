@@ -35,7 +35,8 @@
             </div>
             <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
                 <h3 class="text-xl font-bold text-primary">{{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}</h3>
-                <p class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note ?? 'Không có' }}</p>
+
+                <p v-if="detail.note" class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note }}</p>
             </div>
             <div class="flex items-end justify-between">
                 <span class="text-lg font-bold">SL: {{ detail.quantity }}</span>
