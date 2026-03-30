@@ -35,14 +35,14 @@
             </div>
             <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
                 <h3 class="text-xl font-bold text-primary">
-                    {{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}
+                    {{ detail.quantity }}x {{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}
                     <span v-if="detail.dish?.cooking_method" class="text-xl font-bold text-primary">{{ detail.dish.cooking_method.name }}</span>
                 </h3>
 
                 <p v-if="detail.note" class="mt-1 text-sm text-red-500 italic">Ghi chú: {{ detail.note }}</p>
             </div>
             <div class="flex items-end justify-between">
-                <span class="text-lg font-bold">SL: {{ detail.quantity }}</span>
+                <span class="text-lg font-bold">SL: {{ totalQuantity ?? detail.quantity }}</span>
                 <div class="flex gap-2" v-if="showActions">
                     <button class="rounded-lg bg-green-500 px-3 py-1 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
                         Hoàn thành
@@ -118,6 +118,7 @@ const props = defineProps<{
     detail: BillDetail;
     showActions?: boolean;
     showRestore?: boolean;
+    totalQuantity?: number;
 }>();
 
 const emit = defineEmits(['updateStatus', 'restore']);

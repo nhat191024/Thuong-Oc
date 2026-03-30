@@ -8,6 +8,7 @@
                         :key="detail.id"
                         :detail="detail"
                         :show-actions="true"
+                        :total-quantity="dishTotalMap[detail.dish ? `dish_${detail.dish.id}` : `custom_${detail.custom_dish_name}`]"
                         class="h-full w-full"
                         @update-status="updateStatus"
                     />
@@ -84,6 +85,15 @@ const props = defineProps<{
 
 const carouselRef = ref<HTMLElement | null>(null);
 const currentPage = ref(0);
+
+const dishTotalMap = computed(() => {
+    const map: Record<string, number> = {};
+    for (const detail of props.billDetails) {
+        const key = detail.dish ? `dish_${detail.dish.id}` : `custom_${detail.custom_dish_name}`;
+        map[key] = (map[key] ?? 0) + detail.quantity;
+    }
+    return map;
+});
 
 const pages = computed(() => {
     const items = props.billDetails;
