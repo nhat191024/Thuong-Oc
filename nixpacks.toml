@@ -107,23 +107,6 @@ stdout_logfile=/var/log/worker-phpfpm.log
 stderr_logfile=/var/log/worker-phpfpm.log
 '''
 
-"worker-laravel-queue.conf" = '''
-[program:worker-laravel-queue]
-process_name=%(program_name)s_%(process_num)02d
-command=bash -c 'exec php /app/artisan queue:work redis --queue=default,media,messages,notification --sleep=3 --tries=3 --max-time=300 --memory=500 --timeout=300 --rest=1'
-directory=/app
-user=www-data
-numprocs=2
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-startsecs=0
-stopwaitsecs=60
-stdout_logfile=/var/log/worker-laravel-queue.log
-stderr_logfile=/var/log/worker-laravel-queue.log
-'''
-
 "worker-laravel-scheduler.conf" = '''
 [program:worker-laravel-scheduler]
 process_name=%(program_name)s_%(process_num)02d
