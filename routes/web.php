@@ -17,10 +17,6 @@ Route::get('/', function () {
     return Inertia::render('Landing');
 })->name('home');
 
-Route::get('/health', function () {
-    return response()->json(['status' => 'OK']);
-})->name('health');
-
 Route::get('/menu/{tableId}', [CustomerMenuController::class, 'index'])->name('customer-menu.index');
 Route::post('/order', [OrderController::class, 'placeOrder'])->name('order.place');
 

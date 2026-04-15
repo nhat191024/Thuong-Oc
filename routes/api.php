@@ -6,9 +6,9 @@ use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BillController;
 
-Route::get('/ping', function () {
-    return response()->json(['message' => 'pong'], 200);
-});
+Route::get('/health', function () {
+    return response()->json(['status' => 'OK']);
+})->name('health');
 
 include __DIR__ . '/api/auth.php';
 
