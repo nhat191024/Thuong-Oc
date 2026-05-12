@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\BillDetail;
 use App\Models\Printer as PrinterModel;
+
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\Printer;
 
@@ -66,7 +69,10 @@ class KitchenPrintService
                 ? $billDetail->dish->food->name
                 : ($billDetail->custom_dish_name ?? 'Mon an');
             $cookingMethod = $billDetail->dish?->cookingMethod?->name ?? '';
-            $fullDishName = $dishName . ($cookingMethod ? " ($cookingMethod)" : '');
+
+            $dishName = Str::ascii($dishName);
+
+            $fullDishName = $dishName . ($cookingMethod ? ' (' . Str::ascii($cookingMethod) . ')' : '');
 
             $printer->setEmphasis(true);
             $printer->setTextSize(1, 2);
@@ -74,15 +80,15 @@ class KitchenPrintService
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
 
-            $printer->text('SO LUONG: ' . $billDetail->quantity . "\n");
+            $printer->text('So luong: ' . $billDetail->quantity . "\n");
 
             if (! empty($billDetail->note)) {
                 $printer->text("--------------------------------\n");
-                $printer->text('GHI CHU: ' . $billDetail->note . "\n");
+                $printer->text('Ghi chu: ' . Str::ascii($billDetail->note) . "\n");
             }
 
             $printer->text("================================\n");
-            $printer->text('HOAN THANH: ' . now()->format('H:i d/m/Y') . "\n");
+            $printer->text('Hoan thanh: ' . now()->format('H:i d/m/Y') . "\n");
 
             $printer->feed(3);
             $printer->cut();
