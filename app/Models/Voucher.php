@@ -15,6 +15,7 @@ use BeyondCode\Vouchers\Models\Voucher as BaseVoucher;
  * @property Carbon|null $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read \App\Models\Customer|null $customer
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $model
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
