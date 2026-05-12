@@ -41,4 +41,10 @@ return [
         'checksum_key' => env('PAYOS_CHECKSUM_KEY', ''),
         'partner_code' => env('PAYOS_PARTNER_CODE', ''),
     ],
+
+    'printer' => [
+        'ip' => env('PRINTER_IP', '192.168.1.250'),
+        'port' => env('PRINTER_PORT', 9100),
+        'timeout' => env('PRINTER_TIMEOUT', 3),
+    ],
 ];

@@ -12,6 +12,7 @@ use App\Models\KitchenCookingMethod;
 use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
 
+use App\Services\KitchenPrintService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -91,6 +92,10 @@ class KitchenController extends Controller
         $billDetail->update([
             'status' => $request->status,
         ]);
+
+        if ($request->status === BillDetailStatus::DONE->value) {
+            app(KitchenPrintService::class)->printCompletedOrder($billDetail);
+        }
 
         return back();
     }
