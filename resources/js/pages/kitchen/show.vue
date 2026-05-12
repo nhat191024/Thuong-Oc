@@ -17,16 +17,32 @@
                 </button>
             </div>
 
-            <div class="dropdown dropdown-end">
-                <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
-                <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
-                    <li><Link :href="route('logout')" method="post" as="button">Đăng xuất</Link></li>
-                </ul>
+            <div class="flex items-center gap-3">
+                <div v-if="props.printers.length > 0" class="flex items-center gap-2">
+                    <PrinterIcon class="size-5 text-white" />
+                    <select
+                        v-model="selectedPrinterId"
+                        class="select select-sm bg-white/10 text-white border-white/30 focus:outline-none"
+                        @change="savePrinterSelection"
+                    >
+                        <option :value="null" class="text-gray-800">Không in</option>
+                        <option v-for="p in props.printers" :key="p.id" :value="p.id" class="text-gray-800">
+                            {{ p.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="dropdown dropdown-end">
+                    <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
+                    <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
+                        <li><Link :href="route('logout')" method="post" as="button">Đăng xuất</Link></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         <div class="flex-1 overflow-hidden bg-gray-100">
-            <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" />
+            <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" :selected-printer-id="selectedPrinterId" />
             <HistoryOrders v-else :kitchen-id="props.kitchen.id" />
         </div>
     </div>
@@ -34,8 +50,9 @@
 
 <script setup lang="ts">
 import { AppPageProps } from '@/types';
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, PrinterIcon } from '@heroicons/vue/24/outline';
 import { Link, usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@inertiajs/core';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import ActiveOrders from './partials/ActiveOrders.vue';
 import HistoryOrders from './partials/HistoryOrders.vue';
@@ -81,18 +98,36 @@ interface Kitchen {
     branch_id: number;
 }
 
+interface Printer {
+    id: number;
+    name: string;
+}
+
 interface Props {
     kitchen: Kitchen;
     billDetails: BillDetail[];
     cookingMethodIds: number[];
+    printers: Printer[];
 }
 
 const props = defineProps<Props>();
-const page = usePage<AppPageProps>();
+const page = usePage<PageProps & AppPageProps>();
 const user = page.props.auth.user;
 
 const currentTab = ref('active');
 const billDetails = ref(props.billDetails);
+
+const localStorageKey = `kitchen_printer_${props.kitchen.id}`;
+const savedPrinterId = localStorage.getItem(localStorageKey);
+const selectedPrinterId = ref<number | null>(savedPrinterId ? parseInt(savedPrinterId) : null);
+
+const savePrinterSelection = () => {
+    if (selectedPrinterId.value) {
+        localStorage.setItem(localStorageKey, String(selectedPrinterId.value));
+    } else {
+        localStorage.removeItem(localStorageKey);
+    }
+};
 
 watch(
     () => props.billDetails,

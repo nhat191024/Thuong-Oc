@@ -8,6 +8,7 @@ use App\Models\Kitchen;
 use App\Models\Branch;
 use App\Models\BillDetail;
 use App\Models\KitchenCookingMethod;
+use App\Models\Printer;
 
 use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
@@ -73,6 +74,9 @@ class KitchenController extends Controller
             'kitchen' => $kitchen,
             'billDetails' => $billDetails,
             'cookingMethodIds' => $cookingMethodIds,
+            'printers' => Printer::whereBranchId($kitchen->branch_id)
+                ->where('is_active', true)
+                ->get(['id', 'name']),
         ]);
     }
 
@@ -87,14 +91,19 @@ class KitchenController extends Controller
     {
         $request->validate([
             'status' => ['required', Rule::enum(BillDetailStatus::class)],
+            'printer_id' => ['nullable', 'integer', 'exists:printers,id'],
         ]);
 
         $billDetail->update([
             'status' => $request->status,
         ]);
 
-        if ($request->status === BillDetailStatus::DONE->value) {
-            app(KitchenPrintService::class)->printCompletedOrder($billDetail);
+        if ($request->status === BillDetailStatus::DONE->value && $request->printer_id) {
+            $printer = Printer::whereId($request->input('printer_id'))->first();
+
+            if ($printer?->is_active) {
+                app(KitchenPrintService::class)->printForKitchen($billDetail, $printer);
+            }
         }
 
         return back();

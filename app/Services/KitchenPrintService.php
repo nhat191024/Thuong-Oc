@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BillDetail;
+use App\Models\Printer as PrinterModel;
 use Illuminate\Support\Facades\Log;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\Printer;
@@ -20,6 +21,15 @@ class KitchenPrintService
         $this->printerIp = config('services.printer.ip', '192.168.1.250');
         $this->printerPort = (int) config('services.printer.port', 9100);
         $this->timeout = (int) config('services.printer.timeout', 3);
+    }
+
+    public function printForKitchen(BillDetail $billDetail, PrinterModel $printer): bool
+    {
+        $this->printerIp = $printer->ip_address;
+        $this->printerPort = $printer->port;
+        $this->timeout = $printer->timeout;
+
+        return $this->printCompletedOrder($billDetail);
     }
 
     public function printCompletedOrder(BillDetail $billDetail): bool

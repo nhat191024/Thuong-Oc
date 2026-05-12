@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->unsignedBigInteger('branch_id');
+            $table->foreignId('printer_id')->nullable()->constrained('printers')->nullOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });
