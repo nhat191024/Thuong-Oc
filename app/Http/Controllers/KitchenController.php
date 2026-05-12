@@ -28,8 +28,8 @@ class KitchenController extends Controller
     {
         $user = Auth::user();
         $branchId = $user->branch_id;
-        $kitchens = Kitchen::where('branch_id', $branchId)->get();
-        $branchName = Branch::find($branchId)->name;
+        $kitchens = Kitchen::whereBranchId($branchId)->get();
+        $branchName = Branch::whereId($branchId)->value('name');
 
         return Inertia::render('kitchen/index', [
             'kitchens' => $kitchens,
@@ -50,7 +50,7 @@ class KitchenController extends Controller
             abort(403);
         }
 
-        $cookingMethodIds = KitchenCookingMethod::where('kitchen_id', $kitchen->id)
+        $cookingMethodIds = KitchenCookingMethod::whereKitchenId($kitchen->id)
             ->pluck('cooking_method_id');
 
         $billDetails = BillDetail::query()
@@ -114,7 +114,7 @@ class KitchenController extends Controller
             abort(403);
         }
 
-        $cookingMethodIds = KitchenCookingMethod::where('kitchen_id', $kitchen->id)
+        $cookingMethodIds = KitchenCookingMethod::whereKitchenId($kitchen->id)
             ->pluck('cooking_method_id');
 
         $history = BillDetail::query()
