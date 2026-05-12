@@ -21,6 +21,8 @@ use App\Http\Resources\TableResource;
 
 use App\Settings\AppSettings;
 
+use App\Models\Printer;
+use App\Services\BillPrintService;
 use App\Services\MenuService;
 use App\Services\PaymentService;
 
@@ -218,6 +220,10 @@ class StaffController extends Controller
             }
         }
 
+        $printers = Printer::where('branch_id', $table->branch_id)
+            ->where('is_active', true)
+            ->get(['id', 'name']);
+
         return Inertia::render('staff/bill', [
             'table' => $table,
             'billDetails' => $billDetails,
@@ -225,6 +231,7 @@ class StaffController extends Controller
             'paymentMethods' => $paymentMethods,
             'discountPercent' => $discountPercent,
             'discountAmount' => $discountAmount,
+            'printers' => $printers,
         ]);
     }
 
@@ -378,6 +385,7 @@ class StaffController extends Controller
     public function processPayment(ProcessPaymentRequest $requests, string $tableId)
     {
         $paymentMethod = $requests->input('payment_method');
+        $printerId = $requests->input('printer_id');
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
@@ -417,6 +425,13 @@ class StaffController extends Controller
                 $pointEarned = floor($bill->final_total / $pointStep);
                 $customer->points += $pointEarned;
                 $customer->save();
+            }
+
+            if ($printerId) {
+                $printer = Printer::find($printerId);
+                if ($printer?->is_active) {
+                    app(BillPrintService::class)->printForBill($bill, $printer);
+                }
             }
 
             return redirect()->route('payment.result', [

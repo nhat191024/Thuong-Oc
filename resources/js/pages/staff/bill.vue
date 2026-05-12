@@ -9,6 +9,22 @@
             <div class="flex-1">
                 <h1 class="text-xl font-bold">Hóa đơn - Bàn {{ table.table_number }}</h1>
             </div>
+            <div v-if="printers.length > 0" class="flex-none">
+                <div class="dropdown dropdown-end">
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1">
+                        <PrinterIcon class="size-5" />
+                        <span class="hidden text-sm sm:inline">{{ selectedPrinterId ? printers.find((p) => p.id === selectedPrinterId)?.name : 'Chọn máy in' }}</span>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content menu rounded-box bg-base-100 z-50 w-52 p-2 shadow">
+                        <li>
+                            <a :class="{ active: selectedPrinterId === null }" @click="savePrinterSelection(null)">Không in</a>
+                        </li>
+                        <li v-for="printer in printers" :key="printer.id">
+                            <a :class="{ active: selectedPrinterId === printer.id }" @click="savePrinterSelection(printer.id)">{{ printer.name }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="flex flex-1 flex-col p-4">
@@ -91,15 +107,21 @@
 <script setup lang="ts">
 import ConfirmModal from '@/pages/components/ConfirmModal.vue';
 import { AppPageProps } from '@/types';
-import { ChevronLeftIcon } from '@heroicons/vue/24/outline';
+import { ChevronLeftIcon, PrinterIcon } from '@heroicons/vue/24/outline';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@inertiajs/core';
 import { computed, ref, watch } from 'vue';
 import BillAdditionalInfo from './partials/BillAdditionalInfo.vue';
 import BillPayment from './partials/BillPayment.vue';
 import BillTableDetails from './partials/BillTableDetails.vue';
 import CreateCustomerDialog from './partials/CreateCustomerDialog.vue';
 
-const page = usePage<AppPageProps>();
+const page = usePage<PageProps & AppPageProps>();
+
+interface Printer {
+    id: number;
+    name: string;
+}
 
 interface BillItem {
     name: string;
@@ -138,9 +160,22 @@ interface Props {
     paymentMethods: PaymentMethod[];
     discountPercent: number;
     discountAmount: number;
+    printers: Printer[];
 }
 
 const props = defineProps<Props>();
+
+const localStorageKey = `bill_printer_${props.table.id}`;
+const savedPrinterId = localStorage.getItem(localStorageKey);
+const selectedPrinterId = ref<number | null>(savedPrinterId ? parseInt(savedPrinterId) : null);
+const savePrinterSelection = (id: number | null) => {
+    if (id === null) {
+        localStorage.removeItem(localStorageKey);
+    } else {
+        localStorage.setItem(localStorageKey, String(id));
+    }
+    selectedPrinterId.value = id;
+};
 
 const showError = ref(false);
 let errorTimeout: ReturnType<typeof setTimeout>;
@@ -352,6 +387,7 @@ function confirmPayment() {
     const form = useForm({
         table_id: props.table.id,
         payment_method: selectedPaymentMethod.value,
+        printer_id: selectedPrinterId.value,
     });
 
     isProcessing.value = true;

@@ -2,7 +2,7 @@
     <div class="card w-full max-w-sm border border-base-200 bg-base-100 shadow-xl">
         <div class="card-body items-center text-center">
             <h2 class="card-title">Quét mã thanh toán</h2>
-            <p class="mb-4 text-sm text-base-content/70">Mã dành cho nhân viên quét bằng máy POS để thanh toán và in đơn</p>
+            <p class="mb-4 text-sm text-base-content/70">Mã dành cho nhân viên nếu dùng máy POS để thanh toán</p>
 
             <div class="rounded-xl border border-base-300 bg-white p-4 shadow-inner">
                 <div class="flex h-48 w-48 items-center justify-center rounded-lg bg-white">
@@ -16,7 +16,7 @@
 
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text font-medium">Thanh toán nhanh (Không in đơn)</span>
+                    <span class="label-text font-medium">Thanh toán nhanh </span>
                 </label>
                 <div class="mt-1 flex gap-2">
                     <select
@@ -29,11 +29,7 @@
                             {{ method.label }}
                         </option>
                     </select>
-                    <button
-                        class="btn text-white btn-primary"
-                        :disabled="!selectedPaymentMethod || isProcessing"
-                        @click="$emit('confirmPayment')"
-                    >
+                    <button class="btn text-white btn-primary" :disabled="!selectedPaymentMethod || isProcessing" @click="$emit('confirmPayment')">
                         Xác nhận
                     </button>
                 </div>

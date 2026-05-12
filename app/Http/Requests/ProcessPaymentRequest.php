@@ -27,6 +27,7 @@ class ProcessPaymentRequest extends FormRequest
         return [
             'table_id' => 'required|exists:tables,id',
             'payment_method' => ['required', new Enum(PaymentMethods::class)],
+            'printer_id' => ['nullable', 'integer', 'exists:printers,id'],
         ];
     }
 }
