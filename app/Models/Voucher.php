@@ -115,7 +115,7 @@ class Voucher extends BaseVoucher
     public function incrementTimesUsed(): void
     {
         $timesUsed = $this->timesUsed();
-        $this->data = array_merge($this->data ?? [], ['times_used' => $timesUsed + 1]);
+        $this->data = ($this->data ?? collect())->put('times_used', $timesUsed + 1);
         $this->save();
     }
 
