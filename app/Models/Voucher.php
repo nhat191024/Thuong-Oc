@@ -53,9 +53,9 @@ class Voucher extends BaseVoucher
     {
         $voucher = null;
         if ($id) {
-            $voucher = self::find($id);
+            $voucher = self::find($id, 'id');
         } else {
-            $voucher = self::where('code', $code)->first();
+            $voucher = self::whereCode($code)->first();
         }
 
         if (!$voucher) {
