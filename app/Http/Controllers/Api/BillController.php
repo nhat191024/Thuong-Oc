@@ -61,11 +61,11 @@ class BillController extends Controller
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
-        $customer = Customer::where('phone', $phone)->first();
+        $customer = Customer::wherePhone($phone)->first();
 
         if (!$customer) {
             if ($name) {
-                if (Customer::where('username', $phone)->exists()) {
+                if (Customer::whereUUsername($phone)->exists()) {
                     return response()->json(['message' => 'Account already exists.'], 409);
                 }
 
@@ -164,7 +164,7 @@ class BillController extends Controller
 
         $discountAmount = 0;
         if ($bill->voucher_id) {
-            $voucher = Voucher::find($bill->voucher_id);
+            $voucher = Voucher::find($bill->voucher_id, 'id');
             if ($voucher) {
                 $discountAmount = $voucher->getDiscountAmount($bill->total);
             }
@@ -173,23 +173,19 @@ class BillController extends Controller
         $finalTotal = $bill->total - $discountAmount;
 
         if ($paymentMethod === PaymentMethods::CASH->value) {
-            $bill->pay_status = PayStatus::PAID;
-            $bill->payment_method = PaymentMethods::CASH;
-            $bill->time_out = now();
-            $bill->final_total = $finalTotal;
-            $bill->save();
+            $this->processCashPayment($bill, $finalTotal);
 
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
 
             if ($bill->voucher_id) {
-                $voucher = Voucher::find($bill->voucher_id);
+                $voucher = Voucher::find($bill->voucher_id, 'id');
                 if ($voucher) {
                     $voucher->increment('used_count');
                 }
             }
 
-            $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+            $customer = $bill->customer_id ? Customer::find($bill->customer_id, 'id') : null;
             if ($customer) {
                 $pointStep = app(AppSettings::class)->point_step;
                 $pointEarned = floor($bill->final_total / $pointStep);
@@ -202,50 +198,8 @@ class BillController extends Controller
                 'amount' => $bill->final_total
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
-
-            $items = $bill->billDetails->map(function ($detail) {
-                $name = $detail->custom_dish_name;
-                if ($detail->dish) {
-                    $name = $detail->dish->food->name;
-                }
-                return [
-                    'name' => $name,
-                    'quantity' => $detail->quantity,
-                    'price' => $detail->price,
-                ];
-            })->toArray();
-
-            if ($discountAmount > 0) {
-                $discountItems = [
-                    'name' => 'Mã giảm giá',
-                    'quantity' => 1,
-                    'price' => $discountAmount,
-                ];
-
-                $items[] = $discountItems;
-            }
-
-            $total = $bill->total - $discountAmount;
-
-            $timestamp = time();
-            $randomNum = rand(1000, 9999);
-            $billId = $bill->id . $timestamp . $randomNum;
-
-            $data = [
-                'billId' => $billId,
-                'billCode' => (string)$bill->id,
-                'amount' => (int)$total,
-                'items' => $items,
-                'buyerName' => 'Khách hàng',
-            ];
-
             try {
-                $paymentService = app(PaymentService::class);
-                $paymentLink = $paymentService->processPayment(
-                    $data,
-                    'qr_transfer',
-                    true
-                );
+                $paymentLink = $this->processQrPayment($bill, $finalTotal);
 
                 return response()->json([
                     'message' => 'Payment link created.',
@@ -258,6 +212,82 @@ class BillController extends Controller
         }
 
         return response()->json(['message' => 'Invalid payment method.'], 400);
+    }
+
+    private function processCashPayment(Bill $bill, float $finalTotal)
+    {
+        $bill->pay_status = PayStatus::PAID;
+        $bill->payment_method = PaymentMethods::CASH;
+        $bill->time_out = now();
+        $bill->final_total = $finalTotal;
+        $bill->save();
+
+        $table = $bill->table;
+        $table->is_active = TableActiveStatus::INACTIVE;
+        $table->save();
+
+        if ($bill->voucher_id) {
+            $voucher = Voucher::find($bill->voucher_id, 'id');
+            if ($voucher) {
+                $voucher->increment('used_count');
+            }
+        }
+
+        $customer = $bill->customer_id ? Customer::find($bill->customer_id, 'id') : null;
+        if ($customer) {
+            $pointStep = app(AppSettings::class)->point_step;
+            $pointEarned = floor($bill->final_total / $pointStep);
+            $customer->points += $pointEarned;
+            $customer->save();
+        }
+    }
+
+    private function processQrPayment(Bill $bill, int $discountAmount)
+    {
+        $items = $bill->billDetails->map(function ($detail) {
+            $name = $detail->custom_dish_name;
+            if ($detail->dish) {
+                $name = $detail->dish->food->name;
+            }
+            return [
+                'name' => $name,
+                'quantity' => $detail->quantity,
+                'price' => $detail->price,
+            ];
+        })->toArray();
+
+        if ($discountAmount > 0) {
+            $discountItems = [
+                'name' => 'Mã giảm giá',
+                'quantity' => 1,
+                'price' => $discountAmount,
+            ];
+
+            $items[] = $discountItems;
+        }
+
+        $total = $bill->total - $discountAmount;
+
+        $timestamp = time();
+        $randomNum = rand(1000, 9999);
+        $billId = $bill->id . $timestamp . $randomNum;
+
+        $data = [
+            'billId' => $billId,
+            'billCode' => (string)$bill->id,
+            'amount' => (int)$total,
+            'items' => $items,
+            'buyerName' => 'Khách hàng',
+        ];
+
+        $paymentService = app(PaymentService::class);
+        $paymentLink = $paymentService->processPayment(
+            $data,
+            'qr_transfer',
+            true
+        );
+
+        return $paymentLink;
     }
 
     public function updateStatus(Request $request, string $tableId)
@@ -278,7 +308,7 @@ class BillController extends Controller
         if ($status === PayStatus::PAID->value) {
             $discountAmount = 0;
             if ($bill->voucher_id) {
-                $voucher = Voucher::find($bill->voucher_id);
+                $voucher = Voucher::find($bill->voucher_id, 'id');
                 if ($voucher) {
                     $discountAmount = $voucher->getDiscountAmount($bill->total);
                     $voucher->incrementTimesUsed();
@@ -295,7 +325,7 @@ class BillController extends Controller
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
 
-            $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+            $customer = $bill->customer_id ? Customer::find($bill->customer_id, 'id') : null;
             if ($customer) {
                 $pointStep = app(AppSettings::class)->point_step;
                 $pointEarned = floor($bill->final_total / $pointStep);
