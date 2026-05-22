@@ -181,7 +181,7 @@ class BillController extends Controller
             if ($bill->voucher_id) {
                 $voucher = Voucher::find($bill->voucher_id, 'id');
                 if ($voucher) {
-                    $voucher->increment('used_count');
+                    $voucher->incrementTimesUsed();
                 }
             }
 
