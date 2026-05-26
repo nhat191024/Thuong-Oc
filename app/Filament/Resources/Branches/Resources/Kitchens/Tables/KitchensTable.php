@@ -26,8 +26,10 @@ class KitchensTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Tên nhà bếp')
-                    ->searchable(),
-                TextColumn::make('deleted_at')
+                    ->searchable(),                TextColumn::make('cookingMethods.name')
+                    ->label('Phương thức nấu')
+                    ->badge()
+                    ->separator(','),                TextColumn::make('deleted_at')
                     ->label('Đã xóa lúc')
                     ->dateTime()
                     ->sortable()
