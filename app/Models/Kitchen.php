@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Branch|null $branch
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\KitchenCookingMethod> $cookingMethods
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CookingMethod> $cookingMethods
  * @property-read int|null $cooking_methods_count
  * @property-read \App\Models\Printer|null $printer
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen newModelQuery()
@@ -55,7 +55,7 @@ class Kitchen extends Model
 
     public function cookingMethods()
     {
-        return $this->hasMany(KitchenCookingMethod::class);
+        return $this->belongsToMany(CookingMethod::class, 'kitchen_cooking_method');
     }
 
     public function printer()
