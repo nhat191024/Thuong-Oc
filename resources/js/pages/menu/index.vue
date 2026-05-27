@@ -79,7 +79,7 @@
 
                                 <button
                                     class="btn btn-circle bg-primary text-white shadow-lg shadow-primary/30 transition-transform btn-sm hover:scale-110"
-                                    @click.stop="food.dishes.length > 1 ? showDishDetail(food) : addDish(food.id)"
+                                    @click.stop="food.dishes.length > 1 ? showDishDetail(food) : addDish(food.id, $event)"
                                 >
                                     <PlusIcon class="size-5" />
                                 </button>
@@ -413,10 +413,64 @@ function findDishInStore(dish: orderDish): number {
 }
 
 /**
+ * Animate a dot flying from the clicked button to the cart icon
+ */
+function animateToCart(event: MouseEvent) {
+    const cartIcon = document.getElementById('cart-icon');
+    if (!cartIcon) return;
+
+    const button = event.currentTarget as HTMLElement;
+    const btnRect = button.getBoundingClientRect();
+    const cartRect = cartIcon.getBoundingClientRect();
+
+    const startX = btnRect.left + btnRect.width / 2;
+    const startY = btnRect.top + btnRect.height / 2;
+    const endX = cartRect.left + cartRect.width / 2;
+    const endY = cartRect.top + cartRect.height / 2;
+
+    const dx = endX - startX;
+    const dy = endY - startY;
+
+    const dot = document.createElement('div');
+    dot.style.cssText = [
+        'position:fixed',
+        `left:${startX}px`,
+        `top:${startY}px`,
+        'width:22px',
+        'height:22px',
+        'border-radius:50%',
+        'background-color:var(--color-primary,#9f0712)',
+        'pointer-events:none',
+        'z-index:9999',
+        'transform:translate(-50%,-50%)',
+    ].join(';');
+    document.body.appendChild(dot);
+
+    const animation = dot.animate(
+        [
+            { transform: 'translate(-50%,-50%) scale(1)', opacity: '1' },
+            {
+                transform: `translate(calc(-50% + ${dx * 0.4}px), calc(-50% + ${dy * 0.2 - 60}px)) scale(0.8)`,
+                opacity: '0.9',
+                offset: 0.35,
+            },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15)`, opacity: '0' },
+        ],
+        { duration: 950, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'forwards' },
+    );
+
+    animation.onfinish = () => {
+        dot.remove();
+        cartIcon.classList.add('cart-bounce');
+        setTimeout(() => cartIcon.classList.remove('cart-bounce'), 350);
+    };
+}
+
+/**
  * Add dish directly to cart (for foods without dish options or with only one dish)
  * @param foodId
  */
-function addDish(foodId: number) {
+function addDish(foodId: number, event?: MouseEvent) {
     // Tìm food từ menus
     let targetFood: Food | undefined;
     for (const menu of props.menus) {
@@ -468,6 +522,10 @@ function addDish(foodId: number) {
 
         billTemp.value.push(newOrder);
         orderStore.addDish(newOrder);
+    }
+
+    if (event) {
+        animateToCart(event);
     }
 }
 

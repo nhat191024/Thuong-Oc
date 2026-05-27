@@ -1,6 +1,6 @@
 <template>
     <div class="flex py-1 h-full justify-around bg-white shadow-[0_-4px_6px_-1px_rgba(159,7,18,0.1)]">
-        <div class="flex items-center justify-center" @click="showCart()">
+        <div id="cart-icon" class="flex items-center justify-center" @click="showCart()">
             <ShoppingBagIcon class="h-10 text-primary" />
             <span
                 v-if="totalDishes > 0"
@@ -56,3 +56,16 @@ function showOrderHistory() {
     }
 }
 </script>
+
+<style scoped>
+@keyframes cartBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+:deep(.cart-bounce) {
+    animation: cartBounce 0.35s ease;
+}
+</style>
