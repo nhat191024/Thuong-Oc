@@ -104,6 +104,15 @@ class Food extends Model implements HasMedia
         static::deleted(function () {
             Cache::forget(CacheKeys::MENUS->value);
         });
+
+        $clearCacheIfFood = function (Media $media): void {
+            if ($media->model_type === static::class) {
+                Cache::forget(CacheKeys::MENUS->value);
+            }
+        };
+
+        Media::saved($clearCacheIfFood);
+        Media::deleted($clearCacheIfFood);
     }
 
     //Model Relations
