@@ -64,7 +64,7 @@ class FoodForm
                             )
                             ->getOptionLabelUsing(
                                 fn($value): ?string =>
-                                CookingMethod::find($value)?->name
+                                CookingMethod::whereName($value)->first()?->name
                             )
                             ->searchable()
                             ->preload(true)
