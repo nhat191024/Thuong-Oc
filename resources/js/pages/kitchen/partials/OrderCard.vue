@@ -36,7 +36,7 @@
             <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
                 <h3 class="text-xl font-bold text-primary">
                     {{ detail.quantity }}x {{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}
-                    <span v-if="detail.dish?.cooking_method" class="text-xl font-bold text-primary">{{ detail.dish.cooking_method.name }}</span>
+                    <span v-if="detail.dish?.cooking_method" class="text-xl font-bold text-black">{{ detail.dish.cooking_method.name }}</span>
                 </h3>
 
                 <div v-if="detail.note" class="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1">
