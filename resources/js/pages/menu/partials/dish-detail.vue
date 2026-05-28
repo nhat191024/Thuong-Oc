@@ -12,7 +12,7 @@
                 <h3 class="pt-2 text-center text-xl font-bold">Thêm món ăn</h3>
                 <div class="flex flex-col">
                     <div class="my-5 flex h-24 w-full gap-4 px-4 text-lg font-light">
-                        <img src="/images/demo.jpg" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
+                        <img :src="food.image || '/images/demo.jpg'" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
                         <div class="flex flex-1 flex-col justify-between">
                             <p class="font-medium line-clamp-2">
                                 {{ food.name }}
