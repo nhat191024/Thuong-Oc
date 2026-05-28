@@ -77,7 +77,7 @@ class Table extends Model
     //generate table number for a branch
     public static function generateTableNumber(int $branchId): int
     {
-        $lastTable = self::where('branch_id', $branchId)
+        $lastTable = self::whereBranchId($branchId)
             ->orderBy('table_number', 'desc')
             ->first();
 
