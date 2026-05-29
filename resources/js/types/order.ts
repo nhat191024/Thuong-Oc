@@ -10,4 +10,5 @@ export interface orderDish {
     cookingMethod: string | null;
     cookingMethodId: number | null;
     note: string | null;
+    image?: string | null;
 }
