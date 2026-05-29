@@ -51,9 +51,9 @@ class StaffController extends Controller
     {
         $user = Auth::user();
         $branchId = $user->branch_id;
-        $tables = Table::where('branch_id', $branchId)->get();
+        $tables = Table::whereBranchId($branchId)->orderBy('table_number', 'asc')->get();
         $tables = TableResource::collection($tables)->resolve();
-        $branchName = Branch::find($branchId)->name;
+        $branchName = Branch::whereId($branchId)->value('name');
 
         return Inertia::render('staff/index', [
             'tables' => $tables,
@@ -92,16 +92,16 @@ class StaffController extends Controller
 
         $currentOrder = $this->formatCurrentOrder($table);
 
-        $inactiveTables = Table::where('branch_id', $table->branch_id)
+        $inactiveTables = Table::whereBranchId($table->branch_id)
             ->where('is_active', TableActiveStatus::INACTIVE)
-            ->orderBy('table_number')
+            ->orderBy('table_number', 'asc')
             ->get()
             ->map(fn($t) => [
                 'id' => $t->id,
                 'table_number' => $t->table_number,
             ]);
 
-        $kitchens = Kitchen::where('branch_id', $table->branch_id)
+        $kitchens = Kitchen::whereBranchId($table->branch_id)
             ->select(['id', 'name'])
             ->get();
 
@@ -213,14 +213,14 @@ class StaffController extends Controller
         $discountPercent = 0;
         $discountAmount = 0;
         if ($table->bill && $table->bill->voucher_id) {
-            $voucher = Voucher::find($table->bill->voucher_id);
+            $voucher = Voucher::whereId($table->bill->voucher_id)->first();
             if ($voucher) {
                 $discountPercent = $voucher->discountPercentage();
                 $discountAmount = $voucher->getDiscountAmount($totalAmount);
             }
         }
 
-        $printers = Printer::where('branch_id', $table->branch_id)
+        $printers = Printer::whereBranchId($table->branch_id)
             ->where('is_active', true)
             ->get(['id', 'name']);
 
@@ -259,11 +259,11 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
-        $customer = Customer::where('phone', $phone)->first();
+        $customer = Customer::wherePhone($phone)->first();
 
         if (!$customer) {
             if ($name) {
-                if (Customer::where('username', $phone)->exists()) {
+                if (Customer::whereUsername($phone)->exists()) {
                     return redirect()->back()->with('error', 'Tài khoản đã tồn tại.');
                 }
 
@@ -396,7 +396,7 @@ class StaffController extends Controller
         $voucher = null;
         $discountAmount = 0;
         if ($table->bill && $table->bill->voucher_id) {
-            $voucher = Voucher::find($table->bill->voucher_id);
+            $voucher = Voucher::whereId($table->bill->voucher_id)->first();
             if ($voucher) {
                 $discountAmount = $voucher->getDiscountAmount($bill->total);
             }
@@ -413,13 +413,13 @@ class StaffController extends Controller
             $table->save();
 
             if ($bill->voucher_id) {
-                $voucher = Voucher::find($bill->voucher_id);
+                $voucher = Voucher::whereId($bill->voucher_id)->first();
                 if ($voucher) {
                     $voucher->incrementTimesUsed();
                 }
             }
 
-            $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+            $customer = $bill->customer_id ? Customer::whereId($bill->customer_id)->first() : null;
             if ($customer) {
                 $pointStep = app(AppSettings::class)->point_step;
                 $pointEarned = floor($bill->final_total / $pointStep);
@@ -428,7 +428,7 @@ class StaffController extends Controller
             }
 
             if ($printerId) {
-                $printer = Printer::find($printerId);
+                $printer = Printer::whereId($printerId)->first();
                 if ($printer?->is_active) {
                     app(BillPrintService::class)->printForBill($bill, $printer);
                 }
