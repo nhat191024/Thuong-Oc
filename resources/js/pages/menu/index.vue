@@ -351,6 +351,7 @@ function handleAddToCart(dishData: { dishId: number; quantity: number; note: str
             cookingMethod: choosingDish.name,
             cookingMethodId: choosingDish.cooking_method_id,
             note: normalizedNote,
+            image: selectedFood.value.image || null,
         };
 
         billTemp.value.push(newOrder);
@@ -518,6 +519,7 @@ function addDish(foodId: number, event?: MouseEvent) {
             cookingMethod: cookingMethod,
             cookingMethodId: cookingMethodId,
             note: null,
+            image: targetFood.image || null,
         };
 
         billTemp.value.push(newOrder);

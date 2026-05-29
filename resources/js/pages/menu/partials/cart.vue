@@ -26,7 +26,7 @@
                 <!-- List -->
                 <div v-else class="space-y-4">
                     <div v-for="(dish, index) in billTemp" :key="index" class="flex gap-3 bg-base-100">
-                        <img src="/images/demo.jpg" alt="demo" class="h-24 w-24 shrink-0 rounded-xl object-cover" />
+                        <img :src="dish.image || '/images/demo.jpg'" :alt="dish.name" class="h-24 w-24 shrink-0 rounded-xl object-cover" />
 
                         <div class="flex flex-1 flex-col justify-between py-1">
                             <div>
