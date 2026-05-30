@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CacheKeys;
+use App\Services\MenuService;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -98,16 +99,24 @@ class Food extends Model implements HasMedia
     protected static function booted(): void
     {
         static::saved(function () {
-            Cache::forget(CacheKeys::MENUS->value);
+            MenuService::forgetCache();
         });
 
         static::deleted(function () {
-            Cache::forget(CacheKeys::MENUS->value);
+            MenuService::forgetCache();
+        });
+
+        static::updated(function () {
+            MenuService::forgetCache();
+        });
+
+        static::created(function () {
+            MenuService::forgetCache();
         });
 
         $clearCacheIfFood = function (Media $media): void {
             if ($media->model_type === static::class) {
-                Cache::forget(CacheKeys::MENUS->value);
+                MenuService::forgetCache();
             }
         };
 

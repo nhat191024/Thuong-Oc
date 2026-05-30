@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Cache;
 class MenuService
 {
     /**
+     * Forget all menus cache keys (both collection and array variants).
+     */
+    public static function forgetCache(): void
+    {
+        Cache::forget(CacheKeys::MENUS->value . '-collection');
+        Cache::forget(CacheKeys::MENUS->value . '-array');
+    }
+
+    /**
      * Get menus with categories and foods
      * @var bool $useCollection Whether to return as a resource collection
      *

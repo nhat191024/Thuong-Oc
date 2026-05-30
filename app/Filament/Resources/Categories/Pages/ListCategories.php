@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Categories\Pages;
 
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Enums\CacheKeys;
+use App\Services\MenuService;
 
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -25,7 +26,7 @@ class ListCategories extends ListRecords
     {
         parent::reorderTable($order);
 
-        Cache::forget(CacheKeys::MENUS->value);
+        MenuService::forgetCache();
         Cache::forget(CacheKeys::MENU_CATEGORIES->value);
     }
 }

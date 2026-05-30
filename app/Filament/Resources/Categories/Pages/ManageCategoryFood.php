@@ -6,6 +6,7 @@ use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Categories\Resources\Food\FoodResource;
 
 use App\Enums\CacheKeys;
+use App\Services\MenuService;
 
 use Filament\Tables\Table;
 use Filament\Actions\CreateAction;
@@ -53,7 +54,7 @@ class ManageCategoryFood extends ManageRelatedRecords
     {
         parent::reorderTable($order);
 
-        Cache::forget(CacheKeys::MENUS->value);
+        MenuService::forgetCache();
         Cache::forget(CacheKeys::MENU_CATEGORIES->value);
     }
 }

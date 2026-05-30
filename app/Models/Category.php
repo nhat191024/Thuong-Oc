@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CacheKeys;
+use App\Services\MenuService;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -64,12 +65,12 @@ class Category extends Model
         });
 
         static::created(function () {
-            Cache::forget(CacheKeys::MENUS->value);
+            MenuService::forgetCache();
             Cache::forget(CacheKeys::MENU_CATEGORIES->value);
         });
 
         static::updated(function () {
-            Cache::forget(CacheKeys::MENUS->value);
+            MenuService::forgetCache();
             Cache::forget(CacheKeys::MENU_CATEGORIES->value);
         });
     }
