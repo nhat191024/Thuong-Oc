@@ -9,6 +9,7 @@ export interface Food {
     name: string;
     is_favorite: boolean;
     is_discounted: boolean;
+    is_out_of_stock: boolean;
     price: number;
     discount_price: number;
     note: string | null;

@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchFoodStock> $foodStocks
+ * @property-read int|null $food_stocks_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Kitchen> $kitchens
  * @property-read int|null $kitchens_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Table> $tables
@@ -73,5 +75,10 @@ class Branch extends Model
     public function tables()
     {
         return $this->hasMany(Table::class);
+    }
+
+    public function foodStocks()
+    {
+        return $this->hasMany(BranchFoodStock::class);
     }
 }

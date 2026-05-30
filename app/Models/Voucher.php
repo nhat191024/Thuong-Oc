@@ -13,6 +13,7 @@ use BeyondCode\Vouchers\Models\Voucher as BaseVoucher;
  * @property int $model_id
  * @property \Illuminate\Support\Collection<array-key, mixed>|null $data
  * @property Carbon|null $expires_at
+ * @property int $used_count
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read \App\Models\Customer|null $customer
@@ -30,6 +31,7 @@ use BeyondCode\Vouchers\Models\Voucher as BaseVoucher;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Voucher whereModelId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Voucher whereModelType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Voucher whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Voucher whereUsedCount($value)
  * @mixin \Eloquent
  */
 class Voucher extends BaseVoucher

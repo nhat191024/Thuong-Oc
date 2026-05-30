@@ -28,6 +28,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchFoodStock> $branchFoodStocks
+ * @property-read int|null $branch_food_stocks_count
  * @property-read \App\Models\Category|null $category
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Dish> $dishes
  * @property-read int|null $dishes_count
@@ -133,5 +135,10 @@ class Food extends Model implements HasMedia
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function branchFoodStocks()
+    {
+        return $this->hasMany(BranchFoodStock::class);
     }
 }

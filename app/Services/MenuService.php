@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\CacheKeys;
 
 use App\Models\Category;
+use App\Models\BranchFoodStock;
 
 use App\Http\Resources\CategoryResourceCollection;
 
@@ -22,12 +23,34 @@ class MenuService
     }
 
     /**
+     * Forget the per-branch out-of-stock cache for a given branch.
+     */
+    public static function forgetBranchStockCache(int $branchId): void
+    {
+        Cache::forget("branch-food-stock-{$branchId}");
+    }
+
+    /**
+     * Get food IDs marked as out-of-stock for a given branch.
+     *
+     * @return array<int>
+     */
+    private function getOutOfStockFoodIds(int $branchId): array
+    {
+        return Cache::rememberForever("branch-food-stock-{$branchId}", function () use ($branchId): array {
+            return BranchFoodStock::whereBranchId($branchId)
+                ->whereIsOutOfStock(true)
+                ->pluck('food_id')
+                ->all();
+        });
+    }
+
+    /**
      * Get menus with categories and foods
-     * @var bool $useCollection Whether to return as a resource collection
      *
      * @return CategoryResourceCollection|mixed
      */
-    public function getMenus(bool $useCollection)
+    public function getMenus(bool $useCollection, ?int $branchId = null)
     {
         $menus = Cache::rememberForever(CacheKeys::MENUS->value . '-' . ($useCollection ? 'collection' : 'array'), function () use ($useCollection) {
             $categories = Category::select(['id', 'name'])
@@ -53,6 +76,20 @@ class MenuService
                 return $this->transformMenusToArray($categories);
             }
         });
+
+        if ($branchId !== null && ! $useCollection) {
+            $outOfStockIds = $this->getOutOfStockFoodIds($branchId);
+
+            $menus = $menus->map(function (array $category) use ($outOfStockIds): array {
+                $category['foods'] = collect($category['foods'])->map(function (array $food) use ($outOfStockIds): array {
+                    $food['is_out_of_stock'] = in_array($food['id'], $outOfStockIds);
+
+                    return $food;
+                })->all();
+
+                return $category;
+            });
+        }
 
         return $menus;
     }

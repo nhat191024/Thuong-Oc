@@ -37,6 +37,7 @@
                         v-for="food in menu.foods"
                         :key="food.id"
                         class="card card-side gap-3 border border-base-200 bg-base-100 p-3 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+                        :class="{ 'opacity-60': food.is_out_of_stock }"
                     >
                         <figure class="group relative h-28 w-28 shrink-0 overflow-hidden rounded-xl">
                             <img
@@ -45,6 +46,9 @@
                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                             <div class="absolute inset-0 bg-black/5 transition-colors group-hover:bg-transparent"></div>
+                            <div v-if="food.is_out_of_stock" class="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <span class="rounded-full bg-error px-2 py-0.5 text-xs font-bold text-white">Hết món</span>
+                            </div>
                         </figure>
 
                         <div class="flex min-w-0 flex-1 flex-col justify-between py-0.5">
@@ -78,11 +82,15 @@
                                 </div>
 
                                 <button
+                                    v-if="!food.is_out_of_stock"
                                     class="btn btn-circle bg-primary text-white shadow-lg shadow-primary/30 transition-transform btn-sm hover:scale-110"
                                     @click.stop="food.dishes.length > 1 ? showDishDetail(food) : addDish(food.id, $event)"
                                 >
                                     <PlusIcon class="size-5" />
                                 </button>
+                                <span v-else class="rounded-full border border-error/40 bg-error/10 px-2 py-1 text-xs font-semibold text-error">
+                                    Hết món
+                                </span>
                             </div>
                         </div>
                     </div>
