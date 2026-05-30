@@ -56,12 +56,24 @@ class Category extends Model
             $category->food()->delete();
         });
 
+        static::deleted(function () {
+            MenuService::forgetCache();
+            Cache::forget(CacheKeys::MENU_CATEGORIES->value);
+        });
+
         static::restoring(function (Category $category) {
             $category->food()->withTrashed()->restore();
         });
 
+        static::restored(function () {
+            MenuService::forgetCache();
+            Cache::forget(CacheKeys::MENU_CATEGORIES->value);
+        });
+
         static::forceDeleted(function (Category $category) {
             $category->food()->withTrashed()->forceDelete();
+            MenuService::forgetCache();
+            Cache::forget(CacheKeys::MENU_CATEGORIES->value);
         });
 
         static::created(function () {

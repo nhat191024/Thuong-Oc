@@ -20,6 +20,7 @@ class MenuService
     {
         Cache::forget(CacheKeys::MENUS->value . '-collection');
         Cache::forget(CacheKeys::MENUS->value . '-array');
+        Cache::forget(CacheKeys::MENU_CATEGORIES->value);
     }
 
     /**
