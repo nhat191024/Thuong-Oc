@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\CacheKeys;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -49,6 +52,18 @@ class Dish extends Model
         'additional_price',
         'note',
     ];
+
+    //model boot method
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+        });
+
+        static::deleted(function () {
+            Cache::forget(CacheKeys::MENUS->value);
+        });
+    }
 
     //Model Relations
     public function food()
