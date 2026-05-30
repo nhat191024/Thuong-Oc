@@ -33,6 +33,9 @@ class CustomerMenuController extends Controller
             'bill' => function ($query) {
                 $query->where('pay_status', PayStatus::UNPAID);
             },
+            'bill.billDetails' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
