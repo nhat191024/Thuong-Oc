@@ -33,7 +33,13 @@ class BillController extends Controller
         $table = Table::findOrFail($tableId);
 
         $bill = $table->bill()
-            ->with(['billDetails.dish.food', 'billDetails.dish.cookingMethod', 'customer', 'table'])
+            ->with([
+                'billDetails' => fn($q) => $q->where('status', '!=', 'cancelled'),
+                'billDetails.dish.food',
+                'billDetails.dish.cookingMethod',
+                'customer',
+                'table',
+            ])
             ->where('pay_status', PayStatus::UNPAID)
             ->first();
 
@@ -156,7 +162,7 @@ class BillController extends Controller
     {
         $paymentMethod = $request->input('payment_method');
         $table = Table::findOrFail($tableId);
-        $bill = $table->bill()->with('billDetails')->where('pay_status', PayStatus::UNPAID)->first();
+        $bill = $table->bill()->with(['billDetails' => fn($q) => $q->where('status', '!=', 'cancelled')])->where('pay_status', PayStatus::UNPAID)->first();
 
         if (!$bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
@@ -244,7 +250,7 @@ class BillController extends Controller
 
     private function processQrPayment(Bill $bill, int $discountAmount)
     {
-        $items = $bill->billDetails->map(function ($detail) {
+        $items = $bill->billDetails->where('status', '!=', 'cancelled')->map(function ($detail) {
             $name = $detail->custom_dish_name;
             if ($detail->dish) {
                 $name = $detail->dish->food->name;

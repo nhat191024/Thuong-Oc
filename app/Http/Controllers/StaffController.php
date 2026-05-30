@@ -73,6 +73,9 @@ class StaffController extends Controller
             'bill' => function ($query) {
                 $query->where('pay_status', PayStatus::UNPAID);
             },
+            'bill.billDetails' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
@@ -184,6 +187,9 @@ class StaffController extends Controller
             },
             'bill.user',
             'bill.customer',
+            'bill.billDetails' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
         ])->findOrFail($tableId);
@@ -441,7 +447,7 @@ class StaffController extends Controller
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
 
-            $items = $bill->billDetails->map(function ($detail) {
+            $items = $bill->billDetails->where('status', '!=', 'cancelled')->map(function ($detail) {
                 $name = $detail->custom_dish_name;
                 if ($detail->dish) {
                     $name = $detail->dish->food->name;
