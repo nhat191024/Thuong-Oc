@@ -70,7 +70,7 @@ class OrderController extends Controller
 
             $billTotal += $dish['price'] * $dish['quantity'];
 
-            $billDetail->load(['dish.food', 'bill.table']);
+            $billDetail->load(['dish.food', 'dish.cookingMethod', 'bill.table']);
             broadcast(new NewDishOrdered($billDetail));
         }
 
