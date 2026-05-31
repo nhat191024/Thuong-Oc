@@ -2,7 +2,7 @@
     <nav class="flex items-center justify-between bg-primary px-4 py-1">
         <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="settings.app_logo ?? ''" alt="Logo" />
         <div class="flex items-center gap-3">
-            <p class="text-2xl font-semibold text-white">Bàn {{ props.tableNumber }}</p>
+            <p class="max-w-[180px] truncate text-2xl font-semibold text-white" :title="props.tableName">{{ props.tableName }}</p>
 
             <div v-if="user" class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn avatar btn-circle btn-ghost">
@@ -61,6 +61,7 @@ const settings = computed(() => page.props.app_settings as AppSettings);
 const user = computed(() => (page.props.auth as Auth).user);
 
 interface Props {
+    tableName: string;
     tableNumber: number;
 }
 

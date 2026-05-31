@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-dvh w-dvw flex-col bg-base-100">
-        <Nav :table-number="table.table_number"></Nav>
+        <Nav :table-name="table.name" :table-number="table.table_number"></Nav>
 
         <!-- Category Tab -->
         <div class="sticky top-0 z-20 flex-none bg-base-100/95 shadow-sm backdrop-blur-sm">
@@ -161,6 +161,7 @@ import { HeartIcon, PlusIcon } from '@heroicons/vue/24/solid';
 interface Props {
     table: {
         id: string;
+        name: string;
         table_number: number;
         branch_id: number;
     };
