@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen w-full flex-col bg-base-100">
-        <Nav :center_text="'Bàn ' + props.table.table_number" :use_back_button="true" :back-url="route('staff.tables')" />
+        <Nav :center_text="props.table.name" :use_back_button="true" :back-url="route('staff.tables')" />
 
         <div class="flex flex-1 overflow-hidden">
             <!-- Left Panel: Bill & Cart -->
@@ -58,13 +58,14 @@ const page = usePage<AppPageProps>();
 interface Props {
     table: {
         id: string;
+        name: string;
         table_number: number;
         branch_id: number;
     };
     menus: Menu[];
     categories: Category[];
     currentOrder: orderDish[];
-    inactiveTables?: { id: string; table_number: number }[];
+    inactiveTables?: { id: string; name: string; table_number: number }[];
     kitchens: { id: number; name: string }[];
 }
 

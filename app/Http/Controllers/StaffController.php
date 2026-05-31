@@ -101,6 +101,7 @@ class StaffController extends Controller
             ->get()
             ->map(fn($t) => [
                 'id' => $t->id,
+                'name' => $t->name,
                 'table_number' => $t->table_number,
             ]);
 

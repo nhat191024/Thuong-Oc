@@ -134,7 +134,7 @@
                         class="btn btn-outline"
                         @click="selectMoveTable(table.id)"
                     >
-                        {{ table.table_number }}
+                        {{ table.name ?? 'Bàn ' + table.table_number }}
                     </button>
                 </div>
                 <div v-else class="text-center text-gray-500">
@@ -159,7 +159,7 @@ interface Props {
     cartItems: orderDish[];
     activeTab: 'bill' | 'cart';
     totalAmount: number;
-    inactiveTables?: { id: string; table_number: number }[];
+    inactiveTables?: { id: string; name: string; table_number: number }[];
 }
 
 defineProps<Props>();
