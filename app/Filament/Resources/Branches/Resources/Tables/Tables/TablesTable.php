@@ -40,6 +40,9 @@ class TablesTable
                 TextColumn::make('table_number')
                     ->label(__('Số Bàn'))
                     ->searchable(),
+                TextColumn::make('name')
+                    ->label(__('Tên Bàn'))
+                    ->searchable(),
                 TextColumn::make('is_active')
                     ->formatStateUsing(fn($state) => $state?->label())
                     ->label(__('Trạng Thái'))
@@ -75,12 +78,14 @@ class TablesTable
                         'qrCode' => base64_encode(QrCode::format('png')->size(400)->generate(route('customer-menu.index', ['tableId' => $record->id]))),
                         'url' => route('customer-menu.index', ['tableId' => $record->id]),
                         'tableNumber' => $record->table_number,
+                        'tableName' => $record->name,
                         'branchName' => $record->branch->name ?? null,
                         'appName' => app(AppSettings::class)->app_name,
                         'appLogo' => app(AppSettings::class)->app_logo ? secure_asset(app(AppSettings::class)->app_logo) : null,
                     ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel(__('Đóng')),
+                EditAction::make(),
                 DeleteAction::make()
                     ->disabled(fn(TableModel $record): bool => $record->is_active == TableActiveStatus::ACTIVE)
                     ->tooltip(fn(TableModel $record): ?string => $record->is_active == TableActiveStatus::ACTIVE ? __('Không thể ẩn bàn đang hoạt động') : null),

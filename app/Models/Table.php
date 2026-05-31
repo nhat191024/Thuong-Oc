@@ -12,6 +12,7 @@ use App\Enums\TableActiveStatus;
 /**
  * @property string $id
  * @property int $table_number
+ * @property string $name
  * @property int $branch_id
  * @property TableActiveStatus $is_active
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -28,6 +29,7 @@ use App\Enums\TableActiveStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereTableNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Table withTrashed(bool $withTrashed = true)
@@ -48,6 +50,7 @@ class Table extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'name',
         'table_number',
         'branch_id',
         'is_active',

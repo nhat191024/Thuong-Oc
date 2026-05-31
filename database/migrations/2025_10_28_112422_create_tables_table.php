@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('tables', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->integer('table_number');
+            $table->string('name')->nullable();
             $table->unsignedBigInteger('branch_id');
             $table->string('is_active')->default(TableActiveStatus::INACTIVE->value);
             $table->softDeletes();

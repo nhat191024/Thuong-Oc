@@ -234,11 +234,12 @@
         @foreach ($records as $index => $record)
             @php
                 $tableNumber = $record->table_number;
+                $tableName = $record->name;
                 $branchName = $record->branch->name ?? null;
                 $url = route('customer-menu.index', ['tableId' => $record->id]);
                 $qrCode = base64_encode(SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(400)->generate($url));
             @endphp
-            <div class="qr-print-card-bulk flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700" data-table="{{ $tableNumber }}" style="display: none;">
+            <div class="qr-print-card-bulk flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700" data-table="{{ $tableName }}" style="display: none;">
                 {{-- Header --}}
                 <div class="bg-primary-600 flex w-full flex-col items-center gap-2 px-5 py-4">
                     @if ($appLogo)
@@ -261,13 +262,13 @@
                 {{-- QR Code area --}}
                 <div class="flex w-full flex-col items-center gap-3 bg-white px-6 py-5">
                     <div class="border-primary-100 rounded-xl border-4 bg-white p-1 shadow-inner">
-                        <img class="h-52 w-52 max-w-none" src="data:image/png;base64,{{ $qrCode }}" alt="{{ __('Mã QR Bàn :number', ['number' => $tableNumber]) }}" />
+                        <img class="h-52 w-52 max-w-none" src="data:image/png;base64,{{ $qrCode }}" alt="{{ __('Mã QR :name', ['name' => $tableName]) }}" />
                     </div>
 
-                    {{-- Table number badge --}}
+                    {{-- Table name badge --}}
                     <div class="bg-primary-50 border-primary-200 w-full rounded-xl border px-6 py-2 text-center">
-                        <p class="text-primary-500 text-xs font-medium uppercase tracking-widest">{{ __('Số Bàn') }}</p>
-                        <p class="text-primary-700 text-4xl font-extrabold leading-tight">{{ $tableNumber }}</p>
+                        <p class="text-primary-500 text-xs font-medium uppercase tracking-widest">{{ __('Tên Bàn') }}</p>
+                        <p class="text-primary-700 text-2xl font-extrabold leading-tight">{{ $tableName }}</p>
                     </div>
 
                     <p class="text-center text-xs text-gray-400">{{ __('Quét mã để xem thực đơn & gọi món') }}</p>

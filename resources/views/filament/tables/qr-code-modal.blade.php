@@ -73,7 +73,7 @@
             }).then((dataUrl) => {
                 document.head.removeChild(tmpStyle);
                 const link = document.createElement('a');
-                link.download = 'QR-Ban-{{ $tableNumber }}.png';
+                link.download = 'QR-{{ $tableName }}.png';
                 link.href = dataUrl;
                 link.click();
                 this.downloading = false;
@@ -110,13 +110,13 @@
         {{-- QR Code area --}}
         <div class="flex flex-col items-center gap-3 bg-white px-6 py-5">
             <div class="border-primary-100 rounded-xl border-4 bg-white p-1 shadow-inner">
-                <img class="h-52 w-52" src="data:image/png;base64,{{ $qrCode }}" alt="{{ __('Mã QR Bàn :number', ['number' => $tableNumber]) }}" />
+                <img class="h-52 w-52" src="data:image/png;base64,{{ $qrCode }}" alt="{{ __('Mã QR :name', ['name' => $tableName]) }}" />
             </div>
 
-            {{-- Table number badge --}}
+            {{-- Table name badge --}}
             <div class="bg-primary-50 border-primary-200 w-full rounded-xl border px-6 py-2 text-center">
-                <p class="text-primary-500 text-xs font-medium uppercase tracking-widest">{{ __('Số Bàn') }}</p>
-                <p class="text-primary-700 text-4xl font-extrabold leading-tight">{{ $tableNumber }}</p>
+                <p class="text-primary-500 text-xs font-medium uppercase tracking-widest">{{ __('Tên Bàn') }}</p>
+                <p class="text-primary-700 text-2xl font-extrabold leading-tight">{{ $tableName }}</p>
             </div>
 
             <p class="text-center text-xs text-gray-400">{{ __('Quét mã để xem thực đơn & gọi món') }}</p>

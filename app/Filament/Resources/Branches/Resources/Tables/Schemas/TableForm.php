@@ -14,7 +14,10 @@ class TableForm
     {
         return $schema
             ->components([
-                //
+                TextInput::make('name')
+                    ->label(__('Tên Bàn'))
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 }

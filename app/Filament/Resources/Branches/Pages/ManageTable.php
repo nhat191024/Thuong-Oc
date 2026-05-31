@@ -41,10 +41,12 @@ class ManageTable extends ManageRelatedRecords
                 ->label(__('Tạo Bàn'))
                 ->action(function (): void {
                     $branchId = $this->getRecord()->id;
+                    $numberOfTables = TableModel::generateTableNumber($branchId);
 
                     TableModel::create([
                         'branch_id' => $branchId,
-                        'table_number' => TableModel::generateTableNumber($branchId),
+                        'table_number' => $numberOfTables,
+                        'name' => __('Bàn :number', ['number' => $numberOfTables]),
                     ]);
                 })
                 ->requiresConfirmation()
