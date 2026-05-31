@@ -52,7 +52,16 @@
                 </div>
             </div>
 
-            <div class="mt-12 text-center">
+            <div class="mt-8 flex gap-3">
+                <Link :href="route('login')" class="flex-1 rounded-2xl border-2 border-orange-400 bg-white py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-50">
+                    Đăng nhập
+                </Link>
+                <Link :href="route('register')" class="flex-1 rounded-2xl bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600">
+                    Đăng ký
+                </Link>
+            </div>
+
+            <div class="mt-8 text-center">
                 <div class="mb-2 flex justify-center gap-4 text-orange-800 opacity-60">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
                         <path
@@ -78,7 +87,7 @@
 
 <script setup lang="ts">
 import { AppSettings } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const page = usePage();
