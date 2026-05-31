@@ -1,6 +1,8 @@
 import '../css/app.css';
 import 'vue3-toastify/dist/index.css';
 
+import { registerSW } from 'virtual:pwa-register';
+
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
@@ -33,6 +35,8 @@ configureEcho({
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
+
+registerSW({ immediate: true });
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
