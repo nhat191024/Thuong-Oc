@@ -89,7 +89,7 @@
             <p>Tổng: {{ formatPrice(total) }}</p>
             <p class="pt-4 text-sm font-light">Tổng tiền sẽ được thanh toán vào cuối bữa. Bạn có thể thêm món kể cả khi đã xác nhận đơn!</p>
             <div class="modal-action">
-                <button class="btn bg-primary text-white" @click="placeOrder">Xác nhận</button>
+                <button class="btn bg-primary text-white" @click="placeOrder" :disabled="isPlacingOrder">{{ isPlacingOrder ? 'Đang xử lý...' : 'Xác nhận' }}</button>
             </div>
         </div>
     </dialog>
@@ -101,7 +101,7 @@ import { useHistoryStore } from '@/stores/history';
 import { useOrderStore } from '@/stores/order';
 import { orderDish } from '@/types/order';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 //icons
 import { ShoppingCartIcon } from '@heroicons/vue/24/outline';
@@ -124,6 +124,7 @@ const props = defineProps<Props>();
 const orderStore = useOrderStore();
 const historyStore = useHistoryStore();
 const total = computed(() => orderStore.totalPrice);
+const isPlacingOrder = ref(false);
 
 //emits for updating quantity and removing items
 const emit = defineEmits<{
@@ -175,6 +176,9 @@ function confirmOrder() {
  * Place order
  */
 function placeOrder() {
+    if (isPlacingOrder.value) return;
+    isPlacingOrder.value = true;
+
     const form = useForm({
         table_id: props.table.id,
         branch_id: props.table.branch_id,
@@ -202,6 +206,9 @@ function placeOrder() {
         },
         onError: (errors) => {
             console.error(errors);
+        },
+        onFinish: () => {
+            isPlacingOrder.value = false;
         },
     });
 }
