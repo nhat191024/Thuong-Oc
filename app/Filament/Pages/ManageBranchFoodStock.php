@@ -73,7 +73,13 @@ class ManageBranchFoodStock extends Page implements HasTable
                 Food::query()
                     ->with(['category:id,name'])
                     ->whereHas('dishes')
-                    ->orderBy('order')
+                    ->leftJoin('branch_food_stocks', function ($join) use ($branchId) {
+                        $join->on('branch_food_stocks.food_id', '=', 'foods.id')
+                            ->where('branch_food_stocks.branch_id', '=', $branchId);
+                    })
+                    ->orderByDesc('branch_food_stocks.is_out_of_stock')
+                    ->orderBy('foods.order')
+                    ->select('foods.*')
             )
             ->columns([
                 TextColumn::make('category.name')
