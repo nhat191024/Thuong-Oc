@@ -32,11 +32,13 @@
                                         v-model.number="tempQuantity"
                                         @blur="clampQuantity"
                                         min="1"
+                                        max="99"
                                         class="w-12 rounded border border-gray-300 px-1 py-0.5 text-center text-base font-semibold outline-none focus:border-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     />
                                     <button
                                         @click="tempQuantity++"
                                         class="transform rounded-r-full bg-primary p-1 transition-all duration-300 active:scale-125"
+                                        :disabled="tempQuantity >= 99"
                                     >
                                         <PlusIcon class="size-5 text-white" />
                                     </button>
@@ -153,11 +155,15 @@ function resetModal() {
 }
 
 /**
- * Clamp quantity to minimum 1 on blur
+ * Clamp quantity between 1 and 99 on blur
  */
 function clampQuantity() {
-    if (!tempQuantity.value || tempQuantity.value < 1) {
+    if (!tempQuantity.value || tempQuantity.value < 1 || isNaN(tempQuantity.value)) {
         tempQuantity.value = 1;
+    } else if (tempQuantity.value > 99) {
+        tempQuantity.value = 99;
+    } else {
+        tempQuantity.value = Math.floor(tempQuantity.value);
     }
 }
 
