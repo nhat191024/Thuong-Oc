@@ -179,6 +179,9 @@ function placeOrder() {
     if (isPlacingOrder.value) return;
     isPlacingOrder.value = true;
 
+    // Snapshot dishes before clearing, to allow restore on error
+    const dishesSnapshot = props.billTemp.map((dish) => ({ ...dish }));
+
     const form = useForm({
         table_id: props.table.id,
         branch_id: props.table.branch_id,
@@ -190,6 +193,9 @@ function placeOrder() {
             note: dish.note,
         })),
     });
+
+    // Clear localStorage immediately so a page reload won't re-submit the same order
+    orderStore.clearDishes();
 
     form.post(route('order.place'), {
         onSuccess: () => {
@@ -205,6 +211,8 @@ function placeOrder() {
             }
         },
         onError: (errors) => {
+            // Restore localStorage so cart items aren't lost on error
+            dishesSnapshot.forEach((dish) => orderStore.addDish(dish));
             console.error(errors);
         },
         onFinish: () => {
