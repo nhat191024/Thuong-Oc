@@ -79,7 +79,7 @@
                     </svg>
                 </div>
                 <p class="text-sm text-orange-900/60">Mở cửa: 16:00 - 23:00</p>
-                <p class="text-sm text-orange-900/60">Wifi: ThuongOc / MatKhau: 88888888</p>
+                <p class="text-sm text-orange-900/60">Wifi: Thuong Oc 269 / MatKhau: </p>
             </div>
         </div>
     </div>
