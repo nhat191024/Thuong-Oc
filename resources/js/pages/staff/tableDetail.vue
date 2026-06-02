@@ -80,6 +80,7 @@ const selectedFood = ref<Food | null>(null);
 
 const billItems = ref<orderDish[]>([]);
 const cartItems = ref<orderDish[]>([]);
+const confirmedBillItems = ref<orderDish[]>([]);
 
 // Notification State
 const isNotificationOpen = ref(false);
@@ -115,6 +116,7 @@ function handleMoveTable(newTableId: string) {
 onMounted(() => {
     if (props.currentOrder) {
         billItems.value = JSON.parse(JSON.stringify(props.currentOrder));
+        confirmedBillItems.value = JSON.parse(JSON.stringify(props.currentOrder));
     }
 });
 
@@ -283,6 +285,8 @@ function placeOrder() {
                 }
             });
 
+            confirmedBillItems.value = JSON.parse(JSON.stringify(billItems.value));
+
             cartItems.value = [];
             activeTab.value = 'bill';
 
@@ -302,7 +306,7 @@ function updateBill() {
     const itemsToAdd: any[] = [];
 
     billItems.value.forEach((currentItem) => {
-        const originalItem = props.currentOrder.find((i) => {
+        const originalItem = confirmedBillItems.value.find((i) => {
             if (currentItem.custom_dish_name) {
                 return (
                     i.custom_dish_name === currentItem.custom_dish_name &&
