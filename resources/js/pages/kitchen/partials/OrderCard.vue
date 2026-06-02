@@ -131,21 +131,24 @@ const isRemoving = ref(false);
 
 import { toast } from 'vue3-toastify';
 
-const { lengthX, isSwiping } = useSwipe(target, {
-    threshold: 10,
-    onSwipeEnd() {
-        if (props.showActions && lengthX.value > 100) {
-            isRemoving.value = true;
-            setTimeout(() => {
-                toast.success('Đã hoàn thành món ăn', {
-                    autoClose: 1000,
-                    position: toast.POSITION.BOTTOM_RIGHT,
-                });
-                emit('updateStatus', props.detail.id, 'done');
-            }, 300);
-        }
-    },
-});
+// TODO: Re-enable swipe when needed — uncomment the block below and remove the dummy refs
+// const { lengthX, isSwiping } = useSwipe(target, {
+//     threshold: 10,
+//     onSwipeEnd() {
+//         if (props.showActions && lengthX.value > 100) {
+//             isRemoving.value = true;
+//             setTimeout(() => {
+//                 toast.success('Đã hoàn thành món ăn', {
+//                     autoClose: 1000,
+//                     position: toast.POSITION.BOTTOM_RIGHT,
+//                 });
+//                 emit('updateStatus', props.detail.id, 'done');
+//             }, 300);
+//         }
+//     },
+// });
+const lengthX = ref(0);
+const isSwiping = ref(false);
 
 const cardStyle = computed(() => {
     if (!props.showActions) return {};
