@@ -118,7 +118,7 @@ const currentTab = ref('active');
 const billDetails = ref(props.billDetails);
 
 const localStorageKey = `kitchen_printer_${props.kitchen.id}`;
-const savedPrinterId = localStorage.getItem(localStorageKey);
+const savedPrinterId = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey) : null;
 const selectedPrinterId = ref<number | null>(savedPrinterId ? parseInt(savedPrinterId) : null);
 
 const savePrinterSelection = () => {
