@@ -208,8 +208,12 @@ const showCellularWarning = ref(false);
 
 onMounted(() => {
     const connection = (navigator as any).connection ?? (navigator as any).mozConnection ?? (navigator as any).webkitConnection;
-    if (connection && connection.type === 'cellular') {
-        showCellularWarning.value = true;
+    if (connection) {
+        const isCellularType = connection.type === 'cellular';
+        const isCellularEffective = connection.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType);
+        if (isCellularType || isCellularEffective) {
+            showCellularWarning.value = true;
+        }
     }
 
     if (props.currentOrder) {
