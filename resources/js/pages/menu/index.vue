@@ -123,6 +123,7 @@
             <Footer :table-number="table.table_number"></Footer>
         </div>
 
+        <Announcement v-if="props.announcement" :announcement="props.announcement"></Announcement>
         <DishDetail :food="selectedFood" @add-to-cart="handleAddToCart"></DishDetail>
         <Cart
             :bill-temp="billTemp"
@@ -169,6 +170,7 @@ import { orderDish } from '@/types/order';
 import { onMounted, ref } from 'vue';
 
 // Components
+import Announcement from './partials/announcement.vue';
 import Cart from './partials/cart.vue';
 import DishDetail from './partials/dish-detail.vue';
 import Footer from './partials/footer.vue';
@@ -177,6 +179,11 @@ import Nav from './partials/nav.vue';
 
 //icons
 import { HeartIcon, PlusIcon } from '@heroicons/vue/24/solid';
+
+interface Announcement {
+    title: string;
+    content: string;
+}
 
 interface Props {
     table: {
@@ -188,6 +195,7 @@ interface Props {
     categories: Category[];
     menus: Menu[];
     currentOrder: orderDish[];
+    announcement: Announcement | null;
 }
 
 const props = defineProps<Props>();
