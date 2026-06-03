@@ -11,6 +11,10 @@ class AppSettings extends Settings
     public ?string $app_favicon = null;
     public ?string $point_step = null;
 
+    public bool $announcement_is_active = false;
+    public string $announcement_title = '';
+    public string $announcement_content = '';
+
     public static function group(): string
     {
         return 'app';

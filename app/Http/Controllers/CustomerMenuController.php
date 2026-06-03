@@ -10,6 +10,7 @@ use App\Enums\TableActiveStatus;
 use App\Enums\PayStatus;
 
 use App\Services\MenuService;
+use App\Settings\AppSettings;
 
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,10 +19,12 @@ use Illuminate\Support\Facades\Cache;
 class CustomerMenuController extends Controller
 {
     protected MenuService $menuService;
+    protected AppSettings $appSettings;
 
     public function __construct()
     {
         $this->menuService = app(MenuService::class);
+        $this->appSettings = app(AppSettings::class);
     }
 
     /**
@@ -101,6 +104,30 @@ class CustomerMenuController extends Controller
             'table' => $table,
             'categories' => $categories,
             'currentOrder' => $currentOrder,
+            'announcement' => $this->resolveAnnouncement(),
         ]);
+    }
+
+    /**
+     * Resolve the announcement to show (only on first visit per session).
+     */
+    private function resolveAnnouncement(): ?array
+    {
+        if (! $this->appSettings->announcement_is_active) {
+            return null;
+        }
+
+        $sessionKey = 'announcement_shown';
+
+        if (session()->has($sessionKey)) {
+            return null;
+        }
+
+        session()->put($sessionKey, true);
+
+        return [
+            'title' => $this->appSettings->announcement_title,
+            'content' => $this->appSettings->announcement_content,
+        ];
     }
 }

@@ -14,6 +14,8 @@ use Filament\Schemas\Components\Section;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
 
 // use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
@@ -68,6 +70,26 @@ class AppManager extends SettingsPage
                             ->directory('uploads/app')
                             ->disk('public')
                             ->visibility('public'),
+                    ]),
+
+                Section::make(__('Thông báo khi vào trang'))
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->schema([
+                        Toggle::make('announcement_is_active')
+                            ->label(__('Bật thông báo'))
+                            ->helperText(__('Khi bật, thông báo sẽ hiển thị với khách hàng lần đầu truy cập trang order.'))
+                            ->columnSpanFull(),
+
+                        TextInput::make('announcement_title')
+                            ->label(__('Tiêu đề thông báo'))
+                            ->columnSpanFull()
+                            ->maxLength(255),
+
+                        Textarea::make('announcement_content')
+                            ->label(__('Nội dung thông báo'))
+                            ->columnSpanFull()
+                            ->rows(5),
                     ]),
             ]);
     }
