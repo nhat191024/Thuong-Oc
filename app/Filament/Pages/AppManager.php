@@ -15,7 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 
 // use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
@@ -86,10 +86,21 @@ class AppManager extends SettingsPage
                             ->columnSpanFull()
                             ->maxLength(255),
 
-                        Textarea::make('announcement_content')
+                        RichEditor::make('announcement_content')
                             ->label(__('Nội dung thông báo'))
                             ->columnSpanFull()
-                            ->rows(5),
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'strike',
+                                'link',
+                                'bulletList',
+                                'orderedList',
+                                'h2',
+                                'h3',
+                                'blockquote',
+                            ]),
                     ]),
             ]);
     }
