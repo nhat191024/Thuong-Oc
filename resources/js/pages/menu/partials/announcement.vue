@@ -1,7 +1,9 @@
 <template>
-    <dialog ref="dialogRef" id="announcementModal" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box">
-            <div class="mb-4 flex items-center gap-3">
+    <dialog ref="dialogRef" id="announcementModal" class="modal modal-middle">
+        <div class="modal-box relative">
+            <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2" @click="close">✕</button>
+
+            <div class="mb-4 flex items-center gap-3 pr-8">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                     <MegaphoneIcon class="size-5 text-primary" />
                 </div>
