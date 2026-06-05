@@ -10,7 +10,7 @@
         <div class="relative z-10 w-full max-w-md">
             <div class="mb-10 text-center">
                 <div class="mb-4 inline-block rounded-full bg-white p-1 shadow-lg">
-                    <img class="h-40 w-40 rounded-full max-[400px]:h-24 max-[400px]:w-24" :src="settings.app_logo ?? ''" alt="Logo" />
+                    <img class="h-40 w-40 rounded-full max-[400px]:h-24 max-[400px]:w-24" :src="'storage/' + (settings.app_logo ?? '')" alt="Logo" />
                 </div>
                 <h1 class="mb-2 font-serif text-4xl font-extrabold tracking-tight text-gray-800">Thương Ốc</h1>
                 <p class="font-medium text-orange-600 italic">Hương vị biển, thắm tình quê</p>
