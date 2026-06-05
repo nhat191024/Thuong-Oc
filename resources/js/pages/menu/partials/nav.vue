@@ -1,6 +1,6 @@
 <template>
     <nav class="flex items-center justify-between bg-primary px-4 py-1">
-        <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="settings.app_logo ?? ''" alt="Logo" />
+        <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="'storage/' + (settings.app_logo ?? '')" alt="Logo" />
         <div class="flex items-center gap-3">
             <p class="max-w-[180px] truncate text-2xl font-semibold text-white" :title="props.tableName">{{ props.tableName }}</p>
 
