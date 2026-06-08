@@ -64,14 +64,14 @@ class BranchesTable
                     ->visible(fn($record): bool => $record->deleted_at === null),
                 Action::make('manage-kitchen')
                     ->label(__('Quản lý nhà bếp'))
-                    ->url(fn ($record): string => BranchResource::getUrl('kitchen-management', ['record' => $record->id]))
-                    ->visible(fn ($record): bool => $record->deleted_at === null),
+                    ->url(fn($record): string => BranchResource::getUrl('kitchen-management', ['record' => $record->id]))
+                    ->visible(fn($record): bool => $record->deleted_at === null),
                 Action::make('copy-branch')
                     ->label(__('Sao chép'))
                     ->icon(Heroicon::OutlinedDocumentDuplicate)
                     ->color('info')
-                    ->visible(fn ($record): bool => $record->deleted_at === null)
-                    ->modalHeading(fn ($record): string => __('Sao chép chi nhánh: :name', ['name' => $record->name]))
+                    ->visible(fn($record): bool => $record->deleted_at === null)
+                    ->modalHeading(fn($record): string => __('Sao chép chi nhánh: :name', ['name' => $record->name]))
                     ->modalSubmitActionLabel(__('Sao chép'))
                     ->form([
                         Radio::make('copy_mode')
@@ -85,15 +85,15 @@ class BranchesTable
                             ->live(),
                         TextInput::make('new_branch_name')
                             ->label(__('Tên chi nhánh mới'))
-                            ->required(fn (Get $get): bool => $get('copy_mode') === 'new')
-                            ->visible(fn (Get $get): bool => $get('copy_mode') === 'new')
+                            ->required(fn(Get $get): bool => $get('copy_mode') === 'new')
+                            ->visible(fn(Get $get): bool => $get('copy_mode') === 'new')
                             ->maxLength(255),
                         Select::make('target_branch_id')
                             ->label(__('Chi nhánh đích'))
-                            ->options(fn () => Branch::query()->pluck('name', 'id'))
+                            ->options(fn() => Branch::query()->pluck('name', 'id'))
                             ->searchable()
-                            ->required(fn (Get $get): bool => $get('copy_mode') === 'existing')
-                            ->visible(fn (Get $get): bool => $get('copy_mode') === 'existing'),
+                            ->required(fn(Get $get): bool => $get('copy_mode') === 'existing')
+                            ->visible(fn(Get $get): bool => $get('copy_mode') === 'existing'),
                         Radio::make('existing_copy_strategy')
                             ->label(__('Cách sao chép'))
                             ->options([
@@ -101,8 +101,8 @@ class BranchesTable
                                 'merge' => __('Thêm vào (giữ dữ liệu cũ, thêm dữ liệu mới)'),
                             ])
                             ->default('overwrite')
-                            ->required(fn (Get $get): bool => $get('copy_mode') === 'existing')
-                            ->visible(fn (Get $get): bool => $get('copy_mode') === 'existing'),
+                            ->required(fn(Get $get): bool => $get('copy_mode') === 'existing')
+                            ->visible(fn(Get $get): bool => $get('copy_mode') === 'existing'),
                         Toggle::make('copy_kitchens')
                             ->label(__('Sao chép bếp'))
                             ->default(true),
@@ -169,6 +169,7 @@ class BranchesTable
                                         'table_number' => $isMerge
                                             ? TableModel::generateTableNumber($targetBranch->id)
                                             : $tableRecord->table_number,
+                                        'name' => $tableRecord->name,
                                         'is_active' => $tableRecord->is_active,
                                     ]);
                                 }
