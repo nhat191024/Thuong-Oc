@@ -41,7 +41,7 @@ class KitchenController extends Controller
     /**
      * Show kitchen details
      *
-     * @param  \App\Models\Kitchen  $kitchen
+     * @param  Kitchen  $kitchen
      * @return \Inertia\Response
      */
     public function show(Kitchen $kitchen)
@@ -83,8 +83,8 @@ class KitchenController extends Controller
     /**
      * Update bill detail status
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\BillDetail  $billDetail
+     * @param  Request  $request
+     * @param  BillDetail  $billDetail
      * @return \Illuminate\Http\RedirectResponse
      */
     public function updateStatus(Request $request, BillDetail $billDetail)
@@ -112,8 +112,8 @@ class KitchenController extends Controller
     /**
      * Get kitchen history
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Kitchen  $kitchen
+     * @param  Request  $request
+     * @param  Kitchen  $kitchen
      * @return \Illuminate\Http\JsonResponse
      */
     public function history(Request $request, Kitchen $kitchen)
