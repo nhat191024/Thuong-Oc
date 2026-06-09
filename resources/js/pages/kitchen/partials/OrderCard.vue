@@ -13,7 +13,8 @@
             <div class="mb-2 flex items-start justify-between">
                 <div class="flex flex-col items-end gap-2">
                     <div class="flex flex-col items-start">
-                        <span class="text-2xl font-bold">Bàn {{ detail.bill.table.table_number }}</span>
+                        <span class="text-lg font-medium">#{{ detail.bill.table.table_number }}</span>
+                        <span class="max-w-37.5 truncate text-2xl font-bold" :title="detail.bill.table.name">{{ detail.bill.table.name }}</span>
                         <span class="text-sm text-gray-500">{{ formatTime(detail.created_at) }}</span>
                         <span v-if="showActions" class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
                     </div>
@@ -99,6 +100,7 @@ interface Dish {
 interface Table {
     id: number;
     table_number: string;
+    name: string;
 }
 
 interface Bill {

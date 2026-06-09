@@ -61,6 +61,7 @@ interface Dish {
 interface Table {
     id: number;
     table_number: string;
+    name: string;
 }
 
 interface Bill {
