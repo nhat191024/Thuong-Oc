@@ -9,21 +9,24 @@ use App\Http\Resources\BillHistoryDetailResource;
 use App\Http\Resources\BillHistoryResource;
 
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Request;
 
 use App\Models\Bill;
 use App\Models\Table;
 
 class BillHistoryController extends Controller
 {
-    public function index(string $tableId): AnonymousResourceCollection
+    public function index(Request $request, string $tableId): AnonymousResourceCollection
     {
         Table::findOrFail($tableId);
+
+        $perPage = (int) $request->query('per_page', 10);
 
         $bills = Bill::query()
             ->where('table_id', $tableId)
             ->where('pay_status', PayStatus::PAID)
             ->orderByDesc('time_out')
-            ->get();
+            ->paginate($perPage);
 
         return BillHistoryResource::collection($bills);
     }
