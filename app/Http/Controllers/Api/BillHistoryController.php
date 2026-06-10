@@ -8,12 +8,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BillHistoryDetailResource;
 use App\Http\Resources\BillHistoryResource;
 
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
 use App\Models\Bill;
 use App\Models\Table;
 
 class BillHistoryController extends Controller
 {
-    public function index(string $tableId): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function index(string $tableId): AnonymousResourceCollection
     {
         Table::findOrFail($tableId);
 
