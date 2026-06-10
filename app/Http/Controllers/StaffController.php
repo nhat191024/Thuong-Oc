@@ -105,6 +105,17 @@ class StaffController extends Controller
                 'table_number' => $t->table_number,
             ]);
 
+        $activeTables = Table::whereBranchId($table->branch_id)
+            ->where('is_active', TableActiveStatus::ACTIVE)
+            ->where('id', '!=', $tableId)
+            ->orderBy('table_number', 'asc')
+            ->get()
+            ->map(fn($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'table_number' => $t->table_number,
+            ]);
+
         $kitchens = Kitchen::whereBranchId($table->branch_id)
             ->select(['id', 'name'])
             ->get();
@@ -115,6 +126,7 @@ class StaffController extends Controller
             'categories' => $categories,
             'currentOrder' => $currentOrder,
             'inactiveTables' => $inactiveTables,
+            'activeTables' => $activeTables,
             'kitchens' => $kitchens,
         ]);
     }
@@ -505,6 +517,55 @@ class StaffController extends Controller
         }
 
         return redirect()->back();
+    }
+
+    /**
+     * Merge bill from current table into another active table's bill
+     *
+     * @param Request $request
+     * @param string $tableId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function mergeTable(Request $request, string $tableId)
+    {
+        $request->validate([
+            'target_table_id' => 'required|exists:tables,id|different:' . $tableId,
+        ]);
+
+        $targetTableId = $request->input('target_table_id');
+        $sourceTable = Table::findOrFail($tableId);
+        $targetTable = Table::findOrFail($targetTableId);
+
+        if ($targetTable->is_active !== TableActiveStatus::ACTIVE) {
+            return redirect()->back()->with('error', 'Bàn đích không có đơn đang hoạt động.');
+        }
+
+        $sourceBill = $sourceTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
+        $targetBill = $targetTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
+
+        if (!$sourceBill) {
+            return redirect()->back()->with('error', 'Bàn hiện tại không có hóa đơn để gộp.');
+        }
+
+        if (!$targetBill) {
+            return redirect()->back()->with('error', 'Bàn đích không có hóa đơn đang chờ thanh toán.');
+        }
+
+        // Move all bill details from source to target
+        $sourceBill->billDetails()->update(['bill_id' => $targetBill->id]);
+
+        // Recalculate target bill total
+        $newTotal = $targetBill->billDetails()->sum(\DB::raw('quantity * price'));
+        $targetBill->total = $newTotal;
+        $targetBill->final_total = $newTotal - ($targetBill->discount ?? 0);
+        $targetBill->save();
+
+        // Delete source bill and free the source table
+        $sourceBill->delete();
+        $sourceTable->is_active = TableActiveStatus::INACTIVE;
+        $sourceTable->save();
+
+        return redirect()->route('staff.table.show', $targetTableId)->with('success', 'Gộp đơn thành công.');
     }
 
     /**

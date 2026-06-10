@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/table/{tableId}/remove-customer', [StaffController::class, 'removeCustomer'])->name('table.remove-customer');
         Route::post('/table/{tableId}/pay', [StaffController::class, 'processPayment'])->name('table.pay');
         Route::post('/table/{tableId}/move', [StaffController::class, 'moveTable'])->name('table.move');
+        Route::post('/table/{tableId}/merge', [StaffController::class, 'mergeTable'])->name('table.merge');
     });
 
     Route::prefix('kitchen')->name('kitchen.')->middleware('role:kitchen')->group(function () {

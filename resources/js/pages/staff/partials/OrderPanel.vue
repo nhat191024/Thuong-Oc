@@ -1,5 +1,12 @@
 <template>
-    <div class="flex w-1/3 flex-col border-r border-base-300 bg-base-100">
+    <div class="relative flex w-1/3 flex-col border-r border-base-300 bg-base-100">
+        <!-- Merge Loading Overlay -->
+        <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
+            <div v-if="isMerging" class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-base-100/80 backdrop-blur-sm">
+                <span class="loading loading-spinner loading-lg text-warning"></span>
+                <p class="font-semibold text-base-content">Đang gộp đơn...</p>
+            </div>
+        </Transition>
         <!-- Tabs -->
         <div role="tablist" class="tabs-bordered tabs w-full">
             <a
@@ -117,6 +124,7 @@
                     <ul tabindex="0" class="dropdown-content menu z-50 mb-2 w-52 rounded-box border border-black bg-base-100 p-2 shadow-xl">
                         <li><a @click="$emit('payment')">Thanh toán</a></li>
                         <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
+                        <li><a @click="openMergeTableModal">Gộp đơn</a></li>
                     </ul>
                 </div>
             </div>
@@ -147,12 +155,76 @@
                 </div>
             </div>
         </dialog>
+
+        <!-- Merge Table Modal -->
+        <dialog id="merge_table_modal" class="modal">
+            <div class="modal-box max-w-lg">
+                <h3 class="flex items-center gap-2 font-bold text-lg">
+                    <ArrowsRightLeftIcon class="size-5 text-warning" />
+                    Gộp đơn
+                </h3>
+
+                <!-- Flow description -->
+                <div class="alert alert-warning mt-3">
+                    <InformationCircleIcon class="size-5 shrink-0" />
+                    <div class="text-sm">
+                        <p class="font-semibold">Lưu ý về luồng gộp đơn:</p>
+                        <ol class="mt-1 list-inside list-decimal space-y-1">
+                            <li>Toàn bộ món ăn của bàn hiện tại sẽ được <strong>chuyển vào bàn đích</strong>.</li>
+                            <li>Đơn của bàn hiện tại sẽ bị <strong>xóa</strong>.</li>
+                            <li>Bàn hiện tại sẽ được đặt về trạng thái <strong>trống</strong>.</li>
+                            <li>Bạn sẽ được chuyển sang <strong>trang bàn đích</strong> để tiếp tục phục vụ.</li>
+                        </ol>
+                        <p class="mt-2 text-error font-medium">⚠ Hành động này không thể hoàn tác!</p>
+                    </div>
+                </div>
+
+                <p class="mt-4 font-medium">Chọn bàn đích để gộp vào:</p>
+                <div v-if="activeTables && activeTables.length > 0" class="mt-2 grid grid-cols-4 gap-2">
+                    <button
+                        v-for="table in activeTables"
+                        :key="table.id"
+                        class="btn btn-outline btn-warning"
+                        @click="confirmMergeTable(table.id, table.name ?? 'Bàn ' + table.table_number)"
+                    >
+                        {{ table.name ?? 'Bàn ' + table.table_number }}
+                    </button>
+                </div>
+                <div v-else class="mt-2 text-center text-gray-500">
+                    Không có bàn nào đang hoạt động để gộp.
+                </div>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Đóng</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Merge Confirm Dialog -->
+        <dialog id="merge_confirm_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg text-error">Xác nhận gộp đơn</h3>
+                <p class="py-3">
+                    Bạn chắc chắn muốn gộp đơn của bàn này vào
+                    <strong>{{ pendingMergeTableName }}</strong>?
+                </p>
+                <p class="text-sm text-base-content/60">Đơn hiện tại sẽ bị xóa và bàn sẽ được giải phóng.</p>
+                <div class="modal-action">
+                    <button class="btn btn-error" @click="executeMerge">Xác nhận gộp</button>
+                    <form method="dialog">
+                        <button class="btn">Hủy</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import { orderDish } from '@/types/order';
-import { MinusIcon, PaperAirplaneIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid';
+import { ArrowsRightLeftIcon, InformationCircleIcon, MinusIcon, PaperAirplaneIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/solid';
+import { ref } from 'vue';
 
 interface Props {
     billItems: orderDish[];
@@ -160,6 +232,8 @@ interface Props {
     activeTab: 'bill' | 'cart';
     totalAmount: number;
     inactiveTables?: { id: string; name: string; table_number: number }[];
+    activeTables?: { id: string; name: string; table_number: number }[];
+    isMerging?: boolean;
 }
 
 defineProps<Props>();
@@ -173,7 +247,11 @@ const emit = defineEmits<{
     updateBill: [];
     payment: [];
     moveTable: [tableId: string];
+    mergeTable: [tableId: string];
 }>();
+
+const pendingMergeTableId = ref<string>('');
+const pendingMergeTableName = ref<string>('');
 
 function formatPrice(price: number): string {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -188,5 +266,27 @@ function selectMoveTable(tableId: string) {
     emit('moveTable', tableId);
     const modal = document.getElementById('move_table_modal') as HTMLDialogElement;
     if (modal) modal.close();
+}
+
+function openMergeTableModal() {
+    const modal = document.getElementById('merge_table_modal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
+
+function confirmMergeTable(tableId: string, tableName: string) {
+    pendingMergeTableId.value = tableId;
+    pendingMergeTableName.value = tableName;
+
+    const mergeModal = document.getElementById('merge_table_modal') as HTMLDialogElement;
+    if (mergeModal) mergeModal.close();
+
+    const confirmModal = document.getElementById('merge_confirm_modal') as HTMLDialogElement;
+    if (confirmModal) confirmModal.showModal();
+}
+
+function executeMerge() {
+    emit('mergeTable', pendingMergeTableId.value);
+    const confirmModal = document.getElementById('merge_confirm_modal') as HTMLDialogElement;
+    if (confirmModal) confirmModal.close();
 }
 </script>

@@ -10,6 +10,8 @@
                 v-model:active-tab="activeTab"
                 :total-amount="totalAmount"
                 :inactive-tables="inactiveTables"
+                :active-tables="activeTables"
+                :is-merging="isMerging"
                 @update-bill-quantity="updateBillQuantity"
                 @update-cart-quantity="updateCartQuantity"
                 @remove-from-cart="removeFromCart"
@@ -17,6 +19,7 @@
                 @update-bill="updateBill"
                 @payment="handlePayment"
                 @move-table="handleMoveTable"
+                @merge-table="handleMergeTable"
             />
 
             <!-- Right Panel: Menu -->
@@ -43,7 +46,7 @@ import { Category } from '@/types/category';
 import { Food, Menu } from '@/types/menu';
 import { orderDish } from '@/types/order';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import NotificationModal from '@/pages/components/NotificationModal.vue';
 import Nav from '../components/nav.vue';
@@ -66,6 +69,7 @@ interface Props {
     categories: Category[];
     currentOrder: orderDish[];
     inactiveTables?: { id: string; name: string; table_number: number }[];
+    activeTables?: { id: string; name: string; table_number: number }[];
     kitchens: { id: number; name: string }[];
 }
 
@@ -86,6 +90,7 @@ const confirmedBillItems = ref<orderDish[]>([]);
 const isNotificationOpen = ref(false);
 const notificationTitle = ref('');
 const notificationMessage = ref('');
+const isMerging = ref(false);
 
 function showNotification(title: string, message: string) {
     notificationTitle.value = title;
@@ -112,13 +117,39 @@ function handleMoveTable(newTableId: string) {
     );
 }
 
+function handleMergeTable(targetTableId: string) {
+    isMerging.value = true;
+    router.post(
+        route('staff.table.merge', props.table.id),
+        {
+            target_table_id: targetTableId,
+        },
+        {
+            onSuccess: () => {
+                isMerging.value = false;
+                const status = page.props.flash.error ? 'Thất bại' : 'Thành công';
+                const message = page.props.flash.error ?? page.props.flash.success;
+                showNotification(status, message || '');
+            },
+            onError: (errors) => {
+                isMerging.value = false;
+                showNotification('Lỗi', errors.error || 'Có lỗi xảy ra khi gộp đơn');
+            },
+        },
+    );
+}
+
+function initBillFromOrder() {
+    billItems.value = JSON.parse(JSON.stringify(props.currentOrder ?? []));
+    confirmedBillItems.value = JSON.parse(JSON.stringify(props.currentOrder ?? []));
+    cartItems.value = [];
+}
+
 // Initialize
-onMounted(() => {
-    if (props.currentOrder) {
-        billItems.value = JSON.parse(JSON.stringify(props.currentOrder));
-        confirmedBillItems.value = JSON.parse(JSON.stringify(props.currentOrder));
-    }
-});
+onMounted(initBillFromOrder);
+
+// Re-initialize when Inertia navigates to same component (e.g. after mergeTable redirect)
+watch(() => props.currentOrder, initBillFromOrder, { deep: true });
 
 // Computed
 const totalAmount = computed(() => {
