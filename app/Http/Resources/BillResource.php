@@ -25,7 +25,7 @@ class BillResource extends JsonResource
         $voucherCode = null;
 
         if ($this->voucher_id) {
-            $voucher = Voucher::find($this->voucher_id);
+            $voucher = Voucher::whereId($this->voucher_id)->first();
             if ($voucher) {
                 $discountPercent = $voucher->discountPercentage();
                 $discountAmount = $voucher->getDiscountAmount($totalAmount);
