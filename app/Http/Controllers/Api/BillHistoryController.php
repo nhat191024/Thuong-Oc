@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Common;
+namespace App\Http\Controllers\Api;
 
 use App\Enums\PayStatus;
 

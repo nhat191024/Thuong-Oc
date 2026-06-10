@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BillController;
-use App\Http\Controllers\Api\Common\BillHistoryController;
+use App\Http\Controllers\Api\BillHistoryController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'OK']);
