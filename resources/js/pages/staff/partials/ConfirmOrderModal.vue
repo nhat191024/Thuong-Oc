@@ -9,7 +9,10 @@
             <p>Tổng: {{ formatPrice(totalAmount) }}</p>
             <p class="pt-4 text-sm font-light">Đơn hàng sẽ được gửi đến bếp để chuẩn bị.</p>
             <div class="modal-action">
-                <button class="btn bg-primary text-white" @click="$emit('confirm')">Xác nhận</button>
+                <button class="btn bg-primary text-white" :disabled="isLoading" @click="$emit('confirm')">
+                    <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
+                    {{ isLoading ? 'Đang gửi...' : 'Xác nhận' }}
+                </button>
             </div>
         </div>
     </dialog>
@@ -19,6 +22,7 @@
 interface Props {
     itemCount: number;
     totalAmount: number;
+    isLoading?: boolean;
 }
 
 defineProps<Props>();

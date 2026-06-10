@@ -33,7 +33,7 @@
         <CustomDishModal :kitchens="kitchens" @add-custom-dish="handleAddCustomDish" />
 
         <!-- Confirm Order Modal -->
-        <ConfirmOrderModal :item-count="cartItems.length" :total-amount="totalAmount" @confirm="placeOrder" />
+        <ConfirmOrderModal :item-count="cartItems.length" :total-amount="totalAmount" :is-loading="isPlacingOrder" @confirm="placeOrder" />
 
         <NotificationModal v-model:isOpen="isNotificationOpen" :title="notificationTitle" :message="notificationMessage" />
     </div>
@@ -91,6 +91,7 @@ const isNotificationOpen = ref(false);
 const notificationTitle = ref('');
 const notificationMessage = ref('');
 const isMerging = ref(false);
+const isPlacingOrder = ref(false);
 
 function showNotification(title: string, message: string) {
     notificationTitle.value = title;
@@ -279,6 +280,7 @@ function sendOrder() {
 }
 
 function placeOrder() {
+    isPlacingOrder.value = true;
     const form = useForm({
         table_id: props.table.id,
         branch_id: props.table.branch_id,
@@ -294,6 +296,7 @@ function placeOrder() {
 
     form.post(route('order.place'), {
         onSuccess: () => {
+            isPlacingOrder.value = false;
             cartItems.value.forEach((dish) => historyStore.addHistory({ ...dish }));
 
             cartItems.value.forEach((item) => {
@@ -327,6 +330,7 @@ function placeOrder() {
             }
         },
         onError: (errors) => {
+            isPlacingOrder.value = false;
             console.error(errors);
             showNotification('Lỗi', 'Có lỗi xảy ra khi gửi đơn!');
         },
