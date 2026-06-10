@@ -40,7 +40,7 @@ class BillHistoryController extends Controller
             ->where('pay_status', PayStatus::PAID)
             ->where('id', $billId)
             ->with([
-                'billDetails',
+                'billDetails' => fn($q) => $q->where('status', '!=', 'cancelled'),
                 'billDetails.dish.food',
                 'billDetails.dish.cookingMethod',
                 'customer',
