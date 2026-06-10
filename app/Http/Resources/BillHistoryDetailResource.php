@@ -6,6 +6,8 @@ use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use Carbon\Carbon;
+
 class BillHistoryDetailResource extends JsonResource
 {
     /**
@@ -21,7 +23,7 @@ class BillHistoryDetailResource extends JsonResource
         $voucherCode = null;
 
         if ($this->voucher_id) {
-            $voucher = Voucher::find($this->voucher_id);
+            $voucher = Voucher::whereId($this->voucher_id)->first();
             if ($voucher) {
                 $discountAmount = $voucher->getDiscountAmount($totalAmount);
                 $voucherCode = $voucher->code;
@@ -32,10 +34,8 @@ class BillHistoryDetailResource extends JsonResource
             'id' => $this->id,
             'table_id' => $this->table_id,
             'table_number' => $this->table->table_number,
-            'time_in' => $this->time_in,
-            'time_out' => $this->time_out,
-            'date_in' => $this->time_in ? \Carbon\Carbon::parse($this->time_in)->toDateString() : null,
-            'date_out' => $this->time_out ? \Carbon\Carbon::parse($this->time_out)->toDateString() : null,
+            'time_in' => $this->time_in ? Carbon::parse($this->time_in)->toDateTimeString() : null,
+            'time_out' => $this->time_out ? Carbon::parse($this->time_out)->toDateTimeString() : null,
             'customer' => $this->customer ? [
                 'id' => $this->customer->id,
                 'name' => $this->customer->name,
