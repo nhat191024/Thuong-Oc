@@ -17,15 +17,11 @@ class BillHistoryDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $totalAmount = $this->billDetails->sum(fn($d) => $d->quantity * $d->price);
-
-        $discountAmount = 0;
         $voucherCode = null;
 
         if ($this->voucher_id) {
             $voucher = Voucher::whereId($this->voucher_id)->first();
             if ($voucher) {
-                $discountAmount = $voucher->getDiscountAmount($totalAmount);
                 $voucherCode = $voucher->code;
             }
         }
@@ -42,8 +38,8 @@ class BillHistoryDetailResource extends JsonResource
                 'phone' => $this->customer->phone,
             ] : null,
             'details' => BillDetailResource::collection($this->billDetails),
-            'total_amount' => $totalAmount,
-            'discount_amount' => $discountAmount,
+            'total_amount' => $this->total,
+            'discount_amount' => $this->discount,
             'voucher_code' => $voucherCode,
             'final_total' => $this->final_total,
             'payment_method' => $this->payment_method,
