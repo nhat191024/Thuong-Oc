@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BillController;
+use App\Http\Controllers\Api\Common\BillHistoryController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'OK']);
@@ -27,4 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tables/{table}/bill/discount', [BillController::class, 'removeDiscount']);
     Route::post('/tables/{table}/bill/pay', [BillController::class, 'processPayment']);
     Route::patch('/tables/{table}/bill/status', [BillController::class, 'updateStatus']);
+
+    // Bill History
+    Route::get('/tables/{table}/bill-history', [BillHistoryController::class, 'index']);
+    Route::get('/tables/{table}/bill-history/{bill}', [BillHistoryController::class, 'show']);
 });
