@@ -41,7 +41,7 @@ class BillHistoryDetailResource extends JsonResource
             'total_amount' => $this->total,
             'discount_amount' => $this->discount,
             'voucher_code' => $voucherCode,
-            'final_total' => $this->final_total,
+            'final_amount' => $this->final_total,
             'payment_method' => $this->payment_method,
             'pay_status' => $this->pay_status,
         ];
