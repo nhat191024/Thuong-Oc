@@ -59,7 +59,7 @@ class ManageBranchFoodStock extends Page implements HasTable
                     ->options(Branch::query()->pluck('name', 'id'))
                     ->required()
                     ->live()
-                    ->afterStateUpdated(fn () => $this->resetTable()),
+                    ->afterStateUpdated(fn() => $this->resetTable()),
             ])
             ->columns(3);
     }
@@ -80,6 +80,9 @@ class ManageBranchFoodStock extends Page implements HasTable
                     ->orderByDesc('branch_food_stocks.is_out_of_stock')
                     ->orderBy('foods.order')
                     ->select('foods.*')
+                    ->selectRaw(
+                        'COALESCE(branch_food_stocks.is_out_of_stock, 0) as stock_is_out_of_stock'
+                    )
             )
             ->columns([
                 TextColumn::make('category.name')
@@ -91,17 +94,11 @@ class ManageBranchFoodStock extends Page implements HasTable
                 TextColumn::make('price')
                     ->label(__('Giá'))
                     ->money('vnd'),
-                IconColumn::make('is_out_of_stock')
+                IconColumn::make('stock_is_out_of_stock')
                     ->label(__('Hết món'))
-                    ->state(function (Food $record) use ($branchId): bool {
-                        if ($branchId === null) {
-                            return false;
-                        }
-
-                        return BranchFoodStock::whereBranchId($branchId)
-                            ->whereFoodId($record->id)
-                            ->value('is_out_of_stock') ?? false;
-                    })
+                    ->state(
+                        fn(Food $record): bool => (bool) $record->getAttribute('stock_is_out_of_stock')
+                    )
                     ->boolean()
                     ->trueIcon(Heroicon::XCircle)
                     ->falseIcon(Heroicon::CheckCircle)
@@ -129,9 +126,7 @@ class ManageBranchFoodStock extends Page implements HasTable
                             return false;
                         }
 
-                        return ! (BranchFoodStock::whereBranchId($branchId)
-                            ->whereFoodId($record->id)
-                            ->value('is_out_of_stock') ?? false);
+                        return ! (bool) $record->getAttribute('stock_is_out_of_stock');
                     }),
                 Action::make('markAvailable')
                     ->label(__('Đánh dấu còn món'))
@@ -154,9 +149,7 @@ class ManageBranchFoodStock extends Page implements HasTable
                             return false;
                         }
 
-                        return BranchFoodStock::whereBranchId($branchId)
-                            ->whereFoodId($record->id)
-                            ->value('is_out_of_stock') ?? false;
+                        return (bool) $record->getAttribute('stock_is_out_of_stock');
                     }),
             ])
             ->defaultSort('category.name');
