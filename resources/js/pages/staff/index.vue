@@ -1,6 +1,12 @@
 <template>
     <div class="flex h-screen flex-col">
-        <Nav :center_text="'Chi nhánh ' + props.branchName" />
+        <Nav :center_text="'Chi nhánh ' + props.branchName">
+            <template #actions>
+                <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-white text-primary btn-sm hover:bg-white/90">
+                    Quản lý tồn kho
+                </Link>
+            </template>
+        </Nav>
 
         <div class="flex-1 overflow-hidden bg-gray-100">
             <div class="h-full overflow-x-auto p-4">

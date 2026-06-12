@@ -6,7 +6,9 @@ use Inertia\Inertia;
 
 use App\Models\Table;
 use App\Models\Branch;
+use App\Models\BranchFoodStock;
 use App\Models\Category;
+use App\Models\Food;
 use App\Models\Kitchen;
 use App\Models\Voucher;
 use App\Models\Customer;
@@ -22,6 +24,7 @@ use App\Http\Resources\TableResource;
 use App\Settings\AppSettings;
 
 use App\Models\Printer;
+use App\Http\Requests\UpdateStaffFoodStockRequest;
 use App\Services\BillPrintService;
 use App\Services\MenuService;
 use App\Services\PaymentService;
@@ -59,6 +62,59 @@ class StaffController extends Controller
             'tables' => $tables,
             'branchName' => $branchName,
         ]);
+    }
+
+    public function stockIndex(): \Inertia\Response
+    {
+        $branchId = Auth::user()->branch_id;
+        $branchName = Branch::whereId($branchId)->value('name');
+
+        $foods = Food::query()
+            ->with(['category:id,name'])
+            ->whereHas('dishes')
+            ->leftJoin('branch_food_stocks', function ($join) use ($branchId): void {
+                $join->on('branch_food_stocks.food_id', '=', 'foods.id')
+                    ->where('branch_food_stocks.branch_id', '=', $branchId);
+            })
+            ->orderByDesc('branch_food_stocks.is_out_of_stock')
+            ->orderBy('foods.order')
+            ->orderBy('foods.name')
+            ->select('foods.*')
+            ->selectRaw('COALESCE(branch_food_stocks.is_out_of_stock, 0) as stock_is_out_of_stock')
+            ->get()
+            ->map(fn (Food $food): array => [
+                'id' => $food->id,
+                'name' => $food->name,
+                'price' => $food->price,
+                'category_name' => $food->category?->name ?? __('Chưa phân loại'),
+                'is_out_of_stock' => (bool) $food->stock_is_out_of_stock,
+            ]);
+
+        return Inertia::render('staff/stock', [
+            'branchName' => $branchName,
+            'foods' => $foods,
+        ]);
+    }
+
+    public function updateStock(UpdateStaffFoodStockRequest $request, Food $food): \Illuminate\Http\RedirectResponse
+    {
+        $branchId = Auth::user()->branch_id;
+
+        BranchFoodStock::updateOrCreate(
+            [
+                'branch_id' => $branchId,
+                'food_id' => $food->id,
+            ],
+            [
+                'is_out_of_stock' => $request->boolean('is_out_of_stock'),
+            ]
+        );
+
+        $message = $request->boolean('is_out_of_stock')
+            ? __('Đã đánh dấu hết món.')
+            : __('Đã đánh dấu còn món.');
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**

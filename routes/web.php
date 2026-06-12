@@ -31,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('staff')->name('staff.')->middleware('role:staff')->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('tables');
+        Route::get('/stock', [StaffController::class, 'stockIndex'])->name('stock.index');
+        Route::patch('/stock/{food}', [StaffController::class, 'updateStock'])->name('stock.update');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
         Route::post('/table/{tableId}/apply-discount', [StaffController::class, 'applyDiscount'])->name('table.apply-discount');
