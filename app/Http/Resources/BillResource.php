@@ -15,7 +15,35 @@ class BillResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $billDetails = BillDetailResource::collection($this->billDetails);
+        $billDetails = $this->billDetails
+            ->groupBy(fn ($detail): string => $detail->dish_id ? "dish-{$detail->dish_id}" : "custom-{$detail->id}")
+            ->map(function ($details): array {
+                $detail = $details->first();
+                $notes = $details
+                    ->pluck('note')
+                    ->filter()
+                    ->unique();
+
+                $name = $detail->custom_dish_name;
+                $cookingMethod = null;
+
+                if ($detail->dish) {
+                    $name = $detail->dish->food->name;
+                    $cookingMethod = $detail->dish->cookingMethod?->name;
+                }
+
+                return [
+                    'id' => $detail->id,
+                    'name' => $name,
+                    'quantity' => $details->sum('quantity'),
+                    'price' => $detail->price,
+                    'total' => $details->sum(fn ($detail): int|float => $detail->quantity * $detail->price),
+                    'cooking_method' => $cookingMethod,
+                    'note' => $notes->isNotEmpty() ? $notes->implode(', ') : null,
+                ];
+            })
+            ->values();
+
         $totalAmount = $this->billDetails->sum(function ($detail) {
             return $detail->quantity * $detail->price;
         });
