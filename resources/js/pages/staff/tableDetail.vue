@@ -348,6 +348,8 @@ function updateBill() {
             const quantityDiff = currentItem.quantity - originalItem.quantity;
             if (quantityDiff > 0) {
                 itemsToAdd.push({
+                    dish_id: currentItem.dishId,
+                    custom_dish_name: currentItem.custom_dish_name,
                     custom_kitchen_id: currentItem.custom_kitchen_id,
                     quantity: quantityDiff,
                     price: currentItem.price,
