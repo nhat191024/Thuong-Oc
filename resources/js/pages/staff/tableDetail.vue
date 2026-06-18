@@ -32,9 +32,6 @@
         <!-- Custom Dish Modal -->
         <CustomDishModal :kitchens="kitchens" @add-custom-dish="handleAddCustomDish" />
 
-        <!-- Confirm Order Modal -->
-        <ConfirmOrderModal :item-count="cartItems.length" :total-amount="totalAmount" :is-loading="isPlacingOrder" @confirm="placeOrder" />
-
         <NotificationModal v-model:isOpen="isNotificationOpen" :title="notificationTitle" :message="notificationMessage" />
     </div>
 </template>
@@ -51,7 +48,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import NotificationModal from '@/pages/components/NotificationModal.vue';
 import Nav from '../components/nav.vue';
 import DishDetail from '../menu/partials/dish-detail.vue';
-import ConfirmOrderModal from './partials/ConfirmOrderModal.vue';
 import CustomDishModal from './partials/CustomDishModal.vue';
 import MenuPanel from './partials/MenuPanel.vue';
 import OrderPanel from './partials/OrderPanel.vue';
@@ -273,13 +269,14 @@ function updateBillQuantity(index: number, delta: number) {
 }
 
 function sendOrder() {
-    const confirmModal = document.getElementById('confirmOrder') as HTMLDialogElement;
-    if (confirmModal) {
-        confirmModal.showModal();
-    }
+    placeOrder();
 }
 
 function placeOrder() {
+    if (isPlacingOrder.value) {
+        return;
+    }
+
     isPlacingOrder.value = true;
     const form = useForm({
         table_id: props.table.id,
@@ -323,11 +320,6 @@ function placeOrder() {
 
             cartItems.value = [];
             activeTab.value = 'bill';
-
-            const confirmModal = document.getElementById('confirmOrder') as HTMLDialogElement;
-            if (confirmModal) {
-                confirmModal.close();
-            }
         },
         onError: (errors) => {
             isPlacingOrder.value = false;
