@@ -9,14 +9,18 @@
                 <button @click="resetModal" class="btn absolute top-2 right-2 btn-circle btn-ghost btn-md">✕</button>
             </form>
             <div>
-                <h3 class="pt-2 text-center text-xl font-bold">Thêm món ăn</h3>
                 <div class="flex flex-col">
                     <div class="my-5 flex h-24 w-full gap-4 px-4 text-lg font-light">
                         <img :src="food.image || '/images/demo.jpg'" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
                         <div class="flex flex-1 flex-col justify-between">
-                            <p class="font-medium line-clamp-2">
-                                {{ food.name }}
-                            </p>
+                            <div class="flex flex-col gap-1">
+                                <p class="line-clamp-2 font-medium">
+                                    {{ food.name }}
+                                </p>
+                                <p class="line-clamp-2 text-xs font-normal text-base-content/60">
+                                    {{ food.dishes.length === 1 ? food.dishes[0].note : food.note }}
+                                </p>
+                            </div>
                             <div class="flex items-end justify-between">
                                 <p class="font-semibold text-primary">{{ formatPrice(food.price) }}</p>
                                 <div class="flex items-center gap-3">
@@ -33,7 +37,7 @@
                                         @blur="clampQuantity"
                                         min="1"
                                         max="99"
-                                        class="w-12 rounded border border-gray-300 px-1 py-0.5 text-center text-base font-semibold outline-none focus:border-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                        class="w-12 [appearance:textfield] rounded border border-gray-300 px-1 py-0.5 text-center text-base font-semibold outline-none focus:border-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     />
                                     <button
                                         @click="tempQuantity++"
