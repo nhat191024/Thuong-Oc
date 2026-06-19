@@ -12,12 +12,12 @@
                 <div class="flex flex-col">
                     <div class="my-5 flex h-24 w-full gap-4 px-4 text-lg font-light">
                         <img :src="food.image || '/images/demo.jpg'" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
-                        <div class="flex flex-1 flex-col justify-between">
-                            <div class="flex flex-col gap-1">
-                                <p class="line-clamp-2 font-medium">
+                        <div class="flex flex-1 flex-col justify-between gap-1">
+                            <div class="flex flex-col">
+                                <p class="line-clamp-2 leading-tight font-medium">
                                     {{ food.name }}
                                 </p>
-                                <p class="line-clamp-2 text-xs font-normal text-base-content/60">
+                                <p class="line-clamp-2 text-xs leading-tight font-normal text-base-content/60">
                                     {{ food.dishes.length === 1 ? food.dishes[0].note : food.note }}
                                 </p>
                             </div>
