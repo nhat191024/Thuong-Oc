@@ -98,6 +98,13 @@ class KitchenController extends Controller
             'status' => $request->status,
         ]);
 
+        //deduct the total bill if the dish is cancelled
+        if ($request->status === BillDetailStatus::CANCELLED->value) {
+            $bill = $billDetail->bill;
+            $bill->total -= $billDetail->quantity * $billDetail->price;
+            $bill->save();
+        }
+
         if ($request->status === BillDetailStatus::DONE->value && $request->printer_id) {
             $printer = Printer::whereId($request->input('printer_id'))->first();
 
