@@ -97,12 +97,12 @@ class OrderController extends Controller
             $id = $request->input('id');
             if ($code == '00' && $cancel != 'true') {
                 $status = 'PAID';
-                $bill = Bill::find($orderCode);
+                $bill = Bill::whereOrderCode($orderCode)->first();
                 if ($bill && $bill->pay_status !== PayStatus::PAID) {
                     $voucher = null;
                     $discountAmount = 0;
                     if ($bill->voucher_id) {
-                        $voucher = Voucher::find($bill->voucher_id);
+                        $voucher = Voucher::whereId($bill->voucher_id)->first();
                         if ($voucher) {
                             $discountAmount = $voucher->getDiscountAmount($bill->total);
                         }
@@ -114,12 +114,12 @@ class OrderController extends Controller
                     $bill->time_out = now();
                     $bill->save();
 
-                    $voucher = $bill->voucher_id ? Voucher::find($bill->voucher_id) : null;
+                    $voucher = $bill->voucher_id ? Voucher::whereId($bill->voucher_id)->first() : null;
                     if ($voucher) {
-                        $voucher->increment('used_count');
+                        $voucher->increment('used_count', 1);
                     }
 
-                    $customer = $bill->customer_id ? Customer::find($bill->customer_id) : null;
+                    $customer = $bill->customer_id ? Customer::whereId($bill->customer_id)->first() : null;
                     if ($customer) {
                         $pointStep = app(AppSettings::class)->point_step;
                         $pointEarned = floor($bill->final_total / $pointStep);
