@@ -14,10 +14,10 @@
                         <img :src="food.image || '/images/demo.jpg'" alt="demo" class="h-full w-24 shrink-0 rounded-lg object-cover" />
                         <div class="flex flex-1 flex-col justify-between gap-1">
                             <div class="flex flex-col">
-                                <p class="line-clamp-2 leading-tight font-medium">
+                                <p class="line-clamp-2 leading-tight font-semibold">
                                     {{ food.name }}
                                 </p>
-                                <p class="line-clamp-2 text-xs leading-tight font-normal text-base-content/60">
+                                <p class="line-clamp-2 text-xs leading-tight font-medium text-primary">
                                     {{ food.dishes.length === 1 ? food.dishes[0].note : food.note }}
                                 </p>
                             </div>
