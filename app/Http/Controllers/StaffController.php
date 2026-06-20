@@ -35,6 +35,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class StaffController extends Controller
 {
@@ -611,7 +612,7 @@ class StaffController extends Controller
         $sourceBill->billDetails()->update(['bill_id' => $targetBill->id]);
 
         // Recalculate target bill total
-        $newTotal = $targetBill->billDetails()->sum(\DB::raw('quantity * price'));
+        $newTotal = $targetBill->billDetails()->sum(DB::raw('quantity * price'));
         $targetBill->total = $newTotal;
         $targetBill->final_total = $newTotal - ($targetBill->discount ?? 0);
         $targetBill->save();
