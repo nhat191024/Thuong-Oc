@@ -54,7 +54,8 @@ class BillResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['table', 'branch', 'user', 'billDetails.dish.food', 'billDetails.dish.cookingMethod']);
+            ->with(['table', 'branch', 'user', 'billDetails.dish.food', 'billDetails.dish.cookingMethod'])
+            ->orderByDesc('created_at');
     }
 
     public static function getPages(): array
