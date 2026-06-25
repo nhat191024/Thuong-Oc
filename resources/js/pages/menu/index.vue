@@ -3,12 +3,13 @@
         <Nav :table-name="table.name" :table-number="table.table_number"></Nav>
 
         <!-- Cellular Warning Banner -->
-        <div
-            v-if="showCellularWarning"
-            class="z-30 flex items-start gap-3 bg-amber-50 px-4 py-3 text-sm text-amber-800 border-b border-amber-200"
-        >
+        <div v-if="showCellularWarning" class="z-30 flex items-start gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                <path
+                    fill-rule="evenodd"
+                    d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                    clip-rule="evenodd"
+                />
             </svg>
             <div class="flex-1">
                 <p class="font-semibold">Bạn đang dùng dữ liệu di động</p>
@@ -17,7 +18,11 @@
             </div>
             <button @click="showCellularWarning = false" class="shrink-0 text-amber-500 hover:text-amber-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    <path
+                        fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                    />
                 </svg>
             </button>
         </div>
@@ -104,9 +109,11 @@
                                 <button
                                     v-if="!food.is_out_of_stock"
                                     class="btn btn-circle bg-primary text-white shadow-lg shadow-primary/30 transition-transform btn-sm hover:scale-110"
-                                    @click.stop="food.dishes.length > 1 ? showDishDetail(food) : addDish(food.id, $event)"
+                                    :disabled="isDishSubmitting(food.dishes[0]?.id)"
+                                    @click.stop="food.dishes.length > 1 ? showDishDetail(food) : addDish(food.id)"
                                 >
-                                    <PlusIcon class="size-5" />
+                                    <span v-if="isDishSubmitting(food.dishes[0]?.id)" class="loading loading-xs loading-spinner"></span>
+                                    <PlusIcon v-else class="size-5" />
                                 </button>
                                 <span v-else class="rounded-full border border-error/40 bg-error/10 px-2 py-1 text-xs font-semibold text-error">
                                     Hết món
@@ -124,7 +131,14 @@
         </div>
 
         <Announcement v-if="props.announcement" :announcement="props.announcement"></Announcement>
-        <DishDetail :food="selectedFood" @add-to-cart="handleAddToCart"></DishDetail>
+        <DishDetail
+            ref="dishDetailRef"
+            :food="selectedFood"
+            :is-submitting="isSelectedDishSubmitting"
+            direct-to-kitchen
+            @finalize-dish="handleFinalizeDish"
+        ></DishDetail>
+        <!-- TEMP: Cart disabled for direct-to-kitchen ordering.
         <Cart
             :bill-temp="billTemp"
             :table="table"
@@ -132,6 +146,7 @@
             @remove-item="handleRemoveItem"
             @increase-quantity="handleIncreaseQuantity"
         ></Cart>
+        -->
         <History></History>
     </div>
 </template>
@@ -163,15 +178,21 @@
 
 <script setup lang="ts">
 import { useHistoryStore } from '@/stores/history';
-import { useOrderStore } from '@/stores/order';
+import { Auth } from '@/types';
+// TEMP: Cart disabled for direct-to-kitchen ordering.
+// import { useOrderStore } from '@/stores/order';
 import { Category } from '@/types/category';
 import { Food, Menu } from '@/types/menu';
 import { orderDish } from '@/types/order';
-import { onMounted, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, onMounted, ref } from 'vue';
+import { toast } from 'vue3-toastify';
 
 // Components
 import Announcement from './partials/announcement.vue';
-import Cart from './partials/cart.vue';
+// TEMP: Cart disabled for direct-to-kitchen ordering.
+// import Cart from './partials/cart.vue';
 import DishDetail from './partials/dish-detail.vue';
 import Footer from './partials/footer.vue';
 import History from './partials/history.vue';
@@ -200,7 +221,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const orderStore = useOrderStore();
+const page = usePage();
+const user = computed(() => (page.props.auth as Auth).user);
+// TEMP: Cart disabled for direct-to-kitchen ordering.
+// const orderStore = useOrderStore();
 const historyStore = useHistoryStore();
 
 const activeTabId = ref<number>(props.categories[0]?.id || 0);
@@ -210,9 +234,13 @@ const tabRefs = ref<Map<number, HTMLElement>>(new Map());
 const isScrollingFromClick = ref(false);
 const lastScrollTop = ref(0);
 
-const billTemp = ref<orderDish[]>([]);
+// TEMP: Cart disabled for direct-to-kitchen ordering.
+// const billTemp = ref<orderDish[]>([]);
 const selectedFood = ref<Food>(props.menus[0]?.foods[0]);
 const showCellularWarning = ref(false);
+const submittingDishIds = ref<Set<number>>(new Set());
+const dishDetailRef = ref<{ completeSubmission: () => void } | null>(null);
+const isSelectedDishSubmitting = computed(() => selectedFood.value?.dishes.some((dish) => isDishSubmitting(dish.id)) ?? false);
 
 onMounted(() => {
     const connection = (navigator as any).connection ?? (navigator as any).mozConnection ?? (navigator as any).webkitConnection;
@@ -228,7 +256,8 @@ onMounted(() => {
         historyStore.clearHistory();
         props.currentOrder.forEach((dish) => historyStore.addHistory(dish));
     }
-    loadOrderFromLocalStorage();
+    // TEMP: Cart disabled for direct-to-kitchen ordering.
+    // loadOrderFromLocalStorage();
     if (activeTabId.value) {
         scrollTabToView(activeTabId.value);
     }
@@ -251,20 +280,11 @@ function scrollTabToView(id: number) {
     }
 }
 
-/**
- * Load order from local storage
+/*
+ * TEMP: Cart disabled for direct-to-kitchen ordering.
+ * The previous loadOrderFromLocalStorage() implementation is intentionally
+ * disabled while each finalized dish is submitted immediately.
  */
-function loadOrderFromLocalStorage() {
-    if (orderStore.dishes.length === 0) return;
-    orderStore.dishes.forEach((item: orderDish) => {
-        if (Number(item.table) === props.table.table_number) {
-            billTemp.value.push(item);
-        } else {
-            orderStore.clearDishes();
-            return;
-        }
-    });
-}
 
 /**
  * Handle tab click event
@@ -358,168 +378,43 @@ function showDishDetail(food: any) {
 }
 
 /**
- * Handle adding dish to cart
+ * Finalize a configured dish and send it directly to the kitchen.
  */
-function handleAddToCart(dishData: { dishId: number; quantity: number; note: string }) {
+async function handleFinalizeDish(dishData: { dishId: number; quantity: number; note: string }): Promise<void> {
     const choosingDish = selectedFood.value.dishes.find((dish) => dish.id === dishData.dishId);
 
     if (!choosingDish) return;
 
-    const normalizedNote = dishData.note || null;
-
-    // Check if the dish already exists in billTemp
-    const existingOrderInBillTemp = billTemp.value.findIndex(
-        (item) => item.foodId === selectedFood.value.id && item.dishId === choosingDish.id && item.note === normalizedNote,
-    );
-
-    if (existingOrderInBillTemp !== -1) {
-        billTemp.value[existingOrderInBillTemp].quantity += dishData.quantity;
-
-        // Find index in orderStore.dishes to update
-        const existingOrderInStore = orderStore.dishes.findIndex(
-            (item: orderDish) =>
-                Number(item.table) === props.table.table_number &&
-                item.foodId === selectedFood.value.id &&
-                item.dishId === choosingDish.id &&
-                item.note === normalizedNote,
-        );
-
-        if (existingOrderInStore !== -1) {
-            orderStore.updateDishQuantity(existingOrderInStore, billTemp.value[existingOrderInBillTemp].quantity);
-        }
-    } else {
-        const newOrder: orderDish = {
-            table: props.table.table_number,
-            foodId: selectedFood.value.id,
-            dishId: choosingDish.id,
-            name: selectedFood.value.name,
-            quantity: dishData.quantity,
-            price: selectedFood.value.price + (choosingDish.additional_price || 0),
-            cookingMethod: choosingDish.name,
-            cookingMethodId: choosingDish.cooking_method_id,
-            note: normalizedNote,
-            image: selectedFood.value.image || null,
-        };
-
-        billTemp.value.push(newOrder);
-        orderStore.addDish(newOrder);
-    }
-}
-
-/**
- * Handle decrease quantity from cart
- */
-function handleDecreaseQuantity(index: number) {
-    const dish = billTemp.value[index];
-    if (!dish) return;
-
-    // Tìm index trong orderStore
-    const storeIndex = findDishInStore(dish);
-    if (storeIndex !== -1) {
-        orderStore.updateDishQuantity(storeIndex, dish.quantity);
-    }
-}
-
-/**
- * Handle remove item from cart
- * @param index
- */
-function handleRemoveItem(index: number) {
-    const dish = billTemp.value[index];
-    if (!dish) return;
-
-    // Tìm index trong orderStore
-    const storeIndex = findDishInStore(dish);
-    if (storeIndex !== -1) {
-        orderStore.removeDish(storeIndex);
-    }
-}
-
-/**
- * Handle increase quantity from cart
- * @param index
- */
-function handleIncreaseQuantity(index: number) {
-    const dish = billTemp.value[index];
-    if (!dish) return;
-
-    // Tìm index trong orderStore
-    const storeIndex = findDishInStore(dish);
-    if (storeIndex !== -1) {
-        orderStore.updateDishQuantity(storeIndex, dish.quantity);
-    }
-}
-
-/**
- * Find dish in orderStore by matching properties
- * @param dish
- */
-function findDishInStore(dish: orderDish): number {
-    return orderStore.dishes.findIndex(
-        (item: orderDish) => item.table === dish.table && item.foodId === dish.foodId && item.dishId === dish.dishId && item.note === dish.note,
-    );
-}
-
-/**
- * Animate a dot flying from the clicked button to the cart icon
- */
-function animateToCart(event: MouseEvent) {
-    const cartIcon = document.getElementById('cart-icon');
-    if (!cartIcon) return;
-
-    const button = event.currentTarget as HTMLElement;
-    const btnRect = button.getBoundingClientRect();
-    const cartRect = cartIcon.getBoundingClientRect();
-
-    const startX = btnRect.left + btnRect.width / 2;
-    const startY = btnRect.top + btnRect.height / 2;
-    const endX = cartRect.left + cartRect.width / 2;
-    const endY = cartRect.top + cartRect.height / 2;
-
-    const dx = endX - startX;
-    const dy = endY - startY;
-
-    const dot = document.createElement('div');
-    dot.style.cssText = [
-        'position:fixed',
-        `left:${startX}px`,
-        `top:${startY}px`,
-        'width:22px',
-        'height:22px',
-        'border-radius:50%',
-        'background-color:var(--color-primary,#9f0712)',
-        'pointer-events:none',
-        'z-index:9999',
-        'transform:translate(-50%,-50%)',
-    ].join(';');
-    document.body.appendChild(dot);
-
-    const animation = dot.animate(
-        [
-            { transform: 'translate(-50%,-50%) scale(1)', opacity: '1' },
-            {
-                transform: `translate(calc(-50% + ${dx * 0.4}px), calc(-50% + ${dy * 0.2 - 60}px)) scale(0.8)`,
-                opacity: '0.9',
-                offset: 0.35,
-            },
-            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15)`, opacity: '0' },
-        ],
-        { duration: 950, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'forwards' },
-    );
-
-    animation.onfinish = () => {
-        dot.remove();
-        cartIcon.classList.add('cart-bounce');
-        setTimeout(() => cartIcon.classList.remove('cart-bounce'), 350);
+    const order: orderDish = {
+        table: props.table.table_number,
+        foodId: selectedFood.value.id,
+        dishId: choosingDish.id,
+        name: selectedFood.value.name,
+        quantity: dishData.quantity,
+        price: selectedFood.value.price + (choosingDish.additional_price || 0),
+        cookingMethod: choosingDish.name,
+        cookingMethodId: choosingDish.cooking_method_id,
+        note: dishData.note || null,
+        image: selectedFood.value.image || null,
     };
+
+    const wasSuccessful = await submitDish(order);
+    if (wasSuccessful) {
+        dishDetailRef.value?.completeSubmission();
+    }
 }
 
+/*
+ * TEMP: Cart disabled for direct-to-kitchen ordering.
+ * Cart quantity handlers, store lookup, and the fly-to-cart animation are
+ * intentionally disabled because finalized dishes no longer enter a cart.
+ */
+
 /**
- * Add dish directly to cart (for foods without dish options or with only one dish)
+ * Finalize a food with one dish option and send it directly to the kitchen.
  * @param foodId
  */
-function addDish(foodId: number, event?: MouseEvent) {
-    // Tìm food từ menus
+async function addDish(foodId: number): Promise<void> {
     let targetFood: Food | undefined;
     for (const menu of props.menus) {
         targetFood = menu.foods.find((food) => food.id === foodId);
@@ -528,53 +423,60 @@ function addDish(foodId: number, event?: MouseEvent) {
 
     if (!targetFood) return;
 
-    let dish = null;
-    let dishId = null;
-    let cookingMethod = null;
-    let cookingMethodId = null;
-    let additionalPrice = 0;
+    const dish = targetFood.dishes[0];
+    if (!dish || isDishSubmitting(dish.id)) return;
 
-    if (targetFood.dishes && targetFood.dishes.length > 0) {
-        dish = targetFood.dishes[0];
-        dishId = dish.id;
-        cookingMethod = dish.name;
-        cookingMethodId = dish.cooking_method_id;
-        additionalPrice = dish.additional_price || 0;
-    }
+    await submitDish({
+        table: props.table.table_number,
+        foodId: targetFood.id,
+        dishId: dish.id,
+        name: targetFood.name,
+        quantity: 1,
+        price: targetFood.price + (dish.additional_price || 0),
+        cookingMethod: dish.name,
+        cookingMethodId: dish.cooking_method_id,
+        note: null,
+        image: targetFood.image || null,
+    });
+}
 
-    // Kiểm tra món đã tồn tại trong giỏ hàng chưa
-    const existingOrderIndex = billTemp.value.findIndex((item) => item.foodId === targetFood!.id && item.dishId === dishId && item.note === null);
+function isDishSubmitting(dishId?: number): boolean {
+    return dishId !== undefined && submittingDishIds.value.has(dishId);
+}
 
-    if (existingOrderIndex !== -1) {
-        // Nếu đã tồn tại, tăng quantity
-        billTemp.value[existingOrderIndex].quantity += 1;
+async function submitDish(order: orderDish): Promise<boolean> {
+    if (order.dishId === null || isDishSubmitting(order.dishId)) return false;
 
-        // Cập nhật trong orderStore
-        const storeIndex = findDishInStore(billTemp.value[existingOrderIndex]);
-        if (storeIndex !== -1) {
-            orderStore.updateDishQuantity(storeIndex, billTemp.value[existingOrderIndex].quantity);
-        }
-    } else {
-        // Nếu chưa có, thêm món mới
-        const newOrder: orderDish = {
-            table: props.table.table_number,
-            foodId: targetFood.id,
-            dishId: dishId,
-            name: targetFood.name,
-            quantity: 1,
-            price: targetFood.price + additionalPrice,
-            cookingMethod: cookingMethod,
-            cookingMethodId: cookingMethodId,
-            note: null,
-            image: targetFood.image || null,
-        };
+    submittingDishIds.value = new Set(submittingDishIds.value).add(order.dishId);
 
-        billTemp.value.push(newOrder);
-        orderStore.addDish(newOrder);
-    }
+    try {
+        await axios.post(route('order.place'), {
+            table_id: props.table.id,
+            branch_id: props.table.branch_id,
+            customer_id: user.value?.id ?? null,
+            dishes: [
+                {
+                    dish_id: order.dishId,
+                    quantity: order.quantity,
+                    price: order.price,
+                    note: order.note,
+                },
+            ],
+        });
 
-    if (event) {
-        animateToCart(event);
+        historyStore.addHistory({ ...order });
+        toast.success(`Đã gửi ${order.name} đến bếp`);
+
+        return true;
+    } catch (error) {
+        console.error('Unable to send dish to kitchen:', error);
+        toast.error('Không thể gửi món đến bếp. Vui lòng thử lại.');
+
+        return false;
+    } finally {
+        const nextSubmittingDishIds = new Set(submittingDishIds.value);
+        nextSubmittingDishIds.delete(order.dishId);
+        submittingDishIds.value = nextSubmittingDishIds;
     }
 }
 

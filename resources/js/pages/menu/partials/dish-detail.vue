@@ -56,7 +56,7 @@
                         <p class="text-primary">Cách chế biến (chọn 1)</p>
                     </div>
                     <div class="flex flex-col">
-                        <div v-for="dish in food.dishes" class="flex flex-col border-b border-gray-300 px-4 py-2">
+                        <div v-for="dish in food.dishes" :key="dish.id" class="flex flex-col border-b border-gray-300 px-4 py-2">
                             <p class="font-medium text-black">
                                 {{ dish.name }}
                             </p>
@@ -87,9 +87,17 @@
             </div>
             <div>
                 <div class="modal-action mt-0 p-4">
-                    <form method="dialog" class="w-full">
-                        <button class="btn w-full border-0 bg-primary outline-0 btn-primary" @click="addDish(food.id)">Thêm vào giỏ hàng</button>
-                    </form>
+                    <div class="w-full">
+                        <button
+                            type="button"
+                            class="btn w-full border-0 bg-primary outline-0 btn-primary"
+                            :disabled="isSubmitting"
+                            @click="finalizeDish"
+                        >
+                            <span v-if="isSubmitting" class="loading loading-sm loading-spinner"></span>
+                            {{ submitButtonLabel }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,24 +105,37 @@
 </template>
 <script setup lang="ts">
 import { Food } from '@/types/menu';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 //icons
 import { MinusIcon, PlusIcon } from '@heroicons/vue/24/solid';
 
 interface Props {
     food: Food;
+    isSubmitting?: boolean;
+    directToKitchen?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    isSubmitting: false,
+    directToKitchen: false,
+});
 
 const emit = defineEmits<{
+    finalizeDish: [dishData: { dishId: number; quantity: number; note: string }];
     addToCart: [dishData: { dishId: number; quantity: number; note: string }];
 }>();
 
 const tempQuantity = ref<number>(1);
 const dishPicked = ref<number>(props.food.dishes[0]?.id || 1);
 const tempNote = ref<string>('');
+const submitButtonLabel = computed(() => {
+    if (props.isSubmitting) {
+        return 'Đang gửi đến bếp...';
+    }
+
+    return props.directToKitchen ? 'Chốt món' : 'Thêm vào giỏ hàng';
+});
 
 // Watch for food changes and reset dishPicked to first dish of new food
 watch(
@@ -130,23 +151,33 @@ watch(
 );
 
 /**
- * Add dish to cart
- * @param id
+ * Ask the parent page to finalize and submit the selected dish.
  */
-function addDish(id: number) {
+function finalizeDish() {
+    if (props.isSubmitting) return;
+
     const choosingDish = props.food.dishes.find((dish) => dish.id === dishPicked.value);
     if (!choosingDish) return;
 
-    emit('addToCart', {
+    const dishData = {
         dishId: choosingDish.id,
         quantity: tempQuantity.value,
         note: tempNote.value,
-    });
+    };
 
-    // Reset form
-    tempQuantity.value = 1;
-    dishPicked.value = props.food.dishes[0]?.id || 1;
-    tempNote.value = '';
+    if (props.directToKitchen) {
+        emit('finalizeDish', dishData);
+        return;
+    }
+
+    emit('addToCart', dishData);
+    resetModal();
+}
+
+function completeSubmission() {
+    resetModal();
+    const dishDetail = document.getElementById('dishDetail') as HTMLDialogElement;
+    dishDetail?.close();
 }
 
 /**
@@ -178,4 +209,8 @@ function clampQuantity() {
 function formatPrice(price: number): string {
     return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 }
+
+defineExpose({
+    completeSubmission,
+});
 </script>
