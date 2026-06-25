@@ -1,11 +1,24 @@
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import tailwindcss from '@tailwindcss/vite';
+import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+    css: {
+        transformer: 'lightningcss',
+        lightningcss: {
+            targets: {
+                chrome: 51 << 16,
+            },
+        },
+    },
+    build: {
+        cssMinify: 'lightningcss',
+        cssTarget: 'chrome51',
+    },
     server: {
         host: '0.0.0.0',
         port: 5173,
@@ -18,14 +31,13 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: [
-                'resources/js/app.ts',
-                'resources/css/filament/admin/theme.css',
-            ],
+            input: ['resources/js/app.ts', 'resources/css/filament/admin/theme.css'],
             ssr: 'resources/js/ssr.ts',
             refresh: true,
         }),
-        tailwindcss(),
+        tailwindcss({
+            optimize: false,
+        }),
         vue({
             template: {
                 transformAssetUrls: {
@@ -33,6 +45,9 @@ export default defineConfig({
                     includeAbsolute: false,
                 },
             },
+        }),
+        legacy({
+            targets: ['Chrome >= 51', 'Android >= 7'],
         }),
         wayfinder({
             formVariants: true,
