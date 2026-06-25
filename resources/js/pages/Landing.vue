@@ -10,7 +10,7 @@
         <div class="relative z-10 w-full max-w-md">
             <div class="mb-10 text-center">
                 <div class="mb-4 inline-block rounded-full bg-white p-1 shadow-lg">
-                    <img class="h-40 w-40 rounded-full max-[400px]:h-24 max-[400px]:w-24" :src="settings.app_logo ?? ''" alt="Logo" />
+                    <img class="h-40 w-40 rounded-full max-[400px]:h-24 max-[400px]:w-24" :src="'storage/' + (settings.app_logo ?? '')" alt="Logo" />
                 </div>
                 <h1 class="mb-2 font-serif text-4xl font-extrabold tracking-tight text-gray-800">Thương Ốc</h1>
                 <p class="font-medium text-orange-600 italic">Hương vị biển, thắm tình quê</p>
@@ -53,10 +53,16 @@
             </div>
 
             <div class="mt-8 flex gap-3">
-                <Link :href="route('login')" class="flex-1 rounded-2xl border-2 border-orange-400 bg-white py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-50">
+                <Link
+                    :href="route('login')"
+                    class="flex-1 rounded-2xl border-2 border-orange-400 bg-white py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-50"
+                >
                     Đăng nhập
                 </Link>
-                <Link :href="route('register')" class="flex-1 rounded-2xl bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600">
+                <Link
+                    :href="route('register')"
+                    class="flex-1 rounded-2xl bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
+                >
                     Đăng ký
                 </Link>
             </div>
@@ -79,7 +85,7 @@
                     </svg>
                 </div>
                 <p class="text-sm text-orange-900/60">Mở cửa: 16:00 - 23:00</p>
-                <p class="text-sm text-orange-900/60">Wifi: Thuong Oc 269 / MatKhau: </p>
+                <p class="text-sm text-orange-900/60">Wifi: Thuong Oc 269 / MatKhau:</p>
             </div>
         </div>
     </div>

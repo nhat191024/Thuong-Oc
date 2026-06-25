@@ -1,13 +1,13 @@
 <template>
     <nav class="flex items-center justify-between bg-primary px-4 py-1">
-        <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="settings.app_logo ?? ''" alt="Logo" />
+        <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="'storage/' + (settings.app_logo ?? '')" alt="Logo" />
         <div class="flex items-center gap-3">
-            <p class="max-w-[180px] truncate text-2xl font-semibold text-white" :title="props.tableName">{{ props.tableName }}</p>
+            <p class="max-w-45 truncate text-2xl font-semibold text-white" :title="props.tableName">{{ props.tableName }}</p>
 
             <div v-if="user" class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn avatar btn-circle btn-ghost">
                     <div class="w-10 rounded-full border-2 border-white">
-                        <img v-if="user.avatar" :src="user.avatar" alt="Avatar" />
+                        <img v-if="user.avatar" :src="'storage/' + user.avatar" alt="Avatar" />
                     </div>
                 </div>
                 <ul tabindex="0" class="dropdown-content menu z-50 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow">
