@@ -47,8 +47,8 @@ class AppServiceProvider extends ServiceProvider
         try {
             return [
                 'app_name'    => $settings->app_name,
-                'app_logo'    => secure_asset($settings->app_logo),
-                'app_favicon' => secure_asset($settings->app_favicon),
+                'app_logo'    => secure_asset('storage/' . $settings->app_logo),
+                'app_favicon' => secure_asset('storage/' . $settings->app_favicon),
             ];
         } catch (\Exception $e) {
             return [
