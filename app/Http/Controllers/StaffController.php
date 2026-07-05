@@ -13,6 +13,7 @@ use App\Models\Kitchen;
 use App\Models\Voucher;
 use App\Models\Customer;
 
+use App\Enums\BillDetailStatus;
 use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
 use App\Enums\PayStatus;
@@ -35,7 +36,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 
 class StaffController extends Controller
 {
@@ -131,7 +131,7 @@ class StaffController extends Controller
                 $query->where('pay_status', PayStatus::UNPAID);
             },
             'bill.billDetails' => function ($query) {
-                $query->where('status', '!=', 'cancelled');
+                $query->where('status', '!=', BillDetailStatus::CANCELLED->value);
             },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
@@ -258,7 +258,7 @@ class StaffController extends Controller
             'bill.user',
             'bill.customer',
             'bill.billDetails' => function ($query) {
-                $query->where('status', '!=', 'cancelled');
+                $query->where('status', '!=', BillDetailStatus::CANCELLED->value);
             },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',
@@ -408,6 +408,8 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
+        $bill->recalculateTotal();
+
         $voucher = Voucher::redeemVoucher($bill->total, code: $code, userId: $bill->customer_id);
 
         if (!$voucher->status) {
@@ -469,10 +471,12 @@ class StaffController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán cho bàn này.');
         }
 
+        $bill->recalculateTotal();
+
         $voucher = null;
         $discountAmount = 0;
-        if ($table->bill && $table->bill->voucher_id) {
-            $voucher = Voucher::whereId($table->bill->voucher_id)->first();
+        if ($bill->voucher_id) {
+            $voucher = Voucher::whereId($bill->voucher_id)->first();
             if ($voucher) {
                 $discountAmount = $voucher->getDiscountAmount($bill->total);
             }
@@ -517,17 +521,21 @@ class StaffController extends Controller
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
 
-            $items = $bill->billDetails->where('status', '!=', 'cancelled')->map(function ($detail) {
-                $name = $detail->custom_dish_name;
-                if ($detail->dish) {
-                    $name = $detail->dish->food->name;
-                }
-                return [
-                    'name' => $name,
-                    'quantity' => $detail->quantity,
-                    'price' => $detail->price,
-                ];
-            })->toArray();
+            $items = $bill->billDetails
+                ->reject(fn ($detail): bool => $detail->status === BillDetailStatus::CANCELLED)
+                ->map(function ($detail): array {
+                    $name = $detail->custom_dish_name;
+                    if ($detail->dish) {
+                        $name = $detail->dish->food->name;
+                    }
+
+                    return [
+                        'name' => $name,
+                        'quantity' => $detail->quantity,
+                        'price' => $detail->price,
+                    ];
+                })
+                ->toArray();
 
             if ($discountAmount > 0) {
                 $discountItems = [
@@ -612,8 +620,7 @@ class StaffController extends Controller
         $sourceBill->billDetails()->update(['bill_id' => $targetBill->id]);
 
         // Recalculate target bill total
-        $newTotal = $targetBill->billDetails()->sum(DB::raw('quantity * price'));
-        $targetBill->total = $newTotal;
+        $newTotal = $targetBill->recalculateTotal();
         $targetBill->final_total = $newTotal - ($targetBill->discount ?? 0);
         $targetBill->save();
 

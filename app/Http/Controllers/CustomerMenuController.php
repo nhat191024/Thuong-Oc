@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Table;
 
+use App\Enums\BillDetailStatus;
 use App\Enums\CacheKeys;
 use App\Enums\TableActiveStatus;
 use App\Enums\PayStatus;
@@ -37,7 +38,7 @@ class CustomerMenuController extends Controller
                 $query->where('pay_status', PayStatus::UNPAID);
             },
             'bill.billDetails' => function ($query) {
-                $query->where('status', '!=', 'cancelled');
+                $query->where('status', '!=', BillDetailStatus::CANCELLED->value);
             },
             'bill.billDetails.dish.food',
             'bill.billDetails.dish.cookingMethod',

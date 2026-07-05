@@ -55,7 +55,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $billTotal = $bill->total ?? 0;
+        $billTotal = $bill->calculateTotal();
 
         foreach ($request->input('dishes') as $dish) {
             $billDetail = BillDetail::create([
@@ -99,6 +99,8 @@ class OrderController extends Controller
                 $status = 'PAID';
                 $bill = Bill::whereOrderCode($orderCode)->first();
                 if ($bill && $bill->pay_status !== PayStatus::PAID) {
+                    $bill->recalculateTotal();
+
                     $voucher = null;
                     $discountAmount = 0;
                     if ($bill->voucher_id) {

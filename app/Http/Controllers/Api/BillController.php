@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BillDetailStatus;
 use App\Enums\PaymentMethods;
 use App\Enums\PayStatus;
 use App\Enums\Role;
@@ -34,7 +35,7 @@ class BillController extends Controller
 
         $bill = $table->bill()
             ->with([
-                'billDetails' => fn($q) => $q->where('status', '!=', 'cancelled'),
+                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
                 'billDetails.dish.food',
                 'billDetails.dish.cookingMethod',
                 'customer',
@@ -124,6 +125,8 @@ class BillController extends Controller
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
+        $bill->recalculateTotal();
+
         $voucher = Voucher::redeemVoucher($bill->total, code: $code, userId: $bill->customer_id);
 
         if (!$voucher->status) {
@@ -162,15 +165,17 @@ class BillController extends Controller
     {
         $paymentMethod = $request->input('payment_method');
         $table = Table::findOrFail($tableId);
-        $bill = $table->bill()->with(['billDetails' => fn($q) => $q->where('status', '!=', 'cancelled')])->where('pay_status', PayStatus::UNPAID)->first();
+        $bill = $table->bill()->with(['billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value)])->where('pay_status', PayStatus::UNPAID)->first();
 
         if (!$bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
+        $bill->recalculateTotal();
+
         $discountAmount = 0;
         if ($bill->voucher_id) {
-            $voucher = Voucher::find($bill->voucher_id, 'id');
+            $voucher = Voucher::find($bill->voucher_id);
             if ($voucher) {
                 $discountAmount = $voucher->getDiscountAmount($bill->total);
             }
@@ -185,7 +190,7 @@ class BillController extends Controller
             $table->save();
 
             if ($bill->voucher_id) {
-                $voucher = Voucher::find($bill->voucher_id, 'id');
+                $voucher = Voucher::find($bill->voucher_id);
                 if ($voucher) {
                     $voucher->incrementTimesUsed();
                 }
@@ -205,7 +210,7 @@ class BillController extends Controller
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
             try {
-                $paymentLink = $this->processQrPayment($bill, $finalTotal);
+                $paymentLink = $this->processQrPayment($bill, $discountAmount);
 
                 return response()->json([
                     'message' => 'Payment link created.',
@@ -233,7 +238,7 @@ class BillController extends Controller
         $table->save();
 
         if ($bill->voucher_id) {
-            $voucher = Voucher::find($bill->voucher_id, 'id');
+            $voucher = Voucher::find($bill->voucher_id);
             if ($voucher) {
                 $voucher->increment('used_count');
             }
@@ -250,17 +255,21 @@ class BillController extends Controller
 
     private function processQrPayment(Bill $bill, int $discountAmount)
     {
-        $items = $bill->billDetails->where('status', '!=', 'cancelled')->map(function ($detail) {
-            $name = $detail->custom_dish_name;
-            if ($detail->dish) {
-                $name = $detail->dish->food->name;
-            }
-            return [
-                'name' => $name,
-                'quantity' => $detail->quantity,
-                'price' => $detail->price,
-            ];
-        })->toArray();
+        $items = $bill->billDetails
+            ->reject(fn ($detail): bool => $detail->status === BillDetailStatus::CANCELLED)
+            ->map(function ($detail): array {
+                $name = $detail->custom_dish_name;
+                if ($detail->dish) {
+                    $name = $detail->dish->food->name;
+                }
+
+                return [
+                    'name' => $name,
+                    'quantity' => $detail->quantity,
+                    'price' => $detail->price,
+                ];
+            })
+            ->toArray();
 
         if ($discountAmount > 0) {
             $discountItems = [
@@ -312,9 +321,11 @@ class BillController extends Controller
         }
 
         if ($status === PayStatus::PAID->value) {
+            $bill->recalculateTotal();
+
             $discountAmount = 0;
             if ($bill->voucher_id) {
-                $voucher = Voucher::find($bill->voucher_id, 'id');
+                $voucher = Voucher::find($bill->voucher_id);
                 if ($voucher) {
                     $discountAmount = $voucher->getDiscountAmount($bill->total);
                     $voucher->incrementTimesUsed();

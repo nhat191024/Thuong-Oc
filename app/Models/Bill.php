@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Enums\BillDetailStatus;
 use App\Enums\PaymentMethods;
 use App\Enums\PayStatus;
 
@@ -105,5 +106,21 @@ class Bill extends Model
     public function billDetails()
     {
         return $this->hasMany(BillDetail::class);
+    }
+
+    public function calculateTotal(): int
+    {
+        return (int) $this->billDetails()
+            ->where('status', '!=', BillDetailStatus::CANCELLED->value)
+            ->selectRaw('COALESCE(SUM(quantity * price), 0) as total_price')
+            ->value('total_price');
+    }
+
+    public function recalculateTotal(): int
+    {
+        $this->total = $this->calculateTotal();
+        $this->save();
+
+        return $this->total;
     }
 }
