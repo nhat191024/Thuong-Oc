@@ -3,10 +3,9 @@
 namespace App\Http\Resources;
 
 use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
-use Carbon\Carbon;
 
 class BillHistoryDetailResource extends JsonResource
 {
@@ -46,13 +45,21 @@ class BillHistoryDetailResource extends JsonResource
             })
             ->values();
 
+        $totalAmount = $this->billDetails->sum(function ($detail): int|float {
+            return $detail->quantity * $detail->price;
+        });
+
         $voucherCode = null;
+        $discountAmount = 0;
 
         if ($this->voucher_id) {
             $voucher = Voucher::whereId($this->voucher_id)->first();
             if ($voucher) {
                 $voucherCode = $voucher->code;
+                $discountAmount = $voucher->getDiscountAmount($totalAmount);
             }
+        } else {
+            $discountAmount = $this->discount ?? 0;
         }
 
         return [
@@ -67,10 +74,10 @@ class BillHistoryDetailResource extends JsonResource
                 'phone' => $this->customer->phone,
             ] : null,
             'details' => $billDetails,
-            'total_amount' => $this->total,
-            'discount_amount' => $this->discount,
+            'total_amount' => $totalAmount,
+            'discount_amount' => $discountAmount,
             'voucher_code' => $voucherCode,
-            'final_amount' => $this->final_total,
+            'final_amount' => $totalAmount - $discountAmount,
             'payment_method' => $this->payment_method,
             'pay_status' => $this->pay_status,
         ];

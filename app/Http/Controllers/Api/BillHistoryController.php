@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BillDetailStatus;
 use App\Enums\PayStatus;
 
 use App\Http\Controllers\Controller;
@@ -25,6 +26,9 @@ class BillHistoryController extends Controller
         $bills = Bill::query()
             ->where('table_id', $tableId)
             ->where('pay_status', PayStatus::PAID)
+            ->with([
+                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
+            ])
             ->orderByDesc('time_out')
             ->paginate($perPage);
 
@@ -40,7 +44,7 @@ class BillHistoryController extends Controller
             ->where('pay_status', PayStatus::PAID)
             ->where('id', $billId)
             ->with([
-                'billDetails' => fn($q) => $q->where('status', '!=', 'cancelled'),
+                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
                 'billDetails.dish.food',
                 'billDetails.dish.cookingMethod',
                 'customer',

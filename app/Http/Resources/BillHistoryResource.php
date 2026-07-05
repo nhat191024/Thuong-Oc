@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Carbon\Carbon;
 
 class BillHistoryResource extends JsonResource
 {
@@ -15,11 +16,26 @@ class BillHistoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $totalAmount = $this->billDetails->sum(function ($detail): int|float {
+            return $detail->quantity * $detail->price;
+        });
+
+        $discountAmount = 0;
+
+        if ($this->voucher_id) {
+            $voucher = Voucher::whereId($this->voucher_id)->first();
+            if ($voucher) {
+                $discountAmount = $voucher->getDiscountAmount($totalAmount);
+            }
+        } else {
+            $discountAmount = $this->discount ?? 0;
+        }
+
         return [
             'id' => $this->id,
             'time_in' => $this->time_in ? Carbon::parse($this->time_in)->toDateTimeString() : null,
             'time_out' => $this->time_out ? Carbon::parse($this->time_out)->toDateTimeString() : null,
-            'final_total' => $this->final_total,
+            'final_total' => $totalAmount - $discountAmount,
             'payment_method' => $this->payment_method,
             'pay_status' => $this->pay_status,
         ];
