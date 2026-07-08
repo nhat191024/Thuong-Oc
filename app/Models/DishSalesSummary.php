@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property \Illuminate\Support\Carbon|null $summary_date
  * @property int $dish_id
  * @property int $food_id
  * @property int $cooking_method_id
@@ -31,6 +32,7 @@ class DishSalesSummary extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'summary_date',
         'dish_id',
         'food_id',
         'cooking_method_id',
@@ -48,6 +50,7 @@ class DishSalesSummary extends Model
      * @return array<string, string>
      */
     protected $casts = [
+        'summary_date' => 'date',
         'last_ordered_at' => 'datetime',
         'calculated_at' => 'datetime',
     ];

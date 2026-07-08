@@ -4,12 +4,14 @@ namespace App\Filament\Pages;
 
 use App\Models\DishSalesSummary;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -39,6 +41,11 @@ class DishSalesReport extends Page implements HasTable
             ->query(DishSalesSummary::query())
             ->pluralModelLabel(__('báo cáo doanh thu theo món'))
             ->columns([
+                TextColumn::make('summary_date')
+                    ->label(__('Ngày'))
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('food_name')
                     ->label(__('Món'))
                     ->searchable()
@@ -75,6 +82,21 @@ class DishSalesReport extends Page implements HasTable
                     ->dateTime('H:i d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                Filter::make('summary_date')
+                    ->label(__('Ngày'))
+                    ->schema([
+                        DatePicker::make('date')
+                            ->label(__('Ngày'))
+                            ->default(today())
+                            ->native(false),
+                    ])
+                    ->default([
+                        'date' => today()->toDateString(),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->whereDate('summary_date', $data['date'] ?? today())),
             ])
             ->defaultSort(fn (Builder $query): Builder => $query
                 ->orderBy('food_name')
