@@ -487,8 +487,13 @@ const buildReceiptHtml = (order: BillDetail) => {
 </html>`;
 };
 
-const escapeHtml = (value: string) => {
-    return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+const escapeHtml = (value: unknown) => {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 };
 
 const getErrorMessage = (error: unknown) => {
