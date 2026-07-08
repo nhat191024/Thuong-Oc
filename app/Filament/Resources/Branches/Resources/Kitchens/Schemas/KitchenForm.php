@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Branches\Resources\Kitchens\Schemas;
 
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class KitchenForm
@@ -20,6 +22,14 @@ class KitchenForm
                     ->relationship(titleAttribute: 'name')
                     ->columns(2)
                     ->gridDirection('row'),
+                Select::make('printer_id')
+                    ->label('Máy in')
+                    ->relationship('printer', 'name')
+                    ->searchable()
+                    ->preload(),
+                Toggle::make('auto_print')
+                    ->label('Tự động in')
+                    ->default(true),
             ]);
     }
 }

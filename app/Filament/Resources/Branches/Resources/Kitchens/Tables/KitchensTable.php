@@ -14,6 +14,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 
 use Filament\Tables\Table;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 
 use Filament\Tables\Filters\TrashedFilter;
@@ -26,10 +27,18 @@ class KitchensTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Tên nhà bếp')
-                    ->searchable(),                TextColumn::make('cookingMethods.name')
+                    ->searchable(),
+                TextColumn::make('cookingMethods.name')
                     ->label('Phương thức nấu')
                     ->badge()
-                    ->separator(','),                TextColumn::make('deleted_at')
+                    ->separator(','),
+                TextColumn::make('printer.name')
+                    ->label('Máy in')
+                    ->placeholder('Chưa chọn'),
+                IconColumn::make('auto_print')
+                    ->label('Tự động in')
+                    ->boolean(),
+                TextColumn::make('deleted_at')
                     ->label('Đã xóa lúc')
                     ->dateTime()
                     ->sortable()
