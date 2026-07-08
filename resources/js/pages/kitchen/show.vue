@@ -31,7 +31,7 @@
 
                 <select
                     v-model="kitchenSettings.printer_id"
-                    class="select h-9 min-h-9 w-40 shrink-0 border-0 bg-white text-sm font-bold text-gray-900 shadow-sm focus:outline-none"
+                    class="select h-8 min-h-8 w-36 shrink-0 rounded-full border-0 bg-white px-3 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none"
                     :disabled="isSavingPrintSettings"
                     @change="savePrintSettings"
                 >
