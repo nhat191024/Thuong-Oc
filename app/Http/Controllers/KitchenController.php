@@ -99,9 +99,12 @@ class KitchenController extends Controller
             ->get();
 
         return Inertia::render('kitchen/show', [
-            'kitchen' => $kitchen,
+            'kitchen' => $kitchen->loadMissing('printer'),
             'billDetails' => $billDetails,
             'cookingMethodIds' => $cookingMethodIds,
+            'printers' => Printer::whereBranchId($kitchen->branch_id)
+                ->where('is_active', true)
+                ->get(['id', 'name']),
         ]);
     }
 
