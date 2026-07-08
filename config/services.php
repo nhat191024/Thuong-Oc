@@ -46,5 +46,7 @@ return [
         'ip' => env('PRINTER_IP', '192.168.1.250'),
         'port' => env('PRINTER_PORT', 9100),
         'timeout' => env('PRINTER_TIMEOUT', 3),
+        'character_table' => env('PRINTER_CHARACTER_TABLE', 27),
+        'character_encoding' => env('PRINTER_CHARACTER_ENCODING', 'CP1258'),
     ],
 ];

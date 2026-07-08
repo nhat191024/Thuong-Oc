@@ -43,6 +43,20 @@ class PrinterForm
                     ->default(3)
                     ->minValue(1)
                     ->maxValue(30),
+                TextInput::make('character_table')
+                    ->label(__('Bảng mã ký tự'))
+                    ->numeric()
+                    ->required()
+                    ->default(27)
+                    ->helperText(__('Xprinter in tiếng Việt thường dùng character table 27.'))
+                    ->minValue(0)
+                    ->maxValue(255),
+                TextInput::make('character_encoding')
+                    ->label(__('Encoding ký tự'))
+                    ->required()
+                    ->default('CP1258')
+                    ->helperText(__('Xprinter tiếng Việt thường dùng CP1258. Ví dụ khác: CP437, TCVN-3-1.'))
+                    ->maxLength(40),
                 Toggle::make('is_active')
                     ->label(__('Hoạt động'))
                     ->default(true),

@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $ip_address
  * @property int $port
  * @property int $timeout
+ * @property int $character_table
+ * @property string $character_encoding
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -22,6 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereBranchId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereCharacterEncoding($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereCharacterTable($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Printer whereIpAddress($value)
@@ -43,6 +47,8 @@ class Printer extends Model
         'ip_address',
         'port',
         'timeout',
+        'character_table',
+        'character_encoding',
         'is_active',
     ];
 
@@ -51,6 +57,7 @@ class Printer extends Model
         return [
             'port' => 'integer',
             'timeout' => 'integer',
+            'character_table' => 'integer',
             'is_active' => 'boolean',
         ];
     }
