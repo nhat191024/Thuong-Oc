@@ -14,8 +14,6 @@ use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
 
 use App\Events\DishPrintRequested;
-use App\Http\Requests\PrintKitchenDishRequest;
-use App\Services\KitchenPrintService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -109,7 +107,6 @@ class KitchenController extends Controller
     {
         $request->validate([
             'status' => ['required', Rule::enum(BillDetailStatus::class)],
-            'printer_id' => ['nullable', 'integer', 'exists:printers,id'],
         ]);
 
         $billDetail->update([
@@ -125,42 +122,7 @@ class KitchenController extends Controller
             broadcast(new DishPrintRequested($billDetail));
         }
 
-        if ($request->status === BillDetailStatus::DONE->value && $request->printer_id) {
-            $printer = Printer::whereId($request->input('printer_id'))->first();
-
-            if ($printer?->is_active) {
-                app(KitchenPrintService::class)->printForKitchen($billDetail, $printer);
-            }
-        }
-
         return back();
-    }
-
-    /**
-     * Print a completed dish from the print station.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function printBillDetail(PrintKitchenDishRequest $request, BillDetail $billDetail): \Illuminate\Http\JsonResponse
-    {
-        if ($billDetail->status !== BillDetailStatus::DONE) {
-            return response()->json([
-                'printed' => false,
-                'message' => 'Chỉ có thể in món đã hoàn thành.',
-            ], 422);
-        }
-
-        $printer = Printer::whereId($request->integer('printer_id'))
-            ->whereBranchId($request->user()->branch_id)
-            ->where('is_active', true)
-            ->firstOrFail();
-
-        $printed = app(KitchenPrintService::class)->printForKitchen($billDetail, $printer);
-
-        return response()->json([
-            'printed' => $printed,
-            'message' => $printed ? 'Đã gửi lệnh in.' : 'Không thể kết nối máy in.',
-        ], $printed ? 200 : 422);
     }
 
     /**
