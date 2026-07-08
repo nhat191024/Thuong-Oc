@@ -39,7 +39,7 @@
                                 <span class="text-sm font-semibold text-gray-600">Máy in</span>
                                 <select
                                     v-model="kitchen.printer_id"
-                                    class="select select-bordered h-10 min-h-10 w-full"
+                                    class="select h-9 min-h-9 w-full rounded-full border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-900 focus:outline-none"
                                     :disabled="savingKitchenIds.has(kitchen.id)"
                                     @change="saveKitchenPrintSettings(kitchen)"
                                 >
