@@ -31,15 +31,6 @@ class PrintersTable
                     ->label(__('Cổng'))
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('character_table')
-                    ->label(__('Bảng mã'))
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('character_encoding')
-                    ->label(__('Encoding'))
-                    ->searchable()
-                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label(__('Hoạt động'))
                     ->boolean(),

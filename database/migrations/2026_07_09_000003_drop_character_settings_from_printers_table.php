@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('printers', function (Blueprint $table) {
-            $table->unsignedTinyInteger('character_table')
-                ->default(27)
-                ->after('timeout');
-            $table->string('character_encoding', 40)
-                ->default('CP1258')
-                ->after('character_table');
+            if (Schema::hasColumn('printers', 'character_table')) {
+                $table->dropColumn('character_table');
+            }
+
+            if (Schema::hasColumn('printers', 'character_encoding')) {
+                $table->dropColumn('character_encoding');
+            }
         });
     }
 
@@ -26,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('printers', function (Blueprint $table) {
-            $table->dropColumn(['character_table', 'character_encoding']);
-        });
+        //
     }
 };

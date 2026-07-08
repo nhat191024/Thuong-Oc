@@ -24,8 +24,6 @@ class PrinterFactory extends Factory
             'ip_address' => fake()->localIpv4(),
             'port' => 9100,
             'timeout' => 3,
-            'character_table' => 27,
-            'character_encoding' => 'CP1258',
             'is_active' => true,
         ];
     }
