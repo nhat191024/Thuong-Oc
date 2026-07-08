@@ -243,8 +243,15 @@ const printOrder = async (order: BillDetail) => {
         await printThermalReceipt(order);
         dismissOrder(order.id);
         toast.success('Đã mở lệnh in trên máy trạm.');
-    } catch {
-        toast.error('Không thể mở lệnh in trên trình duyệt.');
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        console.error('Kitchen print failed', {
+            error,
+            order,
+            selectedPrinterId: selectedPrinterId.value,
+            selectedPrinterName: selectedPrinterName.value,
+        });
+        toast.error(`Không thể mở lệnh in: ${errorMessage}`);
     } finally {
         printingOrderIds.value.delete(order.id);
     }
@@ -298,6 +305,32 @@ const formatTime = (dateString: string) => {
 const printThermalReceipt = (order: BillDetail) => {
     return new Promise<void>((resolve, reject) => {
         const printFrame = document.createElement('iframe');
+        let isSettled = false;
+
+        const cleanup = () => {
+            window.setTimeout(() => printFrame.remove(), 60000);
+        };
+
+        const settleResolve = () => {
+            if (isSettled) {
+                return;
+            }
+
+            isSettled = true;
+            cleanup();
+            resolve();
+        };
+
+        const settleReject = (error: unknown) => {
+            if (isSettled) {
+                return;
+            }
+
+            isSettled = true;
+            printFrame.remove();
+            reject(error instanceof Error ? error : new Error(String(error)));
+        };
+
         printFrame.style.position = 'fixed';
         printFrame.style.right = '0';
         printFrame.style.bottom = '0';
@@ -309,16 +342,34 @@ const printThermalReceipt = (order: BillDetail) => {
 
         printFrame.onload = () => {
             try {
-                printFrame.contentWindow?.addEventListener('afterprint', () => printFrame.remove(), { once: true });
-                printFrame.contentWindow?.focus();
-                printFrame.contentWindow?.print();
-                window.setTimeout(() => printFrame.remove(), 60000);
-                resolve();
-            } catch {
-                printFrame.remove();
-                reject();
+                const printWindow = printFrame.contentWindow;
+
+                if (!printWindow) {
+                    settleReject(new Error('Không lấy được cửa sổ in của trình duyệt.'));
+                    return;
+                }
+
+                if (typeof printWindow.print !== 'function') {
+                    settleReject(new Error('Trình duyệt không hỗ trợ window.print().'));
+                    return;
+                }
+
+                printWindow.addEventListener('afterprint', () => printFrame.remove(), { once: true });
+                printWindow.focus();
+                printWindow.print();
+                settleResolve();
+            } catch (error) {
+                settleReject(error);
             }
         };
+
+        printFrame.onerror = () => {
+            settleReject(new Error('Không tải được nội dung phiếu in.'));
+        };
+
+        window.setTimeout(() => {
+            settleReject(new Error('Quá thời gian chờ tải phiếu in.'));
+        }, 5000);
 
         document.body.appendChild(printFrame);
     });
@@ -438,6 +489,18 @@ const buildReceiptHtml = (order: BillDetail) => {
 
 const escapeHtml = (value: string) => {
     return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+};
+
+const getErrorMessage = (error: unknown) => {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (typeof error === 'string' && error.length > 0) {
+        return error;
+    }
+
+    return 'Lỗi không xác định, xem Console để biết chi tiết.';
 };
 
 onMounted(() => {
