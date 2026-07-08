@@ -114,6 +114,7 @@
 <script setup lang="ts">
 import Nav from '@/pages/components/nav.vue';
 import { PrinterIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import axios from 'axios';
 import { format } from 'date-fns';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { toast } from 'vue3-toastify';
@@ -240,9 +241,12 @@ const printOrder = async (order: BillDetail) => {
     printingOrderIds.value.add(order.id);
 
     try {
-        await printThermalReceipt(order);
+        await axios.post(route('kitchen.print-station.bill-detail.print', { billDetail: order.id }), {
+            printer_id: selectedPrinterId.value,
+        });
+
         dismissOrder(order.id);
-        toast.success('Đã mở lệnh in trên máy trạm.');
+        toast.success('Đã gửi lệnh in đến máy in.');
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         console.error('Kitchen print failed', {
@@ -302,201 +306,19 @@ const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'HH:mm');
 };
 
-const printThermalReceipt = (order: BillDetail) => {
-    return new Promise<void>((resolve, reject) => {
-        const printFrame = document.createElement('iframe');
-        let isSettled = false;
-
-        const cleanup = () => {
-            window.setTimeout(() => printFrame.remove(), 60000);
-        };
-
-        const settleResolve = () => {
-            if (isSettled) {
-                return;
-            }
-
-            isSettled = true;
-            cleanup();
-            resolve();
-        };
-
-        const settleReject = (error: unknown) => {
-            if (isSettled) {
-                return;
-            }
-
-            isSettled = true;
-            printFrame.remove();
-            reject(error instanceof Error ? error : new Error(String(error)));
-        };
-
-        printFrame.style.position = 'fixed';
-        printFrame.style.right = '0';
-        printFrame.style.bottom = '0';
-        printFrame.style.width = '0';
-        printFrame.style.height = '0';
-        printFrame.style.border = '0';
-        printFrame.title = 'kitchen-print-receipt';
-        printFrame.srcdoc = buildReceiptHtml(order);
-
-        printFrame.onload = () => {
-            try {
-                const printWindow = printFrame.contentWindow;
-
-                if (!printWindow) {
-                    settleReject(new Error('Không lấy được cửa sổ in của trình duyệt.'));
-                    return;
-                }
-
-                if (typeof printWindow.print !== 'function') {
-                    settleReject(new Error('Trình duyệt không hỗ trợ window.print().'));
-                    return;
-                }
-
-                printWindow.addEventListener('afterprint', () => printFrame.remove(), { once: true });
-                printWindow.focus();
-                printWindow.print();
-                settleResolve();
-            } catch (error) {
-                settleReject(error);
-            }
-        };
-
-        printFrame.onerror = () => {
-            settleReject(new Error('Không tải được nội dung phiếu in.'));
-        };
-
-        window.setTimeout(() => {
-            settleReject(new Error('Quá thời gian chờ tải phiếu in.'));
-        }, 5000);
-
-        document.body.appendChild(printFrame);
-    });
-};
-
-const buildReceiptHtml = (order: BillDetail) => {
-    const dishName = order.dish ? order.dish.food.name : (order.custom_dish_name ?? 'Món ăn');
-    const cookingMethod = order.dish?.cooking_method?.name;
-    const printedAt = format(new Date(), 'HH:mm dd/MM/yyyy');
-
-    return `<!doctype html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8">
-    <title>In món ${escapeHtml(String(order.id))}</title>
-    <style>
-        @page {
-            size: 80mm auto;
-            margin: 0;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            width: 80mm;
-            margin: 0;
-            padding: 4mm;
-            color: #000;
-            background: #fff;
-            font-family: Arial, "Helvetica Neue", sans-serif;
-            font-size: 13px;
-            line-height: 1.35;
-        }
-
-        .center {
-            text-align: center;
-        }
-
-        .title {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 0;
-            text-transform: uppercase;
-        }
-
-        .table {
-            margin-top: 4mm;
-            font-size: 28px;
-            font-weight: 900;
-        }
-
-        .line {
-            margin: 3mm 0;
-            border-top: 1px dashed #000;
-        }
-
-        .dish {
-            font-size: 22px;
-            font-weight: 900;
-        }
-
-        .method {
-            margin-top: 1mm;
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .quantity {
-            margin-top: 3mm;
-            font-size: 22px;
-            font-weight: 900;
-        }
-
-        .note-label {
-            margin-top: 3mm;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .note {
-            margin-top: 1mm;
-            font-size: 17px;
-            font-weight: 800;
-            white-space: pre-wrap;
-        }
-
-        .meta {
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="center title">Bếp phục vụ</div>
-    <div class="line"></div>
-    <div class="table">Bàn ${escapeHtml(order.bill.table.table_number)}</div>
-    <div>${escapeHtml(order.bill.table.name)}</div>
-    <div class="line"></div>
-    <div class="dish">${escapeHtml(dishName)}</div>
-    ${cookingMethod ? `<div class="method">${escapeHtml(cookingMethod)}</div>` : ''}
-    <div class="quantity">SL: ${escapeHtml(String(order.quantity))}</div>
-    ${
-        order.note
-            ? `<div class="line"></div>
-    <div class="note-label">Ghi chú</div>
-    <div class="note">${escapeHtml(order.note)}</div>`
-            : ''
-    }
-    <div class="line"></div>
-    <div class="meta">Hoàn thành: ${escapeHtml(formatTime(order.updated_at ?? order.created_at))}</div>
-    <div class="meta">In lúc: ${escapeHtml(printedAt)}</div>
-</body>
-</html>`;
-};
-
-const escapeHtml = (value: unknown) => {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-};
-
 const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+        const responseMessage = error.response?.data?.message;
+
+        if (typeof responseMessage === 'string' && responseMessage.length > 0) {
+            return responseMessage;
+        }
+
+        if (error.message) {
+            return error.message;
+        }
+    }
+
     if (error instanceof Error && error.message) {
         return error.message;
     }
