@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::job(new CleanupIdleTableJob)->everyFifteenMinutes();
+Schedule::command('reports:refresh-dish-sales')
+    ->dailyAt('00:00')
+    ->withoutOverlapping();
