@@ -6,6 +6,14 @@
             <div class="h-full overflow-y-auto p-4">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <Link
+                        class="flex cursor-pointer flex-row items-center gap-4 rounded-xl border-2 border-gray-200 bg-white p-6 text-gray-400 shadow-sm transition-all duration-200 hover:border-primary hover:text-primary hover:shadow-md"
+                        :href="route('kitchen.print-station')"
+                    >
+                        <PrinterIcon class="h-12 w-12" />
+                        <span class="text-xl font-bold">Trạm in</span>
+                    </Link>
+
+                    <Link
                         v-for="kitchen in props.kitchens"
                         :key="kitchen.id"
                         class="flex cursor-pointer flex-row items-center gap-4 rounded-xl border-2 border-gray-200 bg-white p-6 text-gray-400 shadow-sm transition-all duration-200 hover:border-primary hover:text-primary hover:shadow-md"
@@ -20,9 +28,9 @@
     </div>
 </template>
 <script setup lang="ts">
-import { FireIcon } from '@heroicons/vue/24/outline';
-import Nav from '../components/nav.vue';
+import { FireIcon, PrinterIcon } from '@heroicons/vue/24/outline';
 import { Link } from '@inertiajs/vue3';
+import Nav from '../components/nav.vue';
 
 interface Kitchen {
     id: number;

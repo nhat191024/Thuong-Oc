@@ -13,6 +13,8 @@ use App\Models\Printer;
 use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
 
+use App\Events\DishPrintRequested;
+use App\Http\Requests\PrintKitchenDishRequest;
 use App\Services\KitchenPrintService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -35,6 +37,25 @@ class KitchenController extends Controller
         return Inertia::render('kitchen/index', [
             'kitchens' => $kitchens,
             'branchName' => $branchName,
+        ]);
+    }
+
+    /**
+     * Show print station.
+     *
+     * @return \Inertia\Response
+     */
+    public function printStation(): \Inertia\Response
+    {
+        $user = Auth::user();
+        $branchId = $user->branch_id;
+
+        return Inertia::render('kitchen/print-station', [
+            'branchId' => $branchId,
+            'branchName' => Branch::whereId($branchId)->value('name'),
+            'printers' => Printer::whereBranchId($branchId)
+                ->where('is_active', true)
+                ->get(['id', 'name']),
         ]);
     }
 
@@ -74,9 +95,6 @@ class KitchenController extends Controller
             'kitchen' => $kitchen,
             'billDetails' => $billDetails,
             'cookingMethodIds' => $cookingMethodIds,
-            'printers' => Printer::whereBranchId($kitchen->branch_id)
-                ->where('is_active', true)
-                ->get(['id', 'name']),
         ]);
     }
 
@@ -98,8 +116,14 @@ class KitchenController extends Controller
             'status' => $request->status,
         ]);
 
+        $billDetail->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
+
         $bill = $billDetail->bill;
         $bill->recalculateTotal();
+
+        if ($request->status === BillDetailStatus::DONE->value) {
+            broadcast(new DishPrintRequested($billDetail));
+        }
 
         if ($request->status === BillDetailStatus::DONE->value && $request->printer_id) {
             $printer = Printer::whereId($request->input('printer_id'))->first();
@@ -110,6 +134,33 @@ class KitchenController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Print a completed dish from the print station.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function printBillDetail(PrintKitchenDishRequest $request, BillDetail $billDetail): \Illuminate\Http\JsonResponse
+    {
+        if ($billDetail->status !== BillDetailStatus::DONE) {
+            return response()->json([
+                'printed' => false,
+                'message' => 'Chỉ có thể in món đã hoàn thành.',
+            ], 422);
+        }
+
+        $printer = Printer::whereId($request->integer('printer_id'))
+            ->whereBranchId($request->user()->branch_id)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $printed = app(KitchenPrintService::class)->printForKitchen($billDetail, $printer);
+
+        return response()->json([
+            'printed' => $printed,
+            'message' => $printed ? 'Đã gửi lệnh in.' : 'Không thể kết nối máy in.',
+        ], $printed ? 200 : 422);
     }
 
     /**

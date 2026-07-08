@@ -18,7 +18,7 @@
                 <p class="text-gray-500">Không có món ăn nào cần chế biến</p>
             </div>
         </div>
-        <div class="flex justify-center gap-2 mb-2" v-if="pages.length > 1">
+        <div class="mb-2 flex justify-center gap-2" v-if="pages.length > 1">
             <template v-for="(p, index) in visiblePages" :key="index">
                 <button
                     v-if="typeof p === 'number'"
@@ -28,17 +28,12 @@
                 >
                     {{ p + 1 }}
                 </button>
-                <span v-else class="btn btn-xs btn-ghost btn-disabled">...</span>
+                <span v-else class="btn btn-disabled btn-ghost btn-xs">...</span>
             </template>
         </div>
     </div>
 
-    <ConfirmModal
-        v-model:isOpen="isConfirmModalOpen"
-        :title="modalTitle"
-        :message="modalMessage"
-        @confirm="handleConfirmAction"
-    />
+    <ConfirmModal v-model:isOpen="isConfirmModalOpen" :title="modalTitle" :message="modalMessage" @confirm="handleConfirmAction" />
 </template>
 
 <script setup lang="ts">
@@ -82,7 +77,6 @@ interface BillDetail {
 
 const props = defineProps<{
     billDetails: BillDetail[];
-    selectedPrinterId: number | null;
 }>();
 
 const carouselRef = ref<HTMLElement | null>(null);
@@ -189,7 +183,6 @@ const submitUpdateStatus = (detailId: number, status: string) => {
         route('kitchen.bill-detail.update-status', { billDetail: detailId }),
         {
             status: status,
-            printer_id: status === 'done' ? props.selectedPrinterId : null,
         },
         {
             preserveScroll: true,
