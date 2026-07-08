@@ -1,15 +1,24 @@
 <template>
     <div class="flex h-screen flex-col">
-        <div class="relative flex w-full items-center justify-between bg-primary p-4">
-            <div class="flex items-center gap-4">
+        <div class="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 bg-primary p-4">
+            <div class="flex min-w-0 items-center gap-4">
                 <button class="btn btn-circle btn-sm" @click="goBack">
                     <ArrowLeftIcon class="size-5" />
                 </button>
-                <p class="text-lg font-bold text-white">{{ props.kitchen.name }}</p>
+                <p class="truncate text-lg font-bold text-white">{{ props.kitchen.name }}</p>
             </div>
 
-            <div class="flex items-center gap-2">
-                <label class="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-primary shadow-sm">
+            <div class="flex justify-center gap-2">
+                <button class="btn btn-sm" :class="currentTab === 'active' ? 'btn-active' : 'text-white btn-ghost'" @click="currentTab = 'active'">
+                    Đang thực hiện
+                </button>
+                <button class="btn btn-sm" :class="currentTab === 'history' ? 'btn-active' : 'text-white btn-ghost'" @click="currentTab = 'history'">
+                    Lịch sử
+                </button>
+            </div>
+
+            <div class="flex min-w-0 items-center justify-end gap-2">
+                <label class="flex shrink-0 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-primary shadow-sm">
                     <input
                         v-model="kitchenSettings.auto_print"
                         type="checkbox"
@@ -22,7 +31,7 @@
 
                 <select
                     v-model="kitchenSettings.printer_id"
-                    class="select h-9 min-h-9 w-40 border-0 bg-white text-sm font-bold text-gray-900 shadow-sm focus:outline-none"
+                    class="select h-9 min-h-9 w-40 shrink-0 border-0 bg-white text-sm font-bold text-gray-900 shadow-sm focus:outline-none"
                     :disabled="isSavingPrintSettings"
                     @change="savePrintSettings"
                 >
@@ -31,18 +40,7 @@
                         {{ printer.name }}
                     </option>
                 </select>
-            </div>
 
-            <div class="flex gap-2">
-                <button class="btn btn-sm" :class="currentTab === 'active' ? 'btn-active' : 'text-white btn-ghost'" @click="currentTab = 'active'">
-                    Đang thực hiện
-                </button>
-                <button class="btn btn-sm" :class="currentTab === 'history' ? 'btn-active' : 'text-white btn-ghost'" @click="currentTab = 'history'">
-                    Lịch sử
-                </button>
-            </div>
-
-            <div class="flex items-center gap-3">
                 <div class="dropdown dropdown-end">
                     <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
                     <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
