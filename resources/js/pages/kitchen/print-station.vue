@@ -2,11 +2,6 @@
     <div class="flex h-screen flex-col bg-gray-100">
         <Nav :center_text="`Trạm in - ${props.branchName}`" use_back_button :back-url="route('kitchen.index')">
             <template #actions>
-                <label class="flex min-w-0 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-primary shadow-sm">
-                    <input v-model="autoPrintEnabled" type="checkbox" class="toggle toggle-primary toggle-sm" @change="saveAutoPrintPreference" />
-                    <span class="text-sm font-semibold whitespace-nowrap">Tự động in</span>
-                </label>
-
                 <div
                     v-if="props.printers.length > 0"
                     class="flex min-w-0 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-primary shadow-sm"
@@ -38,9 +33,7 @@
                 </div>
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <p class="text-sm text-gray-500">Chế độ</p>
-                    <p class="text-xl font-bold" :class="autoPrintEnabled ? 'text-primary' : 'text-gray-700'">
-                        {{ autoPrintEnabled ? 'Tự động in' : 'Chờ bấm nút' }}
-                    </p>
+                    <p class="text-xl font-bold text-gray-700">Theo setting bếp</p>
                 </div>
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <p class="text-sm text-gray-500">Kết nối</p>
@@ -172,16 +165,11 @@ interface Props {
 const props = defineProps<Props>();
 
 const localStorageKey = `print_station_printer_${props.branchId}`;
-const autoPrintStorageKey = `print_station_auto_print_${props.branchId}`;
 const savedPrinterId = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey) : null;
-const savedAutoPrint = typeof window !== 'undefined' ? localStorage.getItem(autoPrintStorageKey) : null;
 const fallbackPrinterId = props.printers[0]?.id ?? null;
 const selectedPrinterId = ref<number | null>(savedPrinterId ? Number(savedPrinterId) : fallbackPrinterId);
-const autoPrintEnabled = ref(savedAutoPrint === null ? true : savedAutoPrint === 'true');
 const queuedOrders = ref<BillDetail[]>([]);
-const autoPrintQueue = ref<BillDetail[]>([]);
 const printingOrderIds = ref(new Set<number>());
-const isAutoPrinting = ref(false);
 const isSubscribed = ref(false);
 
 const selectedPrinterName = computed(() => {
@@ -193,39 +181,25 @@ const savePrinterSelection = () => {
         localStorage.setItem(localStorageKey, String(selectedPrinterId.value));
     }
 
-    if (autoPrintEnabled.value) {
-        for (const order of queuedOrders.value) {
-            enqueueAutoPrint(order);
-        }
-    }
 };
 
-const saveAutoPrintPreference = () => {
-    localStorage.setItem(autoPrintStorageKey, String(autoPrintEnabled.value));
+const enqueueOrder = (order: BillDetail, autoPrinted = false) => {
+    if (autoPrinted) {
+        toast.success(`Đã tự động in phiếu: bàn ${order.bill.table.table_number}`);
 
-    if (autoPrintEnabled.value) {
-        for (const order of queuedOrders.value) {
-            enqueueAutoPrint(order);
-        }
+        return;
     }
-};
 
-const enqueueOrder = (order: BillDetail) => {
     if (queuedOrders.value.some((queuedOrder) => queuedOrder.id === order.id)) {
         return;
     }
 
     queuedOrders.value = [order, ...queuedOrders.value];
     toast.info(`Có phiếu in mới: bàn ${order.bill.table.table_number}`);
-
-    if (autoPrintEnabled.value) {
-        enqueueAutoPrint(order);
-    }
 };
 
 const dismissOrder = (orderId: number) => {
     queuedOrders.value = queuedOrders.value.filter((order) => order.id !== orderId);
-    autoPrintQueue.value = autoPrintQueue.value.filter((order) => order.id !== orderId);
 };
 
 const printOrder = async (order: BillDetail) => {
@@ -259,47 +233,6 @@ const printOrder = async (order: BillDetail) => {
     } finally {
         printingOrderIds.value.delete(order.id);
     }
-};
-
-const enqueueAutoPrint = (order: BillDetail) => {
-    if (!selectedPrinterId.value) {
-        toast.error('Vui lòng chọn máy in để tự động in.');
-        return;
-    }
-
-    if (autoPrintQueue.value.some((queuedOrder) => queuedOrder.id === order.id) || printingOrderIds.value.has(order.id)) {
-        return;
-    }
-
-    autoPrintQueue.value.push(order);
-    void processAutoPrintQueue();
-};
-
-const processAutoPrintQueue = async () => {
-    if (isAutoPrinting.value) {
-        return;
-    }
-
-    isAutoPrinting.value = true;
-
-    try {
-        while (autoPrintEnabled.value && autoPrintQueue.value.length > 0) {
-            const order = autoPrintQueue.value.shift();
-
-            if (!order || !queuedOrders.value.some((queuedOrder) => queuedOrder.id === order.id)) {
-                continue;
-            }
-
-            await printOrder(order);
-            await wait(800);
-        }
-    } finally {
-        isAutoPrinting.value = false;
-    }
-};
-
-const wait = (milliseconds: number) => {
-    return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 };
 
 const formatTime = (dateString: string) => {
@@ -336,9 +269,9 @@ onMounted(() => {
     }
 
     if (window.Echo) {
-        window.Echo.private(`kitchens.${props.branchId}`).listen('.dish.print.requested', (event: { billDetail: BillDetail }) => {
+        window.Echo.private(`kitchens.${props.branchId}`).listen('.dish.print.requested', (event: { billDetail: BillDetail; autoPrinted: boolean }) => {
             isSubscribed.value = true;
-            enqueueOrder(event.billDetail);
+            enqueueOrder(event.billDetail, event.autoPrinted);
         });
 
         isSubscribed.value = true;

@@ -77,6 +77,7 @@ interface BillDetail {
 
 const props = defineProps<{
     billDetails: BillDetail[];
+    kitchenId: number;
 }>();
 
 const carouselRef = ref<HTMLElement | null>(null);
@@ -183,6 +184,7 @@ const submitUpdateStatus = (detailId: number, status: string) => {
         route('kitchen.bill-detail.update-status', { billDetail: detailId }),
         {
             status: status,
+            kitchen_id: props.kitchenId,
         },
         {
             preserveScroll: true,

@@ -13,7 +13,7 @@ class DishPrintRequested implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public BillDetail $billDetail)
+    public function __construct(public BillDetail $billDetail, public bool $autoPrinted = false)
     {
         $this->billDetail->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
     }

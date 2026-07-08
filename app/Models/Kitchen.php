@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property int $branch_id
  * @property int|null $printer_id
+ * @property bool $auto_print
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen whereBranchId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen whereAutoPrint($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Kitchen whereId($value)
@@ -45,7 +47,15 @@ class Kitchen extends Model
         'name',
         'branch_id',
         'printer_id',
+        'auto_print',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'auto_print' => 'boolean',
+        ];
+    }
 
     //Model Relations
     public function branch()

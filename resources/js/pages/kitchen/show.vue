@@ -28,7 +28,7 @@
         </div>
 
         <div class="flex-1 overflow-hidden bg-gray-100">
-            <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" />
+            <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" :kitchen-id="props.kitchen.id" />
             <HistoryOrders v-else :kitchen-id="props.kitchen.id" />
         </div>
     </div>

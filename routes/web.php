@@ -48,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [KitchenController::class, 'index'])->name('index');
         Route::get('/print-station', [KitchenController::class, 'printStation'])->name('print-station');
         Route::post('/print-station/bill-detail/{billDetail}', [KitchenController::class, 'printBillDetail'])->name('print-station.bill-detail.print');
+        Route::patch('/{kitchen}/print-settings', [KitchenController::class, 'updatePrintSettings'])->name('print-settings.update');
         Route::get('/{kitchen}', [KitchenController::class, 'show'])->name('show');
         Route::get('/{kitchen}/history', [KitchenController::class, 'history'])->name('history');
         Route::post('/bill-detail/{billDetail}/status', [KitchenController::class, 'updateStatus'])->name('bill-detail.update-status');
