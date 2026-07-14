@@ -16,7 +16,7 @@ class RefreshDishSalesSummaries extends Command
      *
      * @var string
      */
-    protected $signature = 'reports:refresh-dish-sales {--date= : The sales date to refresh. Defaults to today.}';
+    protected $signature = 'reports:refresh-dish-sales {--date= : The sales date to refresh. Defaults to yesterday.}';
 
     /**
      * The console command description.
@@ -126,7 +126,7 @@ class RefreshDishSalesSummaries extends Command
     private function summaryDate(): ?Carbon
     {
         try {
-            return Carbon::parse($this->option('date') ?: today())->startOfDay();
+            return Carbon::parse($this->option('date') ?: yesterday())->startOfDay();
         } catch (\Throwable) {
             $this->error('The --date option must be a valid date.');
 
