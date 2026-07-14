@@ -12,4 +12,10 @@ Artisan::command('inspire', function () {
 Schedule::job(new CleanupIdleTableJob)->everyFifteenMinutes();
 Schedule::command('reports:refresh-dish-sales')
     ->dailyAt('01:00')
-    ->withoutOverlapping();
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('reports:cleanup-dish-sales')
+    ->dailyAt('01:30')
+    ->withoutOverlapping()
+    ->onOneServer();
