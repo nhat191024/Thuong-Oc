@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property \Illuminate\Support\Carbon|null $summary_date
+ * @property int|null $branch_id
  * @property int $dish_id
  * @property int $food_id
  * @property int $cooking_method_id
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\CookingMethod|null $cookingMethod
+ * @property-read \App\Models\Branch|null $branch
  * @property-read \App\Models\Dish|null $dish
  * @property-read \App\Models\Food|null $food
  * @mixin \Eloquent
@@ -33,6 +35,7 @@ class DishSalesSummary extends Model
      */
     protected $fillable = [
         'summary_date',
+        'branch_id',
         'dish_id',
         'food_id',
         'cooking_method_id',
@@ -58,6 +61,11 @@ class DishSalesSummary extends Model
     public function dish(): BelongsTo
     {
         return $this->belongsTo(Dish::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function food(): BelongsTo
