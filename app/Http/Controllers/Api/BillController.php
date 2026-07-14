@@ -22,7 +22,9 @@ use App\Services\PaymentService;
 
 use App\Settings\AppSettings;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -49,6 +51,29 @@ class BillController extends Controller
         }
 
         return new BillResource($bill);
+    }
+
+    public function destroy(string $tableId): JsonResponse
+    {
+        return DB::transaction(function () use ($tableId): JsonResponse {
+            $table = Table::query()->lockForUpdate()->findOrFail($tableId);
+            $bill = $table->bill()
+                ->where('pay_status', PayStatus::UNPAID)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $bill) {
+                return response()->json(['message' => 'No unpaid bill found.'], 404);
+            }
+
+            $bill->billDetails()->delete();
+            $bill->delete();
+
+            $table->is_active = TableActiveStatus::INACTIVE;
+            $table->save();
+
+            return response()->json(['message' => 'Bill deleted successfully.']);
+        });
     }
 
     public function attachCustomer(Request $request, string $tableId)

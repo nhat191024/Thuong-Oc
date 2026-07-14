@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Bills & Payment
     Route::get('/tables/{table}/bill', [BillController::class, 'show']);
+    Route::delete('/tables/{table}/bill', [BillController::class, 'destroy']);
     Route::post('/tables/{table}/bill/customer', [BillController::class, 'attachCustomer']);
     Route::delete('/tables/{table}/bill/customer', [BillController::class, 'removeCustomer']);
     Route::post('/tables/{table}/bill/discount', [BillController::class, 'applyDiscount']);
