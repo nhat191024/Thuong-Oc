@@ -60,9 +60,9 @@
 <script setup lang="ts">
 import { AppPageProps } from '@/types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
-import axios from 'axios';
 import type { PageProps } from '@inertiajs/core';
 import { Link, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import ActiveOrders from './partials/ActiveOrders.vue';
@@ -140,6 +140,15 @@ watch(
     () => props.billDetails,
     (newVal) => {
         billDetails.value = newVal;
+    },
+);
+
+watch(
+    () => page.props.flash.error,
+    (message) => {
+        if (message) {
+            toast.error(message);
+        }
     },
 );
 

@@ -51,7 +51,9 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/{kitchen}/print-settings', [KitchenController::class, 'updatePrintSettings'])->name('print-settings.update');
         Route::get('/{kitchen}', [KitchenController::class, 'show'])->name('show');
         Route::get('/{kitchen}/history', [KitchenController::class, 'history'])->name('history');
-        Route::post('/bill-detail/{billDetail}/status', [KitchenController::class, 'updateStatus'])->name('bill-detail.update-status');
+        Route::post('/bill-detail/{billDetail}/status', [KitchenController::class, 'updateStatus'])
+            ->missing(fn () => back()->with('error', 'Đơn đã bị xóa, không thể cập nhật món.'))
+            ->name('bill-detail.update-status');
     });
 
     Route::get('/payment/result', [OrderController::class, 'paymentResult'])->name('payment.result');
