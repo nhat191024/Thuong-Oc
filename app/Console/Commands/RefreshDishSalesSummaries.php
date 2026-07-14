@@ -8,6 +8,8 @@ use App\Models\BillDetail;
 use App\Models\DishSalesSummary;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RefreshDishSalesSummaries extends Command
 {
@@ -36,6 +38,45 @@ class RefreshDishSalesSummaries extends Command
             return self::FAILURE;
         }
 
+        $startedAt = microtime(true);
+        $date = $summaryDate->toDateString();
+
+        Log::info('Dish sales summary refresh started.', [
+            'summary_date' => $date,
+        ]);
+
+        try {
+            $summaryCount = $this->refreshSummaries($summaryDate);
+            $durationSeconds = round(microtime(true) - $startedAt, 2);
+
+            Log::info('Dish sales summary refresh completed.', [
+                'summary_date' => $date,
+                'summary_count' => $summaryCount,
+                'branch_count' => DishSalesSummary::query()
+                    ->whereDate('summary_date', $summaryDate)
+                    ->distinct()
+                    ->count('branch_id'),
+                'duration_seconds' => $durationSeconds,
+            ]);
+
+            $this->info("Refreshed {$summaryCount} dish sales summaries for {$date}.");
+
+            return self::SUCCESS;
+        } catch (Throwable $exception) {
+            Log::error('Dish sales summary refresh failed.', [
+                'summary_date' => $date,
+                'duration_seconds' => round(microtime(true) - $startedAt, 2),
+                'exception' => $exception,
+            ]);
+
+            $this->error("Failed to refresh dish sales summaries for {$date}: {$exception->getMessage()}");
+
+            return self::FAILURE;
+        }
+    }
+
+    private function refreshSummaries(Carbon $summaryDate): int
+    {
         $calculatedAt = now();
         $startOfDay = $summaryDate->copy()->startOfDay();
         $endOfDay = $summaryDate->copy()->endOfDay();
@@ -50,6 +91,7 @@ class RefreshDishSalesSummaries extends Command
             ->where('bill_details.status', '!=', BillDetailStatus::CANCELLED->value)
             ->whereNotNull('bill_details.dish_id')
             ->groupBy(
+                'bills.branch_id',
                 'bill_details.dish_id',
                 'dishes.food_id',
                 'dishes.cooking_method_id',
@@ -57,6 +99,7 @@ class RefreshDishSalesSummaries extends Command
                 'cooking_methods.name',
             )
             ->select([
+                'bills.branch_id',
                 'bill_details.dish_id',
                 'dishes.food_id',
                 'dishes.cooking_method_id',
@@ -71,9 +114,14 @@ class RefreshDishSalesSummaries extends Command
         DishSalesSummary::query()
             ->getConnection()
             ->transaction(function () use ($summaries, $summaryDate, $calculatedAt): void {
+                DishSalesSummary::query()
+                    ->whereDate('summary_date', $summaryDate)
+                    ->delete();
+
                 $rows = $summaries
                     ->map(fn ($summary): array => [
                         'summary_date' => $summaryDate->toDateString(),
+                        'branch_id' => $summary->branch_id,
                         'dish_id' => $summary->dish_id,
                         'food_id' => $summary->food_id,
                         'cooking_method_id' => $summary->cooking_method_id,
@@ -91,8 +139,9 @@ class RefreshDishSalesSummaries extends Command
                     ->chunk(500)
                     ->each(fn ($chunk) => DishSalesSummary::query()->upsert(
                         $chunk->all(),
-                        ['summary_date', 'dish_id'],
+                        ['summary_date', 'branch_id', 'dish_id'],
                         [
+                            'branch_id',
                             'food_id',
                             'cooking_method_id',
                             'food_name',
@@ -104,23 +153,9 @@ class RefreshDishSalesSummaries extends Command
                             'updated_at',
                         ],
                     ));
-
-                DishSalesSummary::query()
-                    ->whereDate('summary_date', $summaryDate)
-                    ->when(
-                        $rows->isNotEmpty(),
-                        fn ($query) => $query->whereNotIn('dish_id', $rows->pluck('dish_id')),
-                    )
-                    ->delete();
-
-                DishSalesSummary::query()
-                    ->whereDate('summary_date', '<', today()->subDays(14))
-                    ->delete();
             });
 
-        $this->info("Refreshed {$summaries->count()} dish sales summaries for {$summaryDate->toDateString()}.");
-
-        return self::SUCCESS;
+        return $summaries->count();
     }
 
     private function summaryDate(): ?Carbon
