@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Branch;
 use App\Models\DishSalesSummary;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
@@ -12,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -46,6 +48,9 @@ class DishSalesReport extends Page implements HasTable
                     ->date('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('branch.name')
+                    ->label(__('Cơ sở'))
+                    ->sortable(),
                 TextColumn::make('food_name')
                     ->label(__('Món'))
                     ->searchable()
@@ -84,6 +89,12 @@ class DishSalesReport extends Page implements HasTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('branch_id')
+                    ->label(__('Cơ sở'))
+                    ->relationship('branch', 'name')
+                    ->default(fn (): ?int => Branch::query()->oldest('id')->value('id'))
+                    ->preload()
+                    ->searchable(),
                 Filter::make('summary_date')
                     ->label(__('Ngày'))
                     ->schema([
@@ -99,6 +110,7 @@ class DishSalesReport extends Page implements HasTable
                         ->whereDate('summary_date', $data['date'] ?? today())),
             ])
             ->defaultSort(fn (Builder $query): Builder => $query
+                ->orderBy('branch_id')
                 ->orderBy('food_name')
                 ->orderByDesc('total_revenue')
                 ->orderBy('cooking_method_name'))
