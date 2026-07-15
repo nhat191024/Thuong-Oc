@@ -2,6 +2,7 @@
     <div class="flex h-screen flex-col">
         <Nav :center_text="'Chi nhánh ' + props.branchName">
             <template #actions>
+                <Link :href="route('history.index')" class="btn rounded-4xl bg-white text-primary btn-sm hover:bg-white/90"> Lịch sử đơn </Link>
                 <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-white text-primary btn-sm hover:bg-white/90">
                     Quản lý tồn kho
                 </Link>
@@ -9,6 +10,9 @@
         </Nav>
 
         <div class="flex-1 overflow-hidden bg-gray-100">
+            <div v-if="page.props.flash.success" role="alert" class="mx-4 mt-4 alert alert-success">
+                <span>{{ page.props.flash.success }}</span>
+            </div>
             <div class="h-full overflow-x-auto p-4">
                 <div class="grid h-full min-w-max grid-flow-col grid-rows-2 gap-4">
                     <Link
@@ -34,9 +38,11 @@
     </div>
 </template>
 <script setup lang="ts">
+import { AppPageProps } from '@/types';
 import { Table } from '@/types/table';
 import { TableCellsIcon } from '@heroicons/vue/24/outline';
-import { Link } from '@inertiajs/vue3';
+import type { PageProps } from '@inertiajs/core';
+import { Link, usePage } from '@inertiajs/vue3';
 import Nav from '../components/nav.vue';
 
 interface Props {
@@ -45,4 +51,5 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage<PageProps & AppPageProps>();
 </script>

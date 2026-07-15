@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\BillDetailStatus;
 use App\Models\Voucher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -16,7 +17,13 @@ class BillHistoryDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $billDetails = $this->billDetails
+        $sourceBillDetails = $this->trashed()
+            ? $this->billDetails
+            : $this->billDetails->reject(
+                fn ($detail): bool => $detail->status === BillDetailStatus::CANCELLED,
+            );
+
+        $billDetails = $sourceBillDetails
             ->groupBy(fn ($detail): string => $detail->dish_id ? "dish-{$detail->dish_id}" : "custom-{$detail->id}")
             ->map(function ($details): array {
                 $detail = $details->first();
@@ -45,7 +52,7 @@ class BillHistoryDetailResource extends JsonResource
             })
             ->values();
 
-        $totalAmount = $this->billDetails->sum(function ($detail): int|float {
+        $totalAmount = $sourceBillDetails->sum(function ($detail): int|float {
             return $detail->quantity * $detail->price;
         });
 
@@ -68,6 +75,8 @@ class BillHistoryDetailResource extends JsonResource
             'table_number' => $this->table->table_number,
             'time_in' => $this->time_in ? Carbon::parse($this->time_in)->toDateTimeString() : null,
             'time_out' => $this->time_out ? Carbon::parse($this->time_out)->toDateTimeString() : null,
+            'deleted_at' => $this->deleted_at?->toDateTimeString(),
+            'is_deleted' => $this->trashed(),
             'customer' => $this->customer ? [
                 'id' => $this->customer->id,
                 'name' => $this->customer->name,

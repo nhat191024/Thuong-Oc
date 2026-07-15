@@ -1,6 +1,7 @@
 <template>
     <div class="min-h-screen bg-gray-100">
-        <Nav :tableNumber="0" />
+        <StaffNav v-if="props.isStaff" center_text="Lịch sử đơn hàng" use_back_button :back-url="route('staff.tables')" />
+        <MenuNav v-else :tableNumber="0" table-name="" />
 
         <div class="container mx-auto px-4 py-6">
             <div class="mb-6 flex items-center gap-3">
@@ -24,13 +25,14 @@
                     <div class="card-body">
                         <div class="flex items-center justify-between">
                             <h2 class="card-title text-sm">Đơn #{{ bill.id }}</h2>
-                            <span :class="getStatusBadgeClass(bill.pay_status)" class="badge badge-sm">
-                                {{ getStatusText(bill.pay_status) }}
+                            <span :class="getStatusBadgeClass(bill.pay_status, bill.deleted_at)" class="badge badge-sm">
+                                {{ getStatusText(bill.pay_status, bill.deleted_at) }}
                             </span>
                         </div>
                         <p class="text-sm text-gray-500">
                             {{ formatDate(bill.created_at) }}
                         </p>
+                        <p v-if="bill.deleted_at" class="text-sm font-medium text-error">Thời gian xóa: {{ formatDate(bill.deleted_at) }}</p>
                         <div class="mt-2 flex items-center justify-between font-semibold">
                             <span>Tổng tiền:</span>
                             <span class="text-primary">{{ formatCurrency(bill.total) }}</span>
@@ -51,10 +53,12 @@ import { Bill } from '@/types/bill';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import { Link, router } from '@inertiajs/vue3';
 
-import Nav from '../menu/partials/nav.vue';
+import StaffNav from '../components/nav.vue';
+import MenuNav from '../menu/partials/nav.vue';
 
 interface Props {
     bills: Bill[];
+    isStaff: boolean;
 }
 
 const props = defineProps<Props>();
@@ -68,30 +72,48 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
-const getStatusText = (status: string) => {
+const getStatusText = (status: string, deletedAt: string | null) => {
+    if (deletedAt) {
+        return 'Đã xóa';
+    }
+
     switch (status) {
-        case 'PAID':
+        case 'paid':
             return 'Đã thanh toán';
-        case 'UNPAID':
+        case 'unpaid':
             return 'Chưa thanh toán';
+        case 'cancelled':
+            return 'Đã hủy';
         default:
             return status;
     }
 };
 
-const getStatusBadgeClass = (status: string) => {
+const getStatusBadgeClass = (status: string, deletedAt: string | null) => {
+    if (deletedAt) {
+        return 'badge-error text-white';
+    }
+
     switch (status) {
-        case 'PAID':
+        case 'paid':
             return 'badge-success text-white';
-        case 'UNPAID':
+        case 'unpaid':
             return 'badge-warning text-white';
+        case 'cancelled':
+            return 'badge-error text-white';
         default:
             return 'badge-ghost';
     }
 };
 
 const goBack = () => {
-    let tableId = localStorage.getItem('tableId');
+    if (props.isStaff) {
+        router.visit(route('staff.tables'));
+
+        return;
+    }
+
+    const tableId = localStorage.getItem('tableId');
     if (tableId) {
         router.visit(route('customer-menu.index', { tableId }));
     } else {

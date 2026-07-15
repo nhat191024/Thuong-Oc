@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/stock/{food}', [StaffController::class, 'updateStock'])->name('stock.update');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
+        Route::delete('/table/{tableId}/bill', [StaffController::class, 'destroyBill'])->name('table.bill.destroy');
         Route::post('/table/{tableId}/apply-discount', [StaffController::class, 'applyDiscount'])->name('table.apply-discount');
         Route::post('/table/{tableId}/remove-discount', [StaffController::class, 'removeDiscount'])->name('table.remove-discount');
         Route::post('/table/{tableId}/attach-customer', [StaffController::class, 'attachCustomer'])->name('table.attach-customer');

@@ -1,10 +1,18 @@
 <template>
     <div class="relative flex w-1/3 flex-col border-r border-base-300 bg-base-100">
         <!-- Merge Loading Overlay -->
-        <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
-            <div v-if="isMerging" class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-base-100/80 backdrop-blur-sm">
-                <span class="loading loading-spinner loading-lg text-warning"></span>
-                <p class="font-semibold text-base-content">Đang gộp đơn...</p>
+        <Transition
+            enter-active-class="transition-opacity duration-200"
+            enter-from-class="opacity-0"
+            leave-active-class="transition-opacity duration-200"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="isMerging || isDeleting"
+                class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-base-100/80 backdrop-blur-sm"
+            >
+                <span class="loading loading-lg loading-spinner" :class="isDeleting ? 'text-error' : 'text-warning'"></span>
+                <p class="font-semibold text-base-content">{{ isDeleting ? 'Đang xóa đơn...' : 'Đang gộp đơn...' }}</p>
             </div>
         </Transition>
         <!-- Tabs -->
@@ -125,6 +133,7 @@
                         <li><a @click="$emit('payment')">Thanh toán</a></li>
                         <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
                         <li><a @click="openMergeTableModal">Gộp đơn</a></li>
+                        <li><a class="text-error" @click="openDeleteBillModal">Xóa đơn</a></li>
                     </ul>
                 </div>
             </div>
@@ -133,21 +142,14 @@
         <!-- Move Table Modal -->
         <dialog id="move_table_modal" class="modal">
             <div class="modal-box">
-                <h3 class="font-bold text-lg">Chuyển bàn</h3>
+                <h3 class="text-lg font-bold">Chuyển bàn</h3>
                 <p class="py-4">Chọn bàn muốn chuyển đến:</p>
                 <div v-if="inactiveTables && inactiveTables.length > 0" class="grid grid-cols-4 gap-2">
-                    <button
-                        v-for="table in inactiveTables"
-                        :key="table.id"
-                        class="btn btn-outline"
-                        @click="selectMoveTable(table.id)"
-                    >
+                    <button v-for="table in inactiveTables" :key="table.id" class="btn btn-outline" @click="selectMoveTable(table.id)">
                         {{ table.name ?? 'Bàn ' + table.table_number }}
                     </button>
                 </div>
-                <div v-else class="text-center text-gray-500">
-                    Không có bàn trống nào.
-                </div>
+                <div v-else class="text-center text-gray-500">Không có bàn trống nào.</div>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn">Đóng</button>
@@ -159,13 +161,13 @@
         <!-- Merge Table Modal -->
         <dialog id="merge_table_modal" class="modal">
             <div class="modal-box max-w-lg">
-                <h3 class="flex items-center gap-2 font-bold text-lg">
+                <h3 class="flex items-center gap-2 text-lg font-bold">
                     <ArrowsRightLeftIcon class="size-5 text-warning" />
                     Gộp đơn
                 </h3>
 
                 <!-- Flow description -->
-                <div class="alert alert-warning mt-3">
+                <div class="mt-3 alert alert-warning">
                     <InformationCircleIcon class="size-5 shrink-0" />
                     <div class="text-sm">
                         <p class="font-semibold">Lưu ý về luồng gộp đơn:</p>
@@ -175,7 +177,7 @@
                             <li>Bàn hiện tại sẽ được đặt về trạng thái <strong>trống</strong>.</li>
                             <li>Bạn sẽ được chuyển sang <strong>trang bàn đích</strong> để tiếp tục phục vụ.</li>
                         </ol>
-                        <p class="mt-2 text-error font-medium">⚠ Hành động này không thể hoàn tác!</p>
+                        <p class="mt-2 font-medium text-error">⚠ Hành động này không thể hoàn tác!</p>
                     </div>
                 </div>
 
@@ -190,9 +192,7 @@
                         {{ table.name ?? 'Bàn ' + table.table_number }}
                     </button>
                 </div>
-                <div v-else class="mt-2 text-center text-gray-500">
-                    Không có bàn nào đang hoạt động để gộp.
-                </div>
+                <div v-else class="mt-2 text-center text-gray-500">Không có bàn nào đang hoạt động để gộp.</div>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn">Đóng</button>
@@ -204,14 +204,30 @@
         <!-- Merge Confirm Dialog -->
         <dialog id="merge_confirm_modal" class="modal">
             <div class="modal-box">
-                <h3 class="font-bold text-lg text-error">Xác nhận gộp đơn</h3>
+                <h3 class="text-lg font-bold text-error">Xác nhận gộp đơn</h3>
                 <p class="py-3">
                     Bạn chắc chắn muốn gộp đơn của bàn này vào
-                    <strong>{{ pendingMergeTableName }}</strong>?
+                    <strong>{{ pendingMergeTableName }}</strong
+                    >?
                 </p>
                 <p class="text-sm text-base-content/60">Đơn hiện tại sẽ bị xóa và bàn sẽ được giải phóng.</p>
                 <div class="modal-action">
                     <button class="btn btn-error" @click="executeMerge">Xác nhận gộp</button>
+                    <form method="dialog">
+                        <button class="btn">Hủy</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Delete Bill Confirm Dialog -->
+        <dialog id="delete_bill_confirm_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold text-error">Xác nhận xóa đơn</h3>
+                <p class="py-3">Bạn có chắc muốn xóa đơn hiện tại?</p>
+                <p class="text-sm text-base-content/60">Đơn sẽ được chuyển vào lịch sử, toàn bộ món sẽ bị hủy và bàn sẽ được giải phóng.</p>
+                <div class="modal-action">
+                    <button class="btn text-white btn-error" @click="executeDeleteBill">Xóa đơn</button>
                     <form method="dialog">
                         <button class="btn">Hủy</button>
                     </form>
@@ -234,6 +250,7 @@ interface Props {
     inactiveTables?: { id: string; name: string; table_number: number }[];
     activeTables?: { id: string; name: string; table_number: number }[];
     isMerging?: boolean;
+    isDeleting?: boolean;
 }
 
 defineProps<Props>();
@@ -248,6 +265,7 @@ const emit = defineEmits<{
     payment: [];
     moveTable: [tableId: string];
     mergeTable: [tableId: string];
+    deleteBill: [];
 }>();
 
 const pendingMergeTableId = ref<string>('');
@@ -288,5 +306,16 @@ function executeMerge() {
     emit('mergeTable', pendingMergeTableId.value);
     const confirmModal = document.getElementById('merge_confirm_modal') as HTMLDialogElement;
     if (confirmModal) confirmModal.close();
+}
+
+function openDeleteBillModal() {
+    const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
+
+function executeDeleteBill() {
+    emit('deleteBill');
+    const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
+    if (modal) modal.close();
 }
 </script>

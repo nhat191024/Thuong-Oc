@@ -11,11 +11,13 @@
             </div>
             <div v-if="printers.length > 0" class="flex-none">
                 <div class="dropdown dropdown-end">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1">
+                    <div tabindex="0" role="button" class="btn gap-1 btn-ghost btn-sm">
                         <PrinterIcon class="size-5" />
-                        <span class="hidden text-sm sm:inline">{{ selectedPrinterId ? printers.find((p) => p.id === selectedPrinterId)?.name : 'Chọn máy in' }}</span>
+                        <span class="hidden text-sm sm:inline">{{
+                            selectedPrinterId ? printers.find((p) => p.id === selectedPrinterId)?.name : 'Chọn máy in'
+                        }}</span>
                     </div>
-                    <ul tabindex="0" class="dropdown-content menu rounded-box bg-base-100 z-50 w-52 p-2 shadow">
+                    <ul tabindex="0" class="dropdown-content menu z-50 w-52 rounded-box bg-base-100 p-2 shadow">
                         <li>
                             <a :class="{ active: selectedPrinterId === null }" @click="savePrinterSelection(null)">Không in</a>
                         </li>
@@ -108,8 +110,8 @@
 import ConfirmModal from '@/pages/components/ConfirmModal.vue';
 import { AppPageProps } from '@/types';
 import { ChevronLeftIcon, PrinterIcon } from '@heroicons/vue/24/outline';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import type { PageProps } from '@inertiajs/core';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import BillAdditionalInfo from './partials/BillAdditionalInfo.vue';
 import BillPayment from './partials/BillPayment.vue';

@@ -35,6 +35,7 @@ use App\Http\Requests\ProcessPaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class StaffController extends Controller
@@ -309,6 +310,35 @@ class StaffController extends Controller
             'discountAmount' => $discountAmount,
             'printers' => $printers,
         ]);
+    }
+
+    public function destroyBill(string $tableId)
+    {
+        return DB::transaction(function () use ($tableId) {
+            $table = Table::query()
+                ->where('branch_id', Auth::user()->branch_id)
+                ->lockForUpdate()
+                ->findOrFail($tableId);
+
+            $bill = $table->bill()
+                ->where('pay_status', PayStatus::UNPAID)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $bill) {
+                return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+            }
+
+            $bill->billDetails()->update([
+                'status' => BillDetailStatus::CANCELLED->value,
+            ]);
+            $bill->delete();
+
+            $table->is_active = TableActiveStatus::INACTIVE;
+            $table->save();
+
+            return redirect()->route('staff.tables')->with('success', 'Đã xóa đơn thành công.');
+        });
     }
 
     /**

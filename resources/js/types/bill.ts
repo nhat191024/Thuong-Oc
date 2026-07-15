@@ -1,5 +1,5 @@
-import { Table } from './table';
 import { Dish, Food } from './menu';
+import { Table } from './table';
 
 export interface Branch {
     id: number;
@@ -49,6 +49,8 @@ export interface Bill {
     voucher_id: number | null;
     created_at: string;
     updated_at: string;
+    deleted_at: string | null;
+    is_deleted?: boolean;
     branch?: Branch;
     table?: Table;
     bill_details?: BillDetailWithRelations[];

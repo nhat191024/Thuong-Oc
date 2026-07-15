@@ -1,6 +1,7 @@
 <template>
     <div class="min-h-screen bg-gray-100 pb-20">
-        <Nav :tableNumber="0" />
+        <StaffNav v-if="props.isStaff" center_text="Chi tiết đơn" use_back_button :back-url="route('history.index')" />
+        <MenuNav v-else :tableNumber="0" table-name="" />
 
         <div class="container mx-auto px-4 py-6">
             <Link :href="route('history.index')" class="mb-4 inline-flex items-center text-gray-600 hover:text-primary">
@@ -14,11 +15,12 @@
                 <div class="border-b pb-4">
                     <div class="flex items-center justify-between">
                         <h1 class="text-xl font-bold">Chi tiết đơn #{{ bill.id }}</h1>
-                        <span :class="getStatusBadgeClass(bill.pay_status)" class="badge badge-lg">
-                            {{ getStatusText(bill.pay_status) }}
+                        <span :class="getStatusBadgeClass(bill.pay_status, bill.deleted_at)" class="badge badge-lg">
+                            {{ getStatusText(bill.pay_status, bill.deleted_at) }}
                         </span>
                     </div>
                     <p class="mt-1 text-sm text-gray-500">{{ formatDate(bill.created_at) }}</p>
+                    <p v-if="bill.deleted_at" class="mt-1 text-sm font-medium text-error">Thời gian xóa: {{ formatDate(bill.deleted_at) }}</p>
                     <div class="mt-2 flex gap-2">
                         <span class="badge badge-outline" v-if="bill.branch">{{ bill.branch.name }}</span>
                         <span class="badge badge-outline" v-if="bill.table">Bàn {{ bill.table.table_number }}</span>
@@ -69,10 +71,12 @@
 <script setup lang="ts">
 import { Bill } from '@/types/bill';
 import { Link } from '@inertiajs/vue3';
-import Nav from '../menu/partials/nav.vue';
+import StaffNav from '../components/nav.vue';
+import MenuNav from '../menu/partials/nav.vue';
 
 interface Props {
     bill: Bill;
+    isStaff: boolean;
 }
 
 const props = defineProps<Props>();
@@ -86,23 +90,35 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
-const getStatusText = (status: string) => {
+const getStatusText = (status: string, deletedAt: string | null) => {
+    if (deletedAt) {
+        return 'Đã xóa';
+    }
+
     switch (status) {
-        case 'PAID':
+        case 'paid':
             return 'Đã thanh toán';
-        case 'UNPAID':
+        case 'unpaid':
             return 'Chưa thanh toán';
+        case 'cancelled':
+            return 'Đã hủy';
         default:
             return status;
     }
 };
 
-const getStatusBadgeClass = (status: string) => {
+const getStatusBadgeClass = (status: string, deletedAt: string | null) => {
+    if (deletedAt) {
+        return 'badge-error text-white';
+    }
+
     switch (status) {
-        case 'PAID':
+        case 'paid':
             return 'badge-success text-white';
-        case 'UNPAID':
+        case 'unpaid':
             return 'badge-warning text-white';
+        case 'cancelled':
+            return 'badge-error text-white';
         default:
             return 'badge-ghost';
     }

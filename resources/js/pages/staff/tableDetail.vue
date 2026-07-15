@@ -12,6 +12,7 @@
                 :inactive-tables="inactiveTables"
                 :active-tables="activeTables"
                 :is-merging="isMerging"
+                :is-deleting="isDeleting"
                 @update-bill-quantity="updateBillQuantity"
                 @update-cart-quantity="updateCartQuantity"
                 @remove-from-cart="removeFromCart"
@@ -20,6 +21,7 @@
                 @payment="handlePayment"
                 @move-table="handleMoveTable"
                 @merge-table="handleMergeTable"
+                @delete-bill="handleDeleteBill"
             />
 
             <!-- Right Panel: Menu -->
@@ -87,6 +89,7 @@ const isNotificationOpen = ref(false);
 const notificationTitle = ref('');
 const notificationMessage = ref('');
 const isMerging = ref(false);
+const isDeleting = ref(false);
 const isPlacingOrder = ref(false);
 
 function showNotification(title: string, message: string) {
@@ -134,6 +137,18 @@ function handleMergeTable(targetTableId: string) {
             },
         },
     );
+}
+
+function handleDeleteBill() {
+    isDeleting.value = true;
+    router.delete(route('staff.table.bill.destroy', props.table.id), {
+        onError: (errors) => {
+            showNotification('Lỗi', errors.error || 'Có lỗi xảy ra khi xóa đơn');
+        },
+        onFinish: () => {
+            isDeleting.value = false;
+        },
+    });
 }
 
 function initBillFromOrder() {
@@ -335,11 +350,7 @@ function updateBill() {
     billItems.value.forEach((currentItem) => {
         const originalItem = confirmedBillItems.value.find((i) => {
             if (currentItem.custom_dish_name) {
-                return (
-                    i.custom_dish_name === currentItem.custom_dish_name &&
-                    i.price === currentItem.price &&
-                    i.note === currentItem.note
-                );
+                return i.custom_dish_name === currentItem.custom_dish_name && i.price === currentItem.price && i.note === currentItem.note;
             }
             return i.foodId === currentItem.foodId && i.dishId === currentItem.dishId && i.note === currentItem.note;
         });
