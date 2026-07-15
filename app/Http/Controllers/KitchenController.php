@@ -122,6 +122,10 @@ class KitchenController extends Controller
             'kitchen_id' => ['nullable', 'integer'],
         ]);
 
+        if (! $billDetail->bill()->exists()) {
+            return back()->with('error', 'Đơn đã bị xóa, không thể cập nhật món.');
+        }
+
         $billDetail->update([
             'status' => $request->status,
         ]);
