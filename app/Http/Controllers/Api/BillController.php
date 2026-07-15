@@ -66,13 +66,15 @@ class BillController extends Controller
                 return response()->json(['message' => 'No unpaid bill found.'], 404);
             }
 
-            $bill->billDetails()->delete();
+            $bill->billDetails()->update([
+                'status' => BillDetailStatus::CANCELLED->value,
+            ]);
             $bill->delete();
 
             $table->is_active = TableActiveStatus::INACTIVE;
             $table->save();
 
-            return response()->json(['message' => 'Bill deleted successfully.']);
+            return response()->json(['message' => 'Bill cancelled successfully.']);
         });
     }
 

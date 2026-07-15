@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\BillDetailStatus;
 use App\Enums\PayStatus;
 
 use App\Http\Controllers\Controller;
@@ -24,12 +23,14 @@ class BillHistoryController extends Controller
         $perPage = (int) $request->query('per_page', 10);
 
         $bills = Bill::query()
+            ->withTrashed()
             ->where('table_id', $tableId)
-            ->where('pay_status', PayStatus::PAID)
-            ->with([
-                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
-            ])
-            ->orderByDesc('time_out')
+            ->where(function ($query) {
+                $query->where('pay_status', PayStatus::PAID)
+                    ->orWhereNotNull('deleted_at');
+            })
+            ->with('billDetails')
+            ->orderByRaw('COALESCE(time_out, deleted_at) DESC')
             ->paginate($perPage);
 
         return BillHistoryResource::collection($bills);
@@ -40,11 +41,15 @@ class BillHistoryController extends Controller
         Table::findOrFail($tableId);
 
         $bill = Bill::query()
+            ->withTrashed()
             ->where('table_id', $tableId)
-            ->where('pay_status', PayStatus::PAID)
+            ->where(function ($query) {
+                $query->where('pay_status', PayStatus::PAID)
+                    ->orWhereNotNull('deleted_at');
+            })
             ->where('id', $billId)
             ->with([
-                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
+                'billDetails',
                 'billDetails.dish.food',
                 'billDetails.dish.cookingMethod',
                 'customer',
