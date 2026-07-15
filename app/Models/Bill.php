@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Enums\BillDetailStatus;
 use App\Enums\PaymentMethods;
@@ -22,6 +23,7 @@ use App\Enums\PayStatus;
  * @property PaymentMethods|null $payment_method
  * @property PayStatus $pay_status
  * @property int|null $voucher_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BillDetail> $billDetails
@@ -32,10 +34,12 @@ use App\Enums\PayStatus;
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereBranchId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereDiscount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereFinalTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereId($value)
@@ -48,10 +52,14 @@ use App\Enums\PayStatus;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill whereVoucherId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Bill withoutTrashed()
  * @mixin \Eloquent
  */
 class Bill extends Model
 {
+    use SoftDeletes;
+
     /**
      * The attributes that are mass assignable.
      *
