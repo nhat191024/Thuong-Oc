@@ -160,9 +160,20 @@ class RefreshDishSalesSummaries extends Command
 
     private function summaryDate(): ?Carbon
     {
+        $dateOption = $this->option('date');
+
+        if ($dateOption === null || $dateOption === '') {
+            return Carbon::yesterday()->startOfDay();
+        }
+
         try {
-            return Carbon::parse($this->option('date') ?: yesterday())->startOfDay();
-        } catch (\Throwable) {
+            return Carbon::parse($dateOption)->startOfDay();
+        } catch (Throwable $exception) {
+            Log::warning('Invalid date supplied for dish sales summary refresh.', [
+                'date_option' => $dateOption,
+                'exception' => $exception,
+            ]);
+
             $this->error('The --date option must be a valid date.');
 
             return null;
