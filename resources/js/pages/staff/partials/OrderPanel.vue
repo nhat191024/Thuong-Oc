@@ -133,7 +133,7 @@
                         <li><a @click="$emit('payment')">Thanh toán</a></li>
                         <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
                         <li><a @click="openMergeTableModal">Gộp đơn</a></li>
-                        <li><a class="text-error" @click="openDeleteBillModal">Xóa đơn</a></li>
+                        <!-- <li><a class="text-error" @click="openDeleteBillModal">Xóa đơn</a></li> -->
                     </ul>
                 </div>
             </div>
@@ -308,10 +308,10 @@ function executeMerge() {
     if (confirmModal) confirmModal.close();
 }
 
-function openDeleteBillModal() {
-    const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
-    if (modal) modal.showModal();
-}
+// function openDeleteBillModal() {
+//     const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
+//     if (modal) modal.showModal();
+// }
 
 function executeDeleteBill() {
     emit('deleteBill');
