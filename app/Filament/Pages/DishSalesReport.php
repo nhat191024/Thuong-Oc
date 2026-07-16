@@ -16,6 +16,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class DishSalesReport extends Page implements HasTable
 {
@@ -100,14 +101,19 @@ class DishSalesReport extends Page implements HasTable
                     ->schema([
                         DatePicker::make('date')
                             ->label(__('Ngày'))
-                            ->default(today())
+                            ->default(Carbon::yesterday())
                             ->native(false),
                     ])
                     ->default([
-                        'date' => today()->toDateString(),
+                        'date' => Carbon::yesterday()->toDateString(),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
-                        ->whereDate('summary_date', $data['date'] ?? today())),
+                        ->whereDate('summary_date', $data['date'] ?? Carbon::yesterday()))
+                    ->indicateUsing(fn (array $data): string => __('Ngày: :date', [
+                        'date' => Carbon::parse(
+                            $data['date'] ?? Carbon::yesterday()->toDateString(),
+                        )->format('d/m/Y'),
+                    ])),
             ])
             ->defaultSort(fn (Builder $query): Builder => $query
                 ->orderBy('branch_id')
