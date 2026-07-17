@@ -43,26 +43,13 @@ class KitchenPrintService
 
             $printer->initialize();
 
-            // Header
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
             $printer->setTextSize(2, 2);
-            $printer->text("BEP PHUC VU\n");
-            $printer->setTextSize(1, 1);
-            $printer->setEmphasis(false);
-            $printer->text("================================\n");
 
-            // Table number
-            $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->setEmphasis(true);
-            $printer->setTextSize(2, 2);
             $tableNumber = $billDetail->bill->table->table_number ?? 'N/A';
             $printer->text("BAN: $tableNumber\n");
-            $printer->setTextSize(1, 1);
-            $printer->setEmphasis(false);
-            $printer->text("--------------------------------\n");
 
-            // Dish name
             $dishName = $billDetail->dish
                 ? $billDetail->dish->food->name
                 : ($billDetail->custom_dish_name ?? 'Mon an');
@@ -70,21 +57,12 @@ class KitchenPrintService
 
             $fullDishName = Str::ascii($dishName) . ($cookingMethod ? ' (' . Str::ascii($cookingMethod) . ')' : '');
 
-            $printer->setEmphasis(true);
-            $printer->setTextSize(1, 2);
             $printer->text("$fullDishName\n");
-            $printer->setTextSize(1, 1);
-            $printer->setEmphasis(false);
-
             $printer->text('So luong: ' . $billDetail->quantity . "\n");
 
             if (! empty($billDetail->note)) {
-                $printer->text("--------------------------------\n");
                 $printer->text('Ghi chu: ' . Str::ascii($billDetail->note) . "\n");
             }
-
-            $printer->text("================================\n");
-            $printer->text('Hoan thanh: ' . now()->format('H:i d/m/Y') . "\n");
 
             $printer->feed(3);
             $printer->cut();
