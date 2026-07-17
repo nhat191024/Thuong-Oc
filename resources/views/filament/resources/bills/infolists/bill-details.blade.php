@@ -15,8 +15,8 @@
                     <tr>
                         <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                             <div class="font-medium text-gray-950 dark:text-white">
-                                {{ $detail->dish->food->name ?? 'Unknown' }}
-                                @if($detail->dish->cookingMethod)
+                                {{ $detail->dish?->food?->name ?? $detail->custom_dish_name ?? 'Món không còn tồn tại' }}
+                                @if($detail->dish?->cookingMethod)
                                     - {{ $detail->dish->cookingMethod->name }}
                                 @endif
                             </div>
