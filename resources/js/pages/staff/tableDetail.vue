@@ -449,10 +449,9 @@ function submitBillAdditions(itemsToAdd: any[]) {
     });
 
     form.post(route('order.place'), {
+        preserveScroll: true,
         onSuccess: () => {
             showNotification('Thành công', 'Đã cập nhật Bill thành công!');
-            // Reload to get fresh data
-            window.location.reload();
         },
         onError: (errors) => {
             console.error(errors);
