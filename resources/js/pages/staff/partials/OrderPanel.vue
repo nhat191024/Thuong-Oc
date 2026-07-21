@@ -43,9 +43,19 @@
                     <p>Chưa có món nào trong bill</p>
                 </div>
                 <div v-for="(item, index) in billItems" :key="index" class="flex flex-col gap-2 rounded-lg border border-base-200 p-3 shadow-sm">
-                    <div class="flex justify-between">
+                    <div class="flex justify-between gap-2">
                         <h3 class="font-bold">{{ item.name }}</h3>
-                        <span class="font-semibold text-primary">{{ formatPrice(item.price * item.quantity) }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-primary">{{ formatPrice(item.price * item.quantity) }}</span>
+                            <button
+                                v-if="canDeleteBill && item.billDetailIds?.length"
+                                class="btn btn-circle text-error btn-ghost btn-xs"
+                                title="Hủy món khỏi đơn"
+                                @click="openCancelBillDetailsModal(item)"
+                            >
+                                <TrashIcon class="size-4" />
+                            </button>
+                        </div>
                     </div>
                     <p v-if="item.cookingMethod" class="text-sm text-base-content/70">
                         {{ item.cookingMethod }}
@@ -57,6 +67,8 @@
                         <div class="flex items-center gap-3">
                             <button
                                 class="btn btn-circle bg-base-200 btn-ghost btn-xs hover:bg-base-300"
+                                :disabled="!canDeleteBill || !item.billDetailIds?.length"
+                                :title="canDeleteBill ? 'Giảm số lượng món' : 'Chỉ quản lý bàn được giảm số lượng món'"
                                 @click="$emit('updateBillQuantity', index, -1)"
                             >
                                 <MinusIcon class="size-3" />
@@ -133,7 +145,7 @@
                         <li><a @click="$emit('payment')">Thanh toán</a></li>
                         <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
                         <li><a @click="openMergeTableModal">Gộp đơn</a></li>
-                        <!-- <li><a class="text-error" @click="openDeleteBillModal">Xóa đơn</a></li> -->
+                        <li v-if="canDeleteBill"><a class="text-error" @click="openDeleteBillModal">Xóa đơn</a></li>
                     </ul>
                 </div>
             </div>
@@ -234,6 +246,22 @@
                 </div>
             </div>
         </dialog>
+
+        <dialog id="cancel_bill_details_confirm_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold text-error">Xác nhận hủy món</h3>
+                <p class="py-3">
+                    Bạn có chắc muốn hủy món <strong>{{ pendingCancelItemName }}</strong> khỏi đơn?
+                </p>
+                <p class="text-sm text-base-content/60">Món sẽ được đánh dấu đã hủy và không còn tính vào tổng hóa đơn.</p>
+                <div class="modal-action">
+                    <button class="btn text-white btn-error" @click="executeCancelBillDetails">Hủy món</button>
+                    <form method="dialog">
+                        <button class="btn">Đóng</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
     </div>
 </template>
 
@@ -251,6 +279,7 @@ interface Props {
     activeTables?: { id: string; name: string; table_number: number }[];
     isMerging?: boolean;
     isDeleting?: boolean;
+    canDeleteBill: boolean;
 }
 
 defineProps<Props>();
@@ -266,10 +295,13 @@ const emit = defineEmits<{
     moveTable: [tableId: string];
     mergeTable: [tableId: string];
     deleteBill: [];
+    cancelBillDetails: [billDetailIds: number[]];
 }>();
 
 const pendingMergeTableId = ref<string>('');
 const pendingMergeTableName = ref<string>('');
+const pendingCancelBillDetailIds = ref<number[]>([]);
+const pendingCancelItemName = ref<string>('');
 
 function formatPrice(price: number): string {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -308,14 +340,28 @@ function executeMerge() {
     if (confirmModal) confirmModal.close();
 }
 
-// function openDeleteBillModal() {
-//     const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
-//     if (modal) modal.showModal();
-// }
+function openDeleteBillModal() {
+    const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
 
 function executeDeleteBill() {
     emit('deleteBill');
     const modal = document.getElementById('delete_bill_confirm_modal') as HTMLDialogElement;
+    if (modal) modal.close();
+}
+
+function openCancelBillDetailsModal(item: orderDish) {
+    pendingCancelBillDetailIds.value = item.billDetailIds ?? [];
+    pendingCancelItemName.value = item.name;
+
+    const modal = document.getElementById('cancel_bill_details_confirm_modal') as HTMLDialogElement;
+    if (modal) modal.showModal();
+}
+
+function executeCancelBillDetails() {
+    emit('cancelBillDetails', pendingCancelBillDetailIds.value);
+    const modal = document.getElementById('cancel_bill_details_confirm_modal') as HTMLDialogElement;
     if (modal) modal.close();
 }
 </script>

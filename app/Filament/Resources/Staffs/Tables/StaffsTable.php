@@ -38,11 +38,13 @@ class StaffsTable
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         Role::STAFF->value => __('Nhân viên'),
+                        Role::TABLE_ADMIN->value => __('Quản lý bàn'),
                         Role::KITCHEN->value => __('Bếp'),
                         default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
                         Role::STAFF->value => 'info',
+                        Role::TABLE_ADMIN->value => 'success',
                         Role::KITCHEN->value => 'warning',
                         default => 'gray',
                     }),
@@ -68,6 +70,7 @@ class StaffsTable
                     ->relationship('roles', 'name')
                     ->options([
                         Role::STAFF->value => __('Nhân viên'),
+                        Role::TABLE_ADMIN->value => __('Quản lý bàn'),
                         Role::KITCHEN->value => __('Bếp'),
                     ]),
                 SelectFilter::make('branch_id')

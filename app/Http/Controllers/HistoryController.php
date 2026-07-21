@@ -21,7 +21,7 @@ class HistoryController extends Controller
 
         $bills = Bill::query()
             ->when(
-                $user->hasRole(Role::STAFF->value),
+                $user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]),
                 fn ($query) => $query
                     ->withTrashed()
                     ->where('branch_id', $user->branch_id)
@@ -37,7 +37,7 @@ class HistoryController extends Controller
 
         return Inertia::render('history/index', [
             'bills' => $bills,
-            'isStaff' => $user->hasRole(Role::STAFF->value),
+            'isStaff' => $user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]),
         ]);
     }
 
@@ -51,7 +51,7 @@ class HistoryController extends Controller
 
         $bill = Bill::query()
             ->when(
-                $user->hasRole(Role::STAFF->value),
+                $user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]),
                 fn ($query) => $query
                     ->withTrashed()
                     ->where('branch_id', $user->branch_id)
@@ -67,7 +67,7 @@ class HistoryController extends Controller
 
         return Inertia::render('history/show', [
             'bill' => $bill,
-            'isStaff' => $user->hasRole(Role::STAFF->value),
+            'isStaff' => $user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]),
         ]);
     }
 }

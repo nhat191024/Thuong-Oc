@@ -51,7 +51,7 @@ class StaffResource extends Resource
         return parent::getEloquentQuery()
             ->with(['roles', 'branch'])
             ->whereHas('roles', function (Builder $query) {
-                $query->whereIn('name', [Role::STAFF->value, Role::KITCHEN->value]);
+                $query->whereIn('name', [Role::STAFF->value, Role::TABLE_ADMIN->value, Role::KITCHEN->value]);
             });
     }
 

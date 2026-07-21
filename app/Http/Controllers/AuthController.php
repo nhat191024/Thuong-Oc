@@ -116,7 +116,7 @@ class AuthController extends Controller
                 return back()->withErrors([
                     'username' => 'Access denied for admin role',
                 ]);
-            case $user->hasRole(Role::STAFF->value):
+            case $user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]):
                 if (str_contains(session('url.intended', ''), '/kitchen')) {
                     session()->forget('url.intended');
                 }

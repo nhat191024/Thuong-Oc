@@ -205,6 +205,19 @@ onMounted(() => {
                 billDetails.value.push(newBillDetail);
             }
         });
+
+        (window as any).Echo.private(`kitchens.${props.kitchen.branch_id}`).listen('.bill.details.cancelled', (e: any) => {
+            const cancelledBillDetailIds = new Set<number>(e.billDetailIds ?? []);
+            billDetails.value = billDetails.value.filter((detail) => !cancelledBillDetailIds.has(detail.id));
+        });
+
+        (window as any).Echo.private(`kitchens.${props.kitchen.branch_id}`).listen('.bill.detail.quantity.reduced', (e: any) => {
+            const billDetail = billDetails.value.find((detail) => detail.id === e.billDetailId);
+
+            if (billDetail) {
+                billDetail.quantity = e.quantity;
+            }
+        });
     } else {
         console.error('Echo is NOT initialized');
     }

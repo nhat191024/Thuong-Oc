@@ -38,7 +38,7 @@ class AuthController extends Controller
         $menus = null;
         if ($user->hasRole(Role::ADMIN->value)) {
             return response()->json(['message' => 'Access denied for admin role'], 403);
-        } else if ($user->hasRole(Role::STAFF->value)) {
+        } else if ($user->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value])) {
             $menus = $this->menuService->getMenus(true);
         }
 

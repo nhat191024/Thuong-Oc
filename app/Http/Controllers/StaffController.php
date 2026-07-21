@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Table;
 use App\Models\Branch;
 use App\Models\BranchFoodStock;
+use App\Models\BillDetail;
 use App\Models\Category;
 use App\Models\Food;
 use App\Models\Kitchen;
@@ -19,6 +20,8 @@ use App\Enums\TableActiveStatus;
 use App\Enums\PayStatus;
 use App\Enums\PaymentMethods;
 use App\Enums\Role;
+use App\Events\BillDetailsCancelled;
+use App\Events\BillDetailQuantityReduced;
 
 use App\Http\Resources\TableResource;
 
@@ -26,6 +29,8 @@ use App\Settings\AppSettings;
 
 use App\Models\Printer;
 use App\Http\Requests\UpdateStaffFoodStockRequest;
+use App\Http\Requests\CancelStaffBillDetailsRequest;
+use App\Http\Requests\ReduceStaffBillDetailQuantityRequest;
 use App\Services\BillPrintService;
 use App\Services\MenuService;
 use App\Services\PaymentService;
@@ -37,6 +42,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class StaffController extends Controller
 {
@@ -186,6 +192,7 @@ class StaffController extends Controller
             'inactiveTables' => $inactiveTables,
             'activeTables' => $activeTables,
             'kitchens' => $kitchens,
+            'canDeleteBill' => Auth::user()->hasRole(Role::TABLE_ADMIN->value),
         ]);
     }
 
@@ -214,6 +221,7 @@ class StaffController extends Controller
 
                 if ($detail->dish_id && $detail->dish) {
                     return [
+                        'billDetailIds' => $details->pluck('id')->all(),
                         'table' => $table->table_number,
                         'foodId' => $detail->dish->food_id,
                         'dishId' => $detail->dish_id,
@@ -228,6 +236,7 @@ class StaffController extends Controller
                 }
 
                 return [
+                    'billDetailIds' => $details->pluck('id')->all(),
                     'table' => $table->table_number,
                     'foodId' => null,
                     'dishId' => null,
@@ -338,6 +347,145 @@ class StaffController extends Controller
             $table->save();
 
             return redirect()->route('staff.tables')->with('success', 'Đã xóa đơn thành công.');
+        });
+    }
+
+    public function cancelBillDetails(CancelStaffBillDetailsRequest $request, string $tableId): \Illuminate\Http\RedirectResponse
+    {
+        return DB::transaction(function () use ($request, $tableId): \Illuminate\Http\RedirectResponse {
+            $table = Table::query()
+                ->where('branch_id', Auth::user()->branch_id)
+                ->lockForUpdate()
+                ->findOrFail($tableId);
+
+            $bill = $table->bill()
+                ->where('pay_status', PayStatus::UNPAID)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $bill) {
+                return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+            }
+
+            $billDetailIds = $request->validated('bill_detail_ids');
+            $billDetails = BillDetail::query()
+                ->where('bill_id', $bill->id)
+                ->whereIn('id', $billDetailIds)
+                ->where('status', '!=', BillDetailStatus::CANCELLED->value)
+                ->lockForUpdate()
+                ->get();
+
+            if ($billDetails->count() !== count($billDetailIds)) {
+                return redirect()->back()->with('error', 'Món không còn tồn tại trong đơn hoặc đã bị hủy.');
+            }
+
+            BillDetail::query()
+                ->whereKey($billDetails->modelKeys())
+                ->update(['status' => BillDetailStatus::CANCELLED->value]);
+
+            $bill->recalculateTotal();
+
+            DB::afterCommit(fn () => broadcast(new BillDetailsCancelled(
+                branchId: $table->branch_id,
+                billDetailIds: $billDetails->modelKeys(),
+            )));
+
+            return redirect()->back()->with('success', 'Đã hủy món khỏi đơn.');
+        });
+    }
+
+    public function reduceBillDetailQuantity(ReduceStaffBillDetailQuantityRequest $request, string $tableId): \Illuminate\Http\RedirectResponse
+    {
+        return DB::transaction(function () use ($request, $tableId): \Illuminate\Http\RedirectResponse {
+            $table = Table::query()
+                ->where('branch_id', Auth::user()->branch_id)
+                ->lockForUpdate()
+                ->findOrFail($tableId);
+
+            $bill = $table->bill()
+                ->where('pay_status', PayStatus::UNPAID)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $bill) {
+                return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
+            }
+
+            $reductionGroups = collect($request->validated('reductions'))->map(function (array $reduction) use ($bill): array {
+                $billDetails = BillDetail::query()
+                    ->where('bill_id', $bill->id)
+                    ->whereIn('id', $reduction['bill_detail_ids'])
+                    ->where('status', '!=', BillDetailStatus::CANCELLED->value)
+                    ->lockForUpdate()
+                    ->get();
+
+                if (
+                    $billDetails->count() !== count($reduction['bill_detail_ids'])
+                    || $reduction['quantity'] >= $billDetails->sum('quantity')
+                ) {
+                    throw ValidationException::withMessages([
+                        'reductions' => 'Số lượng giảm không hợp lệ hoặc món đã bị hủy.',
+                    ]);
+                }
+
+                return [
+                    'bill_details' => $billDetails,
+                    'quantity' => $reduction['quantity'],
+                ];
+            });
+
+            $cancelledBillDetailIds = [];
+            $updatedBillDetails = [];
+
+            foreach ($reductionGroups as $reductionGroup) {
+                $remainingQuantity = $reductionGroup['quantity'];
+                $billDetails = $reductionGroup['bill_details']->sortByDesc(
+                    fn (BillDetail $detail): int => $detail->status === BillDetailStatus::WAITING ? 1 : 0,
+                );
+
+                foreach ($billDetails as $billDetail) {
+                    if ($remainingQuantity === 0) {
+                        break;
+                    }
+
+                    if ($remainingQuantity >= $billDetail->quantity) {
+                        $remainingQuantity -= $billDetail->quantity;
+                        $billDetail->update(['status' => BillDetailStatus::CANCELLED]);
+                        $cancelledBillDetailIds[] = $billDetail->id;
+
+                        continue;
+                    }
+
+                    $billDetail->decrement('quantity', $remainingQuantity);
+                    $billDetail->refresh();
+                    $updatedBillDetails[] = [
+                        'id' => $billDetail->id,
+                        'quantity' => $billDetail->quantity,
+                    ];
+                    $remainingQuantity = 0;
+                }
+            }
+
+            $bill->recalculateTotal();
+
+            DB::afterCommit(function () use ($table, $cancelledBillDetailIds, $updatedBillDetails): void {
+                if ($cancelledBillDetailIds !== []) {
+                    broadcast(new BillDetailsCancelled(
+                        branchId: $table->branch_id,
+                        billDetailIds: $cancelledBillDetailIds,
+                    ));
+                }
+
+                foreach ($updatedBillDetails as $updatedBillDetail) {
+                    broadcast(new BillDetailQuantityReduced(
+                        branchId: $table->branch_id,
+                        billDetailId: $updatedBillDetail['id'],
+                        quantity: $updatedBillDetail['quantity'],
+                    ));
+                }
+            });
+
+            return redirect()->back()->with('success', 'Đã cập nhật số lượng món.');
         });
     }
 

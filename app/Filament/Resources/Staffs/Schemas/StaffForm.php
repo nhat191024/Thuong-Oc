@@ -43,6 +43,7 @@ class StaffForm
                     ->label(__('Vai trò'))
                     ->options([
                         Role::STAFF->value => __('Nhân viên'),
+                        Role::TABLE_ADMIN->value => __('Quản lý bàn'),
                         Role::KITCHEN->value => __('Bếp'),
                     ])
                     ->required()

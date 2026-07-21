@@ -29,13 +29,21 @@ Route::post('/register', [AuthController::class, 'storeRegister'])->name('regist
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::prefix('staff')->name('staff.')->middleware('role:staff')->group(function () {
+    Route::prefix('staff')->name('staff.')->middleware('role:staff|table-admin')->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('tables');
         Route::get('/stock', [StaffController::class, 'stockIndex'])->name('stock.index');
         Route::patch('/stock/{food}', [StaffController::class, 'updateStock'])->name('stock.update');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
-        Route::delete('/table/{tableId}/bill', [StaffController::class, 'destroyBill'])->name('table.bill.destroy');
+        Route::delete('/table/{tableId}/bill', [StaffController::class, 'destroyBill'])
+            ->middleware('role:table-admin')
+            ->name('table.bill.destroy');
+        Route::patch('/table/{tableId}/bill-details/cancel', [StaffController::class, 'cancelBillDetails'])
+            ->middleware('role:table-admin')
+            ->name('table.bill-details.cancel');
+        Route::patch('/table/{tableId}/bill-details/reduce', [StaffController::class, 'reduceBillDetailQuantity'])
+            ->middleware('role:table-admin')
+            ->name('table.bill-details.reduce');
         Route::post('/table/{tableId}/apply-discount', [StaffController::class, 'applyDiscount'])->name('table.apply-discount');
         Route::post('/table/{tableId}/remove-discount', [StaffController::class, 'removeDiscount'])->name('table.remove-discount');
         Route::post('/table/{tableId}/attach-customer', [StaffController::class, 'attachCustomer'])->name('table.attach-customer');

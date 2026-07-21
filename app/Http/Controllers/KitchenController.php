@@ -126,11 +126,16 @@ class KitchenController extends Controller
             return back()->with('error', 'Đơn đã bị xóa, không thể cập nhật món.');
         }
 
-        $billDetail->update([
-            'status' => $request->status,
-        ]);
+        $wasUpdated = BillDetail::query()
+            ->whereKey($billDetail->id)
+            ->where('status', '!=', BillDetailStatus::CANCELLED->value)
+            ->update(['status' => $request->status]);
 
-        $billDetail->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
+        if ($wasUpdated === 0) {
+            return back()->with('error', 'Món đã bị hủy bởi quản lý.');
+        }
+
+        $billDetail->refresh()->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
 
         $bill = $billDetail->bill;
         $bill->recalculateTotal();

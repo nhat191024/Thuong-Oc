@@ -24,6 +24,7 @@ use App\Settings\AppSettings;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -55,8 +56,13 @@ class BillController extends Controller
 
     public function destroy(string $tableId): JsonResponse
     {
+        abort_unless(Auth::user()?->hasRole(Role::TABLE_ADMIN->value), 403);
+
         return DB::transaction(function () use ($tableId): JsonResponse {
-            $table = Table::query()->lockForUpdate()->findOrFail($tableId);
+            $table = Table::query()
+                ->where('branch_id', Auth::user()->branch_id)
+                ->lockForUpdate()
+                ->findOrFail($tableId);
             $bill = $table->bill()
                 ->where('pay_status', PayStatus::UNPAID)
                 ->lockForUpdate()

@@ -13,6 +13,7 @@
                 :active-tables="activeTables"
                 :is-merging="isMerging"
                 :is-deleting="isDeleting"
+                :can-delete-bill="props.canDeleteBill"
                 @update-bill-quantity="updateBillQuantity"
                 @update-cart-quantity="updateCartQuantity"
                 @remove-from-cart="removeFromCart"
@@ -22,6 +23,7 @@
                 @move-table="handleMoveTable"
                 @merge-table="handleMergeTable"
                 @delete-bill="handleDeleteBill"
+                @cancel-bill-details="handleCancelBillDetails"
             />
 
             <!-- Right Panel: Menu -->
@@ -69,6 +71,7 @@ interface Props {
     inactiveTables?: { id: string; name: string; table_number: number }[];
     activeTables?: { id: string; name: string; table_number: number }[];
     kitchens: { id: number; name: string }[];
+    canDeleteBill: boolean;
 }
 
 const props = defineProps<Props>();
@@ -149,6 +152,24 @@ function handleDeleteBill() {
             isDeleting.value = false;
         },
     });
+}
+
+function handleCancelBillDetails(billDetailIds: number[]) {
+    router.patch(
+        route('staff.table.bill-details.cancel', props.table.id),
+        { bill_detail_ids: billDetailIds },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                const status = page.props.flash.error ? 'Thất bại' : 'Thành công';
+                const message = page.props.flash.error ?? page.props.flash.success;
+                showNotification(status, message || 'Đã hủy món khỏi đơn.');
+            },
+            onError: (errors) => {
+                showNotification('Lỗi', errors.bill_detail_ids || 'Có lỗi xảy ra khi hủy món');
+            },
+        },
+    );
 }
 
 function initBillFromOrder() {
@@ -346,6 +367,7 @@ function placeOrder() {
 
 function updateBill() {
     const itemsToAdd: any[] = [];
+    const reductions: { bill_detail_ids: number[]; quantity: number }[] = [];
 
     billItems.value.forEach((currentItem) => {
         const originalItem = confirmedBillItems.value.find((i) => {
@@ -366,6 +388,11 @@ function updateBill() {
                     price: currentItem.price,
                     note: currentItem.note,
                 });
+            } else if (quantityDiff < 0 && currentItem.billDetailIds?.length) {
+                reductions.push({
+                    bill_detail_ids: currentItem.billDetailIds,
+                    quantity: Math.abs(quantityDiff),
+                });
             }
         } else {
             itemsToAdd.push({
@@ -379,11 +406,42 @@ function updateBill() {
         }
     });
 
-    if (itemsToAdd.length === 0) {
-        showNotification('Thông báo', 'Không có thay đổi nào để cập nhật (hoặc bạn đang giảm số lượng - chức năng này chưa được hỗ trợ).');
+    if (itemsToAdd.length === 0 && reductions.length === 0) {
+        showNotification('Thông báo', 'Không có thay đổi nào để cập nhật.');
         return;
     }
 
+    if (reductions.length > 0) {
+        router.patch(
+            route('staff.table.bill-details.reduce', props.table.id),
+            { reductions },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    if (page.props.flash.error) {
+                        showNotification('Thất bại', page.props.flash.error);
+                        return;
+                    }
+
+                    if (itemsToAdd.length > 0) {
+                        submitBillAdditions(itemsToAdd);
+                        return;
+                    }
+
+                    showNotification('Thành công', 'Đã cập nhật Bill thành công!');
+                },
+                onError: (errors) => {
+                    showNotification('Lỗi', errors.reductions || 'Có lỗi xảy ra khi giảm số lượng món');
+                },
+            },
+        );
+        return;
+    }
+
+    submitBillAdditions(itemsToAdd);
+}
+
+function submitBillAdditions(itemsToAdd: any[]) {
     const form = useForm({
         table_id: props.table.id,
         branch_id: props.table.branch_id,

@@ -1,4 +1,5 @@
 export interface orderDish {
+    billDetailIds?: number[];
     table: number;
     foodId: number | null;
     dishId: number | null;
