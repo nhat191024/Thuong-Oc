@@ -9,3 +9,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('kitchens.{branchId}', function ($user, $branchId) {
     return (int) $user->branch_id === (int) $branchId;
 });
+
+Broadcast::channel('print-stations.{branchId}', function ($user, $branchId) {
+    return (int) $user->branch_id === (int) $branchId;
+});

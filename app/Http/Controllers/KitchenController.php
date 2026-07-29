@@ -16,18 +16,20 @@ use App\Enums\BillDetailStatus;
 use App\Events\DishPrintRequested;
 use App\Http\Requests\PrintKitchenDishRequest;
 use App\Http\Requests\UpdateKitchenPrintSettingsRequest;
-use App\Services\KitchenPrintService;
+use App\Services\KitchenPrintJobService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Response;
 
 class KitchenController extends Controller
 {
     /**
      * Show kitchen dashboard
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index()
     {
@@ -49,10 +51,8 @@ class KitchenController extends Controller
 
     /**
      * Show print station.
-     *
-     * @return \Inertia\Response
      */
-    public function printStation(): \Inertia\Response
+    public function printStation(): Response
     {
         $user = Auth::user();
         $branchId = $user->branch_id;
@@ -69,8 +69,7 @@ class KitchenController extends Controller
     /**
      * Show kitchen details
      *
-     * @param  Kitchen  $kitchen
-     * @return \Inertia\Response
+     * @return Response
      */
     public function show(Kitchen $kitchen)
     {
@@ -111,9 +110,7 @@ class KitchenController extends Controller
     /**
      * Update bill detail status
      *
-     * @param  Request  $request
-     * @param  BillDetail  $billDetail
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function updateStatus(Request $request, BillDetail $billDetail)
     {
@@ -151,10 +148,8 @@ class KitchenController extends Controller
 
     /**
      * Update kitchen print settings.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function updatePrintSettings(UpdateKitchenPrintSettingsRequest $request, Kitchen $kitchen): \Illuminate\Http\JsonResponse
+    public function updatePrintSettings(UpdateKitchenPrintSettingsRequest $request, Kitchen $kitchen): JsonResponse
     {
         $kitchen->update([
             'auto_print' => $request->boolean('auto_print'),
@@ -169,10 +164,8 @@ class KitchenController extends Controller
 
     /**
      * Print a completed dish from the print station.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function printBillDetail(PrintKitchenDishRequest $request, BillDetail $billDetail): \Illuminate\Http\JsonResponse
+    public function printBillDetail(PrintKitchenDishRequest $request, BillDetail $billDetail): JsonResponse
     {
         if ($billDetail->status !== BillDetailStatus::DONE) {
             return response()->json([
@@ -181,25 +174,19 @@ class KitchenController extends Controller
             ], 422);
         }
 
-        $printer = Printer::whereId($request->integer('printer_id'))
-            ->whereBranchId($request->user()->branch_id)
-            ->where('is_active', true)
-            ->firstOrFail();
-
-        $printed = app(KitchenPrintService::class)->printForKitchen($billDetail, $printer);
+        $job = app(KitchenPrintJobService::class)->request($billDetail);
 
         return response()->json([
-            'printed' => $printed,
-            'message' => $printed ? 'Đã gửi lệnh in.' : 'Không thể kết nối máy in.',
-        ], $printed ? 200 : 422);
+            'queued' => true,
+            'request_id' => $job['request_id'],
+            'message' => 'Đã gửi lệnh in đến trạm in.',
+        ], 202);
     }
 
     /**
      * Get kitchen history
      *
-     * @param  Request  $request
-     * @param  Kitchen  $kitchen
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function history(Request $request, Kitchen $kitchen)
     {
@@ -233,21 +220,13 @@ class KitchenController extends Controller
     {
         $kitchen = $this->resolveKitchenForBillDetail($billDetail, $kitchenId);
 
-        if (! $kitchen?->auto_print || ! $kitchen->printer?->is_active) {
+        if (! $kitchen?->auto_print) {
             return false;
         }
 
-        $printed = app(KitchenPrintService::class)->printForKitchen($billDetail, $kitchen->printer);
+        app(KitchenPrintJobService::class)->request($billDetail);
 
-        if (! $printed) {
-            Log::warning('KitchenController: Auto print failed', [
-                'bill_detail_id' => $billDetail->id,
-                'kitchen_id' => $kitchen->id,
-                'printer_id' => $kitchen->printer_id,
-            ]);
-        }
-
-        return $printed;
+        return true;
     }
 
     private function resolveKitchenForBillDetail(BillDetail $billDetail, ?int $kitchenId): ?Kitchen
@@ -255,14 +234,14 @@ class KitchenController extends Controller
         $branchId = $billDetail->bill->branch_id;
 
         if ($kitchenId) {
-            return Kitchen::with('printer')
+            return Kitchen::query()
                 ->whereBranchId($branchId)
                 ->whereKey($kitchenId)
                 ->first();
         }
 
         if ($billDetail->custom_kitchen_id) {
-            return Kitchen::with('printer')
+            return Kitchen::query()
                 ->whereBranchId($branchId)
                 ->whereKey($billDetail->custom_kitchen_id)
                 ->first();
@@ -274,7 +253,7 @@ class KitchenController extends Controller
             return null;
         }
 
-        return Kitchen::with('printer')
+        return Kitchen::query()
             ->whereBranchId($branchId)
             ->whereHas('cookingMethods', fn ($query) => $query->where('cooking_methods.id', $cookingMethodId))
             ->first();

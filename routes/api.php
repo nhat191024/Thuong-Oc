@@ -6,14 +6,20 @@ use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BillController;
 use App\Http\Controllers\Api\BillHistoryController;
+use App\Http\Controllers\Api\PrintStationController;
+use Illuminate\Broadcasting\BroadcastController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'OK']);
 })->name('health');
 
-include __DIR__ . '/api/auth.php';
+include __DIR__.'/api/auth.php';
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
+
+    Route::get('/print-station/printers', [PrintStationController::class, 'index']);
+
     Route::get('/tables', [TableController::class, 'index']);
 
     // Branches

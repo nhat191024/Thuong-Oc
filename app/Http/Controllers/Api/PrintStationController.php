@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\PrinterResource;
+use App\Models\Printer;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class PrintStationController extends Controller
+{
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $branchId = $request->user()->branch_id;
+
+        abort_if($branchId === null, 403, 'Tài khoản chưa được gán cơ sở.');
+
+        $printers = Printer::query()
+            ->whereBranchId($branchId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return PrinterResource::collection($printers)->additional([
+            'meta' => [
+                'branch_id' => $branchId,
+                'channel' => "print-stations.{$branchId}",
+                'pusher_channel' => "private-print-stations.{$branchId}",
+                'event' => 'print.job.requested',
+                'auth_endpoint' => '/api/broadcasting/auth',
+            ],
+        ]);
+    }
+}
