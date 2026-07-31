@@ -23,6 +23,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 use Hugomyb\FilamentErrorMailer\FilamentErrorMailerPlugin;
+use Boquizo\FilamentLogViewer\FilamentLogViewerPlugin;
 
 use App\Settings\AppSettings;
 use App\Filament\Pages\Login;
@@ -71,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
 
             ->plugins([
                 FilamentErrorMailerPlugin::make(),
+                FilamentLogViewerPlugin::make(),
             ])
 
             ->middleware([

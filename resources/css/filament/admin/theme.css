@@ -2,3 +2,4 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../vendor/gboquizosanchez/filament-log-viewer/resources/views/**/*.blade.php';
