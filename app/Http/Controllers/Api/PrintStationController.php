@@ -10,16 +10,14 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PrintStationController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(int $branchId): AnonymousResourceCollection
     {
-        $branchId = $request->user()->branch_id;
-
         abort_if($branchId === null, 403, 'Tài khoản chưa được gán cơ sở.');
 
         $printers = Printer::query()
             ->whereBranchId($branchId)
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('name', 'asc')
             ->get();
 
         return PrinterResource::collection($printers)->additional([
