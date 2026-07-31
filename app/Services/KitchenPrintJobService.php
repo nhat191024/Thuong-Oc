@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\PrintJobRequested;
 use App\Models\BillDetail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class KitchenPrintJobService
@@ -18,6 +19,16 @@ class KitchenPrintJobService
         $job = $this->buildJob($billDetail);
 
         PrintJobRequested::dispatch($billDetail->bill->branch_id, $job);
+
+        Log::info('Kitchen print event sent', [
+            'event' => 'print.job.requested',
+            'request_id' => $job['request_id'],
+            'branch_id' => $billDetail->bill->branch_id,
+            'bill_detail_id' => $billDetail->id,
+            'table_number' => $job['table_number'],
+            'dish_name' => $job['dish_name'],
+            'quantity' => $job['quantity'],
+        ]);
 
         return $job;
     }
