@@ -14,7 +14,7 @@ class PaymentService
             config('services.payos.client_id'),
             config('services.payos.api_key'),
             config('services.payos.checksum_key'),
-            config('services.payos.partner_code'),
+            config('services.payos.partner_code')
         );
     }
 
@@ -138,13 +138,12 @@ class PaymentService
             'expiredAt' => $expiryTime,
         ];
 
-        // Remove null values
         $paymentRequest = array_filter($paymentRequest, function ($value) {
             return !is_null($value) && $value !== '';
         });
 
         $signature = self::createSignaturePaymentRequest(
-            config('services.payos.checksum_key'),
+            env("PAYOS_CHECKSUM_KEY"),
             $paymentRequest
         );
 
