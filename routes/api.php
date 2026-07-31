@@ -18,7 +18,7 @@ include __DIR__.'/api/auth.php';
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
-    Route::get('/print-station/printers', [PrintStationController::class, 'index']);
+    Route::get('/print-station/printers/{branchId}', [PrintStationController::class, 'index']);
 
     Route::get('/tables', [TableController::class, 'index']);
 
