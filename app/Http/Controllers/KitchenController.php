@@ -8,14 +8,10 @@ use App\Models\Kitchen;
 use App\Models\Branch;
 use App\Models\BillDetail;
 use App\Models\KitchenCookingMethod;
-use App\Models\Printer;
 
 use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
 
-use App\Events\DishPrintRequested;
-use App\Http\Requests\PrintKitchenDishRequest;
-use App\Http\Requests\UpdateKitchenPrintSettingsRequest;
 use App\Services\KitchenPrintJobService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -35,34 +31,12 @@ class KitchenController extends Controller
     {
         $user = Auth::user();
         $branchId = $user->branch_id;
-        $kitchens = Kitchen::with('printer')
-            ->whereBranchId($branchId)
-            ->get();
+        $kitchens = Kitchen::whereBranchId($branchId)->get();
         $branchName = Branch::whereId($branchId)->value('name');
 
         return Inertia::render('kitchen/index', [
             'kitchens' => $kitchens,
             'branchName' => $branchName,
-            'printers' => Printer::whereBranchId($branchId)
-                ->where('is_active', true)
-                ->get(['id', 'name']),
-        ]);
-    }
-
-    /**
-     * Show print station.
-     */
-    public function printStation(): Response
-    {
-        $user = Auth::user();
-        $branchId = $user->branch_id;
-
-        return Inertia::render('kitchen/print-station', [
-            'branchId' => $branchId,
-            'branchName' => Branch::whereId($branchId)->value('name'),
-            'printers' => Printer::whereBranchId($branchId)
-                ->where('is_active', true)
-                ->get(['id', 'name']),
         ]);
     }
 
@@ -98,12 +72,9 @@ class KitchenController extends Controller
             ->get();
 
         return Inertia::render('kitchen/show', [
-            'kitchen' => $kitchen->loadMissing('printer'),
+            'kitchen' => $kitchen,
             'billDetails' => $billDetails,
             'cookingMethodIds' => $cookingMethodIds,
-            'printers' => Printer::whereBranchId($kitchen->branch_id)
-                ->where('is_active', true)
-                ->get(['id', 'name']),
         ]);
     }
 
@@ -116,7 +87,6 @@ class KitchenController extends Controller
     {
         $request->validate([
             'status' => ['required', Rule::enum(BillDetailStatus::class)],
-            'kitchen_id' => ['nullable', 'integer'],
         ]);
 
         if (! $billDetail->bill()->exists()) {
@@ -138,49 +108,10 @@ class KitchenController extends Controller
         $bill->recalculateTotal();
 
         if ($request->status === BillDetailStatus::DONE->value) {
-            $printed = $this->autoPrintCompletedDish($billDetail, $request->integer('kitchen_id'));
-
-            broadcast(new DishPrintRequested($billDetail, $printed));
+            app(KitchenPrintJobService::class)->request($billDetail);
         }
 
         return back();
-    }
-
-    /**
-     * Update kitchen print settings.
-     */
-    public function updatePrintSettings(UpdateKitchenPrintSettingsRequest $request, Kitchen $kitchen): JsonResponse
-    {
-        $kitchen->update([
-            'auto_print' => $request->boolean('auto_print'),
-            'printer_id' => $request->integer('printer_id') ?: null,
-        ]);
-
-        return response()->json([
-            'kitchen' => $kitchen->fresh('printer'),
-            'message' => 'Đã lưu cài đặt in.',
-        ]);
-    }
-
-    /**
-     * Print a completed dish from the print station.
-     */
-    public function printBillDetail(PrintKitchenDishRequest $request, BillDetail $billDetail): JsonResponse
-    {
-        if ($billDetail->status !== BillDetailStatus::DONE) {
-            return response()->json([
-                'printed' => false,
-                'message' => 'Chỉ có thể in món đã hoàn thành.',
-            ], 422);
-        }
-
-        $job = app(KitchenPrintJobService::class)->request($billDetail);
-
-        return response()->json([
-            'queued' => true,
-            'request_id' => $job['request_id'],
-            'message' => 'Đã gửi lệnh in đến trạm in.',
-        ], 202);
     }
 
     /**
@@ -214,48 +145,5 @@ class KitchenController extends Controller
             ->paginate(9);
 
         return response()->json($history);
-    }
-
-    private function autoPrintCompletedDish(BillDetail $billDetail, ?int $kitchenId): bool
-    {
-        $kitchen = $this->resolveKitchenForBillDetail($billDetail, $kitchenId);
-
-        if (! $kitchen?->auto_print) {
-            return false;
-        }
-
-        app(KitchenPrintJobService::class)->request($billDetail);
-
-        return true;
-    }
-
-    private function resolveKitchenForBillDetail(BillDetail $billDetail, ?int $kitchenId): ?Kitchen
-    {
-        $branchId = $billDetail->bill->branch_id;
-
-        if ($kitchenId) {
-            return Kitchen::query()
-                ->whereBranchId($branchId)
-                ->whereKey($kitchenId)
-                ->first();
-        }
-
-        if ($billDetail->custom_kitchen_id) {
-            return Kitchen::query()
-                ->whereBranchId($branchId)
-                ->whereKey($billDetail->custom_kitchen_id)
-                ->first();
-        }
-
-        $cookingMethodId = $billDetail->dish?->cooking_method_id;
-
-        if (! $cookingMethodId) {
-            return null;
-        }
-
-        return Kitchen::query()
-            ->whereBranchId($branchId)
-            ->whereHas('cookingMethods', fn ($query) => $query->where('cooking_methods.id', $cookingMethodId))
-            ->first();
     }
 }

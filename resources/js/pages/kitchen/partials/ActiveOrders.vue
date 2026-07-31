@@ -184,7 +184,6 @@ const submitUpdateStatus = (detailId: number, status: string) => {
         route('kitchen.bill-detail.update-status', { billDetail: detailId }),
         {
             status: status,
-            kitchen_id: props.kitchenId,
         },
         {
             preserveScroll: true,
