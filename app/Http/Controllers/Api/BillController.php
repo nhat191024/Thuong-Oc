@@ -38,7 +38,7 @@ class BillController extends Controller
 
         $bill = $table->bill()
             ->with([
-                'billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
+                'billDetails' => fn($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value),
                 'billDetails.dish.food',
                 'billDetails.dish.cookingMethod',
                 'customer',
@@ -47,7 +47,7 @@ class BillController extends Controller
             ->where('pay_status', PayStatus::UNPAID)
             ->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found for this table.'], 404);
         }
 
@@ -97,19 +97,19 @@ class BillController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
         $customer = Customer::wherePhone($phone)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             if ($name) {
                 if (Customer::whereUUsername($phone)->exists()) {
                     return response()->json(['message' => 'Account already exists.'], 409);
                 }
 
-                $customer = new Customer();
+                $customer = new Customer;
                 $customer->name = $name;
                 $customer->phone = $phone;
                 $customer->username = $phone;
@@ -133,7 +133,7 @@ class BillController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
@@ -154,7 +154,7 @@ class BillController extends Controller
         /** @var Bill $bill */
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
@@ -162,7 +162,7 @@ class BillController extends Controller
 
         $voucher = Voucher::redeemVoucher($bill->total, code: $code, userId: $bill->customer_id);
 
-        if (!$voucher->status) {
+        if (! $voucher->status) {
             return response()->json(['message' => $voucher->message], 400);
         }
 
@@ -171,7 +171,7 @@ class BillController extends Controller
 
         return response()->json([
             'message' => 'Discount applied successfully.',
-            'discount_amount' => $voucher->discount_amount
+            'discount_amount' => $voucher->discount_amount,
         ]);
     }
 
@@ -180,11 +180,11 @@ class BillController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
-        if (!$bill->voucher_id) {
+        if (! $bill->voucher_id) {
             return response()->json(['message' => 'No discount applied.'], 400);
         }
 
@@ -198,9 +198,15 @@ class BillController extends Controller
     {
         $paymentMethod = $request->input('payment_method');
         $table = Table::findOrFail($tableId);
-        $bill = $table->bill()->with(['billDetails' => fn ($q) => $q->where('status', '!=', BillDetailStatus::CANCELLED->value)])->where('pay_status', PayStatus::UNPAID)->first();
+        $bill = $table->bill()
+            ->with([
+                'billDetails' => fn($query) => $query->where('status', '!=', BillDetailStatus::CANCELLED->value),
+                'billDetails.dish.food',
+            ])
+            ->where('pay_status', PayStatus::UNPAID)
+            ->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 
@@ -239,7 +245,7 @@ class BillController extends Controller
 
             return response()->json([
                 'message' => 'Payment successful.',
-                'amount' => $bill->final_total
+                'amount' => $bill->final_total,
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
             try {
@@ -247,10 +253,11 @@ class BillController extends Controller
 
                 return response()->json([
                     'message' => 'Payment link created.',
-                    'data' => $paymentLink
+                    'data' => $paymentLink,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Payment creation failed: ' . $e->getMessage());
+
                 return response()->json(['message' => 'Failed to create payment link.'], 500);
             }
         }
@@ -289,7 +296,6 @@ class BillController extends Controller
     private function processQrPayment(Bill $bill, int $discountAmount)
     {
         $items = $bill->billDetails
-            ->reject(fn ($detail): bool => $detail->status === BillDetailStatus::CANCELLED)
             ->map(function ($detail): array {
                 $name = $detail->custom_dish_name;
                 if ($detail->dish) {
@@ -316,14 +322,10 @@ class BillController extends Controller
 
         $total = $bill->total - $discountAmount;
 
-        $timestamp = time();
-        $randomNum = rand(1000, 9999);
-        $billId = $bill->id . $timestamp . $randomNum;
-
         $data = [
-            'billId' => $billId,
-            'billCode' => (string)$bill->id,
-            'amount' => (int)$total,
+            'billId' => PaymentService::generateOrderCode(),
+            'billCode' => (string) $bill->id,
+            'amount' => (int) $total,
             'items' => $items,
             'buyerName' => 'Khách hàng',
         ];
@@ -349,7 +351,7 @@ class BillController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return response()->json(['message' => 'No unpaid bill found.'], 404);
         }
 

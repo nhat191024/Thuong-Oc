@@ -40,6 +40,7 @@ return [
         'api_key' => env('PAYOS_API_KEY', ''),
         'checksum_key' => env('PAYOS_CHECKSUM_KEY', ''),
         'partner_code' => env('PAYOS_PARTNER_CODE', ''),
+        'app_result_url' => env('APP_PAYMENT_RESULT_DEEPLINK_URL', ''),
     ],
 
     'printer' => [

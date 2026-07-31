@@ -6,6 +6,8 @@ use PayOS\PayOS;
 
 class PaymentService
 {
+    private const MAX_ORDER_CODE = 9_007_199_254_740_991;
+
     protected PayOS $payOS;
 
     public function __construct()
@@ -18,12 +20,15 @@ class PaymentService
         );
     }
 
+    public static function generateOrderCode(): int
+    {
+        return random_int(1, self::MAX_ORDER_CODE);
+    }
+
     /**
      * Process appointment payment
      *
-     * @param array $data
-     * @param string $paymentMethod
-     * @param bool $isAppRequest
+     * @param  string  $paymentMethod
      * @return array
      */
     public function processPayment(
@@ -44,7 +49,7 @@ class PaymentService
             case 'qr_transfer':
                 return $this->processQRTransferPayment(
                     $data['billId'],
-                    $data['billId'],
+                    $data['billCode'],
                     $data['amount'],
                     $data['buyerName'] ?? null,
                     $data['buyerEmail'] ?? null,
@@ -65,7 +70,7 @@ class PaymentService
      */
     private function processWalletPayment($appointment)
     {
-        //TODO: Implement wallet payment logic
+        // TODO: Implement wallet payment logic
         return [];
     }
 
@@ -74,26 +79,14 @@ class PaymentService
      */
     private function processCreditCardPayment($appointment)
     {
-        //TODO: Implement credit card payment logic
+        // TODO: Implement credit card payment logic
         return [];
     }
 
     /**
      * Process QR transfer payment
      *
-     * @param int $billId
-     * @param string $billCode
-     * @param int $amount
-     * @param string|null $buyerName
-     * @param string|null $buyerEmail
-     * @param string|null $buyerPhone
-     * @param string|null $buyerAddress
-     * @param array|null $items
-     * @param int|null $expiryTime
-     * @param bool $isAppRequest
-     * @param string|null $returnUrl
-     * @param string|null $cancelUrl
-     *
+     * @param  string|null  $buyerAddress
      * @return array
      */
     private function processQRTransferPayment(
@@ -112,17 +105,26 @@ class PaymentService
         $expiryTime ??= intval(now()->addMinutes(5)->timestamp);
 
         $url = $returnUrl;
-        if (!$url) {
+        if (! $url) {
             $url = $isAppRequest
-                ? env('APP_PAYMENT_RESULT_DEEPLINK_URL')
+                ? config('services.payos.app_result_url')
                 : route('payment.result');
         }
 
         $cancelTarget = $cancelUrl;
-        if (!$cancelTarget) {
+        if (! $cancelTarget) {
             $cancelTarget = $isAppRequest
-                ? env('APP_PAYMENT_RESULT_DEEPLINK_URL')
+                ? config('services.payos.app_result_url')
                 : route('payment.result');
+        }
+
+        if (! $url || ! $cancelTarget) {
+            throw new \RuntimeException('PayOS payment result URL is not configured.');
+        }
+
+        $checksumKey = config('services.payos.checksum_key');
+        if (! $checksumKey) {
+            throw new \RuntimeException('PayOS checksum key is not configured.');
         }
 
         $paymentRequest = [
@@ -139,11 +141,11 @@ class PaymentService
         ];
 
         $paymentRequest = array_filter($paymentRequest, function ($value) {
-            return !is_null($value) && $value !== '';
+            return ! is_null($value) && $value !== '';
         });
 
         $signature = self::createSignaturePaymentRequest(
-            env("PAYOS_CHECKSUM_KEY"),
+            $checksumKey,
             $paymentRequest
         );
 
@@ -159,8 +161,8 @@ class PaymentService
     /**
      * Create a signature for the payment request
      *
-     * @param string $checksumKey
-     * @param array $obj
+     * @param  string  $checksumKey
+     * @param  array  $obj
      * @return string
      */
     public static function createSignatureFromObj($checksumKey, $obj)
@@ -168,28 +170,31 @@ class PaymentService
         ksort($obj);
         $queryStrArr = [];
         foreach ($obj as $key => $value) {
-            if (in_array($value, ["undefined", "null"]) || gettype($value) == "NULL") {
-                $value = "";
+            if (in_array($value, ['undefined', 'null']) || gettype($value) == 'NULL') {
+                $value = '';
             }
 
             if (is_array($value)) {
                 $valueSortedElementObj = array_map(function ($ele) {
                     ksort($ele);
+
                     return $ele;
                 }, $value);
                 $value = json_encode($valueSortedElementObj);
             }
             $queryStrArr[] = "{$key}={$value}";
         }
-        $queryStr = implode("&", $queryStrArr);
+        $queryStr = implode('&', $queryStrArr);
         $signature = hash_hmac('sha256', $queryStr, $checksumKey);
+
         return $signature;
     }
 
     private static function createSignaturePaymentRequest($checksumKey, $obj)
     {
-        $dataStr = "amount={$obj["amount"]}&cancelUrl={$obj["cancelUrl"]}&description={$obj["description"]}&orderCode={$obj["orderCode"]}&returnUrl={$obj["returnUrl"]}";
-        $signature = hash_hmac("sha256", $dataStr, $checksumKey);
+        $dataStr = "amount={$obj['amount']}&cancelUrl={$obj['cancelUrl']}&description={$obj['description']}&orderCode={$obj['orderCode']}&returnUrl={$obj['returnUrl']}";
+        $signature = hash_hmac('sha256', $dataStr, $checksumKey);
+
         return $signature;
     }
 }
