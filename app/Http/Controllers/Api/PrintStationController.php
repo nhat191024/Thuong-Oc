@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PrinterResource;
+use App\Models\Branch;
 use App\Models\Printer;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PrintStationController extends Controller
 {
     public function index(int $branchId): AnonymousResourceCollection
     {
-        abort_if($branchId === null, 403, 'Tài khoản chưa được gán cơ sở.');
+        Branch::query()->findOrFail($branchId);
 
         $printers = Printer::query()
             ->whereBranchId($branchId)
