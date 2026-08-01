@@ -52,7 +52,15 @@
                 </div>
             </div>
 
-            <div class="mt-8 flex gap-3">
+            <div v-if="authenticatedEntry" class="mt-8">
+                <Link
+                    :href="authenticatedEntry.url"
+                    class="block w-full rounded-2xl bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
+                >
+                    {{ authenticatedEntry.label }}
+                </Link>
+            </div>
+            <div v-else class="mt-8 flex gap-3">
                 <Link
                     :href="route('login')"
                     class="flex-1 rounded-2xl border-2 border-orange-400 bg-white py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-50"
@@ -95,6 +103,13 @@
 import { AppSettings } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+
+defineProps<{
+    authenticatedEntry: {
+        label: string;
+        url: string;
+    } | null;
+}>();
 
 const page = usePage();
 const settings = computed(() => page.props.app_settings as AppSettings);

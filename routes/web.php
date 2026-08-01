@@ -1,20 +1,34 @@
 <?php
 
+use App\Enums\Role;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerMenuController;
+use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\KitchenController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\VoucherController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-use Illuminate\Support\Facades\Route;
+Route::get('/', function (Request $request) {
+    $user = $request->user();
+    $authenticatedEntry = match (true) {
+        $user?->hasAnyRole([Role::STAFF->value, Role::TABLE_ADMIN->value]) => [
+            'label' => 'Vào màn nhân viên',
+            'url' => route('staff.tables'),
+        ],
+        $user?->hasRole(Role::KITCHEN->value) => [
+            'label' => 'Vào màn bếp',
+            'url' => route('kitchen.index'),
+        ],
+        default => null,
+    };
 
-use App\Http\Controllers\CustomerMenuController;
-use App\Http\Controllers\OrderController;
-
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\KitchenController;
-use App\Http\Controllers\HistoryController;
-use App\Http\Controllers\VoucherController;
-
-Route::get('/', function () {
-    return Inertia::render('Landing');
+    return Inertia::render('Landing', [
+        'authenticatedEntry' => $authenticatedEntry,
+    ]);
 })->name('home');
 
 Route::get('/menu/{tableId}', [CustomerMenuController::class, 'index'])->name('customer-menu.index');
