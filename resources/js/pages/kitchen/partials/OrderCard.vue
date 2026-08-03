@@ -1,5 +1,5 @@
 <template>
-    <div class="relative h-full w-full overflow-hidden rounded-xl" ref="target">
+    <div class="relative h-full w-full overflow-hidden rounded-xl">
         <!-- Swipe Background -->
         <div class="absolute inset-0 flex items-center justify-end bg-green-500 pr-8">
             <span class="text-lg font-bold text-white">Hoàn thành</span>
@@ -8,7 +8,6 @@
         <div
             class="relative flex h-full flex-col bg-white p-4 shadow-sm transition-all duration-200 ease-out"
             :class="getCardColorClass(detail.created_at)"
-            :style="cardStyle"
         >
             <div class="mb-2 flex items-start justify-between">
                 <div class="flex flex-col items-end gap-2">
@@ -76,9 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { useSwipe } from '@vueuse/core';
 import { format } from 'date-fns';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 interface Food {
     id: number;
@@ -126,57 +124,7 @@ const props = defineProps<{
     totalQuantity?: number;
 }>();
 
-const emit = defineEmits(['updateStatus', 'restore']);
-
-const target = ref<HTMLElement | null>(null);
-const isRemoving = ref(false);
-
-import { toast } from 'vue3-toastify';
-
-// TODO: Re-enable swipe when needed — uncomment the block below and remove the dummy refs
-// const { lengthX, isSwiping } = useSwipe(target, {
-//     threshold: 10,
-//     onSwipeEnd() {
-//         if (props.showActions && lengthX.value > 100) {
-//             isRemoving.value = true;
-//             setTimeout(() => {
-//                 toast.success('Đã hoàn thành món ăn', {
-//                     autoClose: 1000,
-//                     position: toast.POSITION.BOTTOM_RIGHT,
-//                 });
-//                 emit('updateStatus', props.detail.id, 'done');
-//             }, 300);
-//         }
-//     },
-// });
-const lengthX = ref(0);
-const isSwiping = ref(false);
-
-const cardStyle = computed(() => {
-    if (!props.showActions) return {};
-
-    if (isRemoving.value) {
-        return {
-            transform: 'translateX(-100%)',
-            opacity: 0,
-            transition: 'all 0.3s ease-out',
-        };
-    }
-
-    if (isSwiping.value) {
-        // Swipe left means lengthX is positive
-        const translateX = -Math.min(lengthX.value, 200);
-        if (lengthX.value < 0) return {}; // Prevent swiping right
-
-        return {
-            transform: `translateX(${translateX}px)`,
-            opacity: 1 - lengthX.value / 300,
-            transition: 'none', // Remove transition during swipe for direct control
-        };
-    }
-
-    return {};
-});
+defineEmits(['updateStatus', 'restore']);
 
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval>;

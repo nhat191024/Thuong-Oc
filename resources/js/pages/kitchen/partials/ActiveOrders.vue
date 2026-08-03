@@ -2,7 +2,7 @@
     <div class="flex h-full flex-col gap-2">
         <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
-                <div class="grid h-full w-full grid-cols-3 grid-rows-2 gap-4 pl-4">
+                <TransitionGroup appear name="order-card" tag="div" class="grid h-full w-full grid-cols-3 grid-rows-2 gap-4 pl-4">
                     <OrderCard
                         v-for="detail in page"
                         :key="detail.id"
@@ -12,9 +12,9 @@
                         class="h-full w-full"
                         @update-status="updateStatus"
                     />
-                </div>
+                </TransitionGroup>
             </div>
-            <div v-if="billDetails.length === 0" class="flex h-full w-full items-center justify-center">
+            <div v-if="displayedBillDetails.length === 0" class="flex h-full w-full items-center justify-center">
                 <p class="text-gray-500">Không có món ăn nào cần chế biến</p>
             </div>
         </div>
@@ -38,7 +38,8 @@
 
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
+import { toast } from 'vue3-toastify';
 import ConfirmModal from '../../components/ConfirmModal.vue';
 import OrderCard from './OrderCard.vue';
 
@@ -82,10 +83,13 @@ const props = defineProps<{
 
 const carouselRef = ref<HTMLElement | null>(null);
 const currentPage = ref(0);
+const hiddenBillDetailIds = reactive(new Set<number>());
+
+const displayedBillDetails = computed(() => props.billDetails.filter((detail) => !hiddenBillDetailIds.has(detail.id)));
 
 const dishTotalMap = computed(() => {
     const map: Record<string, number> = {};
-    for (const detail of props.billDetails) {
+    for (const detail of displayedBillDetails.value) {
         const key = detail.dish ? `dish_${detail.dish.id}` : `custom_${detail.custom_dish_name}`;
         map[key] = (map[key] ?? 0) + detail.quantity;
     }
@@ -93,7 +97,7 @@ const dishTotalMap = computed(() => {
 });
 
 const pages = computed(() => {
-    const items = props.billDetails;
+    const items = displayedBillDetails.value;
     const chunkSize = 6;
     const result = [];
     for (let i = 0; i < items.length; i += chunkSize) {
@@ -180,14 +184,47 @@ const handleConfirmAction = () => {
 };
 
 const submitUpdateStatus = (detailId: number, status: string) => {
+    hiddenBillDetailIds.add(detailId);
+
     router.post(
         route('kitchen.bill-detail.update-status', { billDetail: detailId }),
         {
             status: status,
         },
         {
+            async: true,
             preserveScroll: true,
+            showProgress: false,
+            onSuccess: (page) => {
+                if (page.props.flash?.error) {
+                    hiddenBillDetailIds.delete(detailId);
+                }
+            },
+            onError: () => {
+                hiddenBillDetailIds.delete(detailId);
+                toast.error('Không thể cập nhật món. Đơn đã được hiển thị lại.');
+            },
         },
     );
 };
 </script>
+
+<style>
+.order-card-enter-active,
+.order-card-leave-active,
+.order-card-move {
+    transition:
+        transform 160ms ease-out,
+        opacity 160ms ease-out;
+}
+
+.order-card-enter-from {
+    transform: translateY(-12px) scale(0.97);
+    opacity: 0;
+}
+
+.order-card-leave-to {
+    transform: translateX(24px) scale(0.97);
+    opacity: 0;
+}
+</style>
