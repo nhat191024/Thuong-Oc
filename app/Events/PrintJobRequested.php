@@ -17,6 +17,7 @@ class PrintJobRequested implements ShouldBroadcastNow
      */
     public function __construct(
         private readonly int $branchId,
+        private readonly ?int $kitchenId,
         public readonly array $job,
     ) {}
 
@@ -25,9 +26,15 @@ class PrintJobRequested implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [
+        $channels = [
             new PrivateChannel("print-stations.{$this->branchId}"),
         ];
+
+        if ($this->kitchenId !== null) {
+            $channels[] = new PrivateChannel("print-stations.{$this->branchId}.kitchens.{$this->kitchenId}");
+        }
+
+        return $channels;
     }
 
     public function broadcastAs(): string

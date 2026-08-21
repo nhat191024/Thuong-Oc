@@ -87,6 +87,12 @@ class KitchenController extends Controller
     {
         $request->validate([
             'status' => ['required', Rule::enum(BillDetailStatus::class)],
+            'kitchen_id' => [
+                'nullable',
+                'integer',
+                Rule::exists(Kitchen::class, 'id')
+                    ->where('branch_id', $request->user()->branch_id),
+            ],
         ]);
 
         if (! $billDetail->bill()->exists()) {
@@ -108,7 +114,12 @@ class KitchenController extends Controller
         $bill->recalculateTotal();
 
         if ($request->status === BillDetailStatus::DONE->value) {
-            app(KitchenPrintJobService::class)->request($billDetail);
+            $kitchen = $this->resolveKitchenForBillDetail(
+                $billDetail,
+                $request->integer('kitchen_id') ?: null,
+            );
+
+            app(KitchenPrintJobService::class)->request($billDetail, $kitchen);
         }
 
         return back();
@@ -145,5 +156,35 @@ class KitchenController extends Controller
             ->paginate(9);
 
         return response()->json($history);
+    }
+
+    private function resolveKitchenForBillDetail(BillDetail $billDetail, ?int $kitchenId): ?Kitchen
+    {
+        $branchId = $billDetail->bill->branch_id;
+
+        if ($kitchenId !== null) {
+            return Kitchen::query()
+                ->whereBranchId($branchId)
+                ->whereKey($kitchenId)
+                ->first();
+        }
+
+        if ($billDetail->custom_kitchen_id !== null) {
+            return Kitchen::query()
+                ->whereBranchId($branchId)
+                ->whereKey($billDetail->custom_kitchen_id)
+                ->first();
+        }
+
+        $cookingMethodId = $billDetail->dish?->cooking_method_id;
+
+        if ($cookingMethodId === null) {
+            return null;
+        }
+
+        return Kitchen::query()
+            ->whereBranchId($branchId)
+            ->whereHas('cookingMethods', fn ($query) => $query->where('cooking_methods.id', $cookingMethodId))
+            ->first();
     }
 }

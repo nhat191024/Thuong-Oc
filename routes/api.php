@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
     Route::get('/print-station/printers/{branchId}', [PrintStationController::class, 'index']);
+    Route::get('/print-station/kitchens/{branchId}', [PrintStationController::class, 'kitchens']);
 
     Route::get('/tables', [TableController::class, 'index']);
 
