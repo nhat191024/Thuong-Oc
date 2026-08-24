@@ -3,6 +3,7 @@
         <img class="h-14 w-14 rounded-full max-[400px]:h-12 max-[400px]:w-12" :src="settings.app_logo ?? ''" alt="Logo" />
         <div class="flex items-center gap-3">
             <p class="max-w-45 truncate text-2xl font-semibold text-white" :title="props.tableName">{{ props.tableName }}</p>
+            <ThemeSwitcher class="text-white" />
 
             <div v-if="user" class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn avatar btn-circle btn-ghost">
@@ -55,31 +56,32 @@
 import { AppSettings, Auth } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import ThemeSwitcher from '../../components/ThemeSwitcher.vue';
 
 const page = usePage();
 const settings = computed(() => page.props.app_settings as AppSettings);
 const user = computed(() => (page.props.auth as Auth).user);
 
 interface Props {
-    tableName: string;
+    tableName?: string;
     tableNumber: number;
 }
 
 const props = defineProps<Props>();
 
 const goToHistory = () => {
-    let currentUrl = window.location.href;
+    const currentUrl = window.location.href;
     if (currentUrl.includes('/menu/')) {
-        let currentTableId = currentUrl.split('/menu/')[1];
+        const currentTableId = currentUrl.split('/menu/')[1];
         localStorage.setItem('tableId', currentTableId);
     }
     router.visit(route('history.index'));
 };
 
 const goToVouchers = () => {
-    let currentUrl = window.location.href;
+    const currentUrl = window.location.href;
     if (currentUrl.includes('/menu/')) {
-        let currentTableId = currentUrl.split('/menu/')[1];
+        const currentTableId = currentUrl.split('/menu/')[1];
         if (currentTableId) {
             localStorage.setItem('tableId', currentTableId);
         }

@@ -42,7 +42,11 @@
                 <div v-if="billItems.length === 0" class="mt-10 text-center text-base-content/50">
                     <p>Chưa có món nào trong bill</p>
                 </div>
-                <div v-for="(item, index) in billItems" :key="index" class="flex flex-col gap-2 rounded-lg border border-base-200 p-3 shadow-sm">
+                <div
+                    v-for="(item, index) in billItems"
+                    :key="index"
+                    class="flex flex-col gap-2 rounded-lg border border-base-300/80 bg-base-100 p-3 shadow-sm"
+                >
                     <div class="flex justify-between gap-2">
                         <h3 class="font-bold">{{ item.name }}</h3>
                         <div class="flex items-center gap-2">
@@ -90,7 +94,7 @@
                 <div
                     v-for="(item, index) in cartItems"
                     :key="index"
-                    class="bg-base-50 flex flex-col gap-2 rounded-lg border border-base-200 p-3 shadow-sm"
+                    class="flex flex-col gap-2 rounded-lg border border-base-300/80 bg-base-100 p-3 shadow-sm"
                 >
                     <div class="flex justify-between">
                         <h3 class="font-bold">{{ item.name }}</h3>
@@ -141,7 +145,7 @@
                 <button class="btn flex-1 btn-primary" @click="$emit('updateBill')">Cập nhật Bill</button>
                 <div class="dropdown dropdown-center dropdown-top flex-1">
                     <div tabindex="0" role="button" class="btn w-full btn-success">Thao tác</div>
-                    <ul tabindex="0" class="dropdown-content menu z-50 mb-2 w-52 rounded-box border border-black bg-base-100 p-2 shadow-xl">
+                    <ul tabindex="0" class="dropdown-content menu z-50 mb-2 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
                         <li><a @click="$emit('payment')">Thanh toán</a></li>
                         <li><a @click="openMoveTableModal">Chuyển bàn</a></li>
                         <li><a @click="openMergeTableModal">Gộp đơn</a></li>
@@ -161,7 +165,7 @@
                         {{ table.name ?? 'Bàn ' + table.table_number }}
                     </button>
                 </div>
-                <div v-else class="text-center text-gray-500">Không có bàn trống nào.</div>
+                <div v-else class="text-center text-base-content/60">Không có bàn trống nào.</div>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn">Đóng</button>
@@ -204,7 +208,7 @@
                         {{ table.name ?? 'Bàn ' + table.table_number }}
                     </button>
                 </div>
-                <div v-else class="mt-2 text-center text-gray-500">Không có bàn nào đang hoạt động để gộp.</div>
+                <div v-else class="mt-2 text-center text-base-content/60">Không có bàn nào đang hoạt động để gộp.</div>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn">Đóng</button>

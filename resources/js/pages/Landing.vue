@@ -1,28 +1,29 @@
 <template>
     <Head title="Chào mừng đến với Thương Ốc" />
 
-    <div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-orange-50 p-4">
-        <div class="animate-blob absolute -top-10 -left-10 filter h-40 w-40 rounded-full bg-orange-200 opacity-70 mix-blend-multiply blur-xl"></div>
+    <div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-base-200 p-4">
+        <ThemeSwitcher class="fixed top-4 right-4 z-50 rounded-full bg-base-100/80 shadow-md backdrop-blur" />
+        <div class="animate-blob absolute -top-10 -left-10 h-40 w-40 rounded-full bg-orange-500/25 opacity-70 mix-blend-multiply blur-xl filter"></div>
         <div
-            class="animate-blob animation-delay-2000 absolute -right-10 -bottom-10 filter h-40 w-40 rounded-full bg-yellow-200 opacity-70 mix-blend-multiply blur-xl"
+            class="animate-blob animation-delay-2000 absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-yellow-500/25 opacity-70 mix-blend-multiply blur-xl filter"
         ></div>
 
         <div class="relative z-10 w-full max-w-md">
             <div class="mb-10 text-center">
-                <div class="mb-4 inline-block rounded-full bg-white p-1 shadow-lg">
+                <div class="mb-4 inline-block rounded-full bg-base-100 p-1 shadow-lg">
                     <img class="h-40 w-40 rounded-full max-[400px]:h-24 max-[400px]:w-24" :src="settings.app_logo ?? ''" alt="Logo" />
                 </div>
-                <h1 class="mb-2 font-serif text-4xl font-extrabold tracking-tight text-gray-800">Thương Ốc</h1>
+                <h1 class="mb-2 font-serif text-4xl font-extrabold tracking-tight text-base-content">Thương Ốc</h1>
                 <p class="font-medium text-orange-600 italic">Hương vị biển, thắm tình quê</p>
             </div>
 
-            <div class="rounded-3xl border border-white/20 bg-white/80 p-8 text-center shadow-xl backdrop-blur-sm">
-                <h2 class="mb-2 text-2xl font-bold text-gray-800">Bạn đang đói bụng?</h2>
-                <p class="mb-8 text-gray-500">Hãy đặt món ngay để thưởng thức những món ốc tươi ngon nhất!</p>
+            <div class="rounded-3xl border border-base-300/50 bg-base-100/85 p-8 text-center shadow-xl backdrop-blur-sm">
+                <h2 class="mb-2 text-2xl font-bold text-base-content">Bạn đang đói bụng?</h2>
+                <p class="mb-8 text-base-content/60">Hãy đặt món ngay để thưởng thức những món ốc tươi ngon nhất!</p>
 
                 <div class="space-y-4">
                     <div
-                        class="group rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50 p-6 transition-colors hover:border-orange-400"
+                        class="group rounded-2xl border-2 border-dashed border-orange-400/40 bg-orange-500/10 p-6 transition-colors hover:border-orange-400"
                     >
                         <div class="flex flex-col items-center gap-3">
                             <svg
@@ -44,11 +45,11 @@
                                     d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
                                 />
                             </svg>
-                            <span class="font-bold text-gray-700">Quét mã QR trên bàn</span>
+                            <span class="font-bold text-base-content/80">Quét mã QR trên bàn</span>
                         </div>
                     </div>
 
-                    <p class="text-sm text-gray-500">Sử dụng camera điện thoại hoặc Zalo để quét mã QR được dán trên bàn của bạn.</p>
+                    <p class="text-sm text-base-content/60">Sử dụng camera điện thoại hoặc Zalo để quét mã QR được dán trên bàn của bạn.</p>
                 </div>
             </div>
 
@@ -63,7 +64,7 @@
             <div v-else class="mt-8 flex gap-3">
                 <Link
                     :href="route('login')"
-                    class="flex-1 rounded-2xl border-2 border-orange-400 bg-white py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-50"
+                    class="flex-1 rounded-2xl border-2 border-orange-400 bg-base-100 py-3 text-center font-semibold text-orange-600 transition-colors hover:bg-orange-500/10"
                 >
                     Đăng nhập
                 </Link>
@@ -76,7 +77,7 @@
             </div>
 
             <div class="mt-8 text-center">
-                <div class="mb-2 flex justify-center gap-4 text-orange-800 opacity-60">
+                <div class="mb-2 flex justify-center gap-4 text-orange-600 opacity-70">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
                         <path
                             fill-rule="evenodd"
@@ -92,8 +93,8 @@
                         />
                     </svg>
                 </div>
-                <p class="text-sm text-orange-900/60">Mở cửa: 16:00 - 23:00</p>
-                <p class="text-sm text-orange-900/60">Wifi: Thuong Oc 269 / MatKhau:</p>
+                <p class="text-sm text-base-content/60">Mở cửa: 16:00 - 23:00</p>
+                <p class="text-sm text-base-content/60">Wifi: Thuong Oc 269 / MatKhau:</p>
             </div>
         </div>
     </div>
@@ -103,6 +104,7 @@
 import { AppSettings } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import ThemeSwitcher from './components/ThemeSwitcher.vue';
 
 defineProps<{
     authenticatedEntry: {

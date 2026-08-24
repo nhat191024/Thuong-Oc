@@ -2,14 +2,14 @@
     <div class="flex h-screen flex-col">
         <Nav :center_text="'Chi nhánh ' + props.branchName">
             <template #actions>
-                <Link :href="route('history.index')" class="btn rounded-4xl bg-white text-primary btn-sm hover:bg-white/90"> Lịch sử đơn </Link>
-                <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-white text-primary btn-sm hover:bg-white/90">
+                <Link :href="route('history.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200"> Lịch sử đơn </Link>
+                <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200">
                     Quản lý tồn kho
                 </Link>
             </template>
         </Nav>
 
-        <div class="flex-1 overflow-hidden bg-gray-100">
+        <div class="flex-1 overflow-hidden bg-base-200">
             <div v-if="page.props.flash.success" role="alert" class="mx-4 mt-4 alert alert-success">
                 <span>{{ page.props.flash.success }}</span>
             </div>
@@ -22,7 +22,7 @@
                         :class="[
                             table.is_active === 'active'
                                 ? 'border-primary bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary hover:shadow-md',
+                                : 'border-base-300 bg-base-100 text-base-content/50 hover:border-primary hover:text-primary hover:shadow-md',
                         ]"
                         :href="route('staff.table.show', { tableId: table.id })"
                     >

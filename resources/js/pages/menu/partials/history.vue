@@ -15,15 +15,15 @@
                             <span>{{ dish.name }}</span>
                             <span class="text-primary">{{ formatPrice(dish.price * dish.quantity) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm text-gray-500">
+                        <div class="flex justify-between text-sm text-base-content/60">
                             <span>{{ dish.cookingMethod }}</span>
                             <span>x{{ dish.quantity }}</span>
                         </div>
-                        <div v-if="dish.note" class="text-sm italic text-gray-400">
+                        <div v-if="dish.note" class="text-sm text-base-content/50 italic">
                             Ghi chú: {{ dish.note }}
                         </div>
                     </div>
-                    <div v-if="historyStore.dishes.length === 0" class="flex h-full items-center justify-center text-gray-400">
+                    <div v-if="historyStore.dishes.length === 0" class="flex h-full items-center justify-center text-base-content/50">
                         Chưa có lịch sử gọi món
                     </div>
                 </div>

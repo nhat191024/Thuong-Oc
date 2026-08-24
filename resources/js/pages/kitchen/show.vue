@@ -18,6 +18,7 @@
             </div>
 
             <div class="flex min-w-0 items-center justify-end gap-2">
+                <ThemeSwitcher class="text-white" />
                 <div class="dropdown dropdown-end">
                     <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
                     <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
@@ -27,7 +28,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-hidden bg-gray-100">
+        <div class="flex-1 overflow-hidden bg-base-200">
             <ActiveOrders v-if="currentTab === 'active'" :bill-details="billDetails" :kitchen-id="props.kitchen.id" />
             <HistoryOrders v-else :kitchen-id="props.kitchen.id" />
         </div>
@@ -41,6 +42,7 @@ import type { PageProps } from '@inertiajs/core';
 import { Link, usePage } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { toast } from 'vue3-toastify';
+import ThemeSwitcher from '../components/ThemeSwitcher.vue';
 import ActiveOrders from './partials/ActiveOrders.vue';
 import HistoryOrders from './partials/HistoryOrders.vue';
 

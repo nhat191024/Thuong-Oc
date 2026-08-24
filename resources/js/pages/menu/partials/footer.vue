@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-full justify-around bg-white py-1 shadow-[0_-4px_6px_-1px_rgba(159,7,18,0.1)]">
+    <div class="flex h-full justify-around bg-base-100 py-1 shadow-[0_-4px_6px_-1px_rgba(159,7,18,0.1)]">
         <!-- TEMP: Cart disabled for direct-to-kitchen ordering.
         <div id="cart-icon" class="flex items-center justify-center" @click="showCart()">
             <ShoppingBagIcon class="h-10 text-primary" />

@@ -37,7 +37,7 @@
                                         @blur="clampQuantity"
                                         min="1"
                                         max="99"
-                                        class="w-12 [appearance:textfield] rounded border border-gray-300 px-1 py-0.5 text-center text-base font-semibold outline-none focus:border-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                        class="w-12 [appearance:textfield] rounded border border-base-300 bg-base-100 px-1 py-0.5 text-center text-base font-semibold text-base-content outline-none focus:border-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     />
                                     <button
                                         @click="tempQuantity++"
@@ -56,8 +56,8 @@
                         <p class="text-primary">Cách chế biến (chọn 1)</p>
                     </div>
                     <div class="flex flex-col">
-                        <div v-for="dish in food.dishes" :key="dish.id" class="flex flex-col border-b border-gray-300 px-4 py-2">
-                            <p class="font-medium text-black">
+                        <div v-for="dish in food.dishes" :key="dish.id" class="flex flex-col border-b border-base-300 px-4 py-2">
+                            <p class="font-medium text-base-content">
                                 {{ dish.name }}
                             </p>
                             <div class="flex justify-between">

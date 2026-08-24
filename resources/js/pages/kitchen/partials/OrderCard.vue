@@ -6,7 +6,7 @@
         </div>
 
         <div
-            class="relative flex h-full flex-col bg-white p-4 shadow-sm transition-all duration-200 ease-out"
+            class="relative flex h-full flex-col bg-base-100 p-4 shadow-sm transition-all duration-200 ease-out"
             :class="getCardColorClass(detail.created_at)"
         >
             <div class="mb-2 flex items-start justify-between">
@@ -14,7 +14,7 @@
                     <div class="flex flex-col items-start">
                         <span class="text-lg font-medium">#{{ detail.bill.table.table_number }}</span>
                         <span class="max-w-37.5 truncate text-2xl font-bold" :title="detail.bill.table.name">{{ detail.bill.table.name }}</span>
-                        <span class="text-sm text-gray-500">{{ formatTime(detail.created_at) }}</span>
+                        <span class="text-sm opacity-60">{{ formatTime(detail.created_at) }}</span>
                         <span v-if="showActions" class="text-sm font-bold text-red-600">{{ getElapsedTime(detail.created_at) }}</span>
                     </div>
                 </div>
@@ -34,9 +34,11 @@
                 </button>
             </div>
             <div class="mb-1 min-h-0 flex-1 overflow-y-auto">
-                <h3 class="text-2xl font-bold text-primary">
-                    {{ detail.quantity }}x {{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}
-                    <span v-if="detail.dish?.cooking_method" class="text-2xl font-bold text-black">{{ detail.dish.cooking_method.name }}</span>
+                <h3 class="text-2xl font-bold">
+                    <span :class="getDishNameColorClass(detail.created_at)">
+                        {{ detail.quantity }}x {{ detail.dish ? detail.dish.food.name : detail.custom_dish_name }}
+                    </span>
+                    <span v-if="detail.dish?.cooking_method" class="ml-1">{{ detail.dish.cooking_method.name }}</span>
                 </h3>
 
                 <div v-if="detail.note" class="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1">
@@ -47,7 +49,10 @@
             <div class="flex items-end justify-between">
                 <span class="text-lg font-bold">SL: {{ totalQuantity ?? detail.quantity }}</span>
                 <div class="flex gap-2" v-if="showActions">
-                    <button class="rounded-lg bg-green-500 px-6 py-3 text-white hover:bg-green-600" @click="$emit('updateStatus', detail.id, 'done')">
+                    <button
+                        class="rounded-lg border border-white/15 bg-black px-6 py-3 text-white shadow-sm hover:bg-black/85"
+                        @click="$emit('updateStatus', detail.id, 'done')"
+                    >
                         Hoàn thành
                     </button>
                 </div>
@@ -160,18 +165,40 @@ const getElapsedTime = (dateString: string) => {
     return `${pad(minutes)}:${pad(seconds)}`;
 };
 
-const getCardColorClass = (dateString: string) => {
-    if (!props.showActions) return 'bg-white border border-gray-200';
-
+const getElapsedMinutes = (dateString: string): number => {
     const start = new Date(dateString).getTime();
     const current = now.value.getTime();
-    const diffInMinutes = (current - start) / (1000 * 60);
 
-    if (diffInMinutes > 30) {
-        return 'bg-red-100 border-2 border-red-300';
-    } else if (diffInMinutes > 15) {
-        return 'bg-yellow-100 border-2 border-yellow-300';
+    return (current - start) / (1000 * 60);
+};
+
+const getDishNameColorClass = (dateString: string): string => {
+    const elapsedMinutes = getElapsedMinutes(dateString);
+
+    if (elapsedMinutes > 30) {
+        return 'text-red-700';
     }
-    return 'bg-white';
+
+    if (elapsedMinutes > 15) {
+        return 'text-yellow-800';
+    }
+
+    return 'text-primary';
+};
+
+const getCardColorClass = (dateString: string): string => {
+    if (!props.showActions) return 'bg-base-100 border border-base-300';
+
+    const elapsedMinutes = getElapsedMinutes(dateString);
+
+    if (elapsedMinutes > 30) {
+        return 'bg-red-100 border-2 border-red-300 text-red-950';
+    }
+
+    if (elapsedMinutes > 15) {
+        return 'bg-yellow-100 border-2 border-yellow-300 text-yellow-950';
+    }
+
+    return 'bg-base-100 text-base-content';
 };
 </script>

@@ -5,9 +5,27 @@
 @plugin "daisyui/theme" {
     name: 'light';
     default: true;
-    prefersdark: true;
+    prefersdark: false;
 
     --color-primary: oklch(0.4446 0.1774 26.79);
+    --color-primary-content: oklch(0.98 0.01 25);
+    --color-base-100: oklch(0.99 0.003 80);
+    --color-base-200: oklch(0.96 0.006 70);
+    --color-base-300: oklch(0.91 0.01 65);
+    --color-base-content: oklch(0.25 0.02 35);
+}
+
+@plugin "daisyui/theme" {
+    name: 'dark';
+    default: false;
+    prefersdark: false;
+
+    --color-primary: oklch(0.52 0.18 25);
+    --color-primary-content: oklch(0.98 0.01 25);
+    --color-base-100: oklch(0.22 0.018 35);
+    --color-base-200: oklch(0.18 0.015 35);
+    --color-base-300: oklch(0.29 0.02 35);
+    --color-base-content: oklch(0.94 0.01 70);
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -17,4 +35,18 @@
     --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-primary: oklch(0.4446 0.1774 26.79);
+}
+
+html,
+body,
+#app {
+    min-height: 100%;
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+}
+
+html {
+    transition:
+        background-color 150ms ease,
+        color 150ms ease;
 }

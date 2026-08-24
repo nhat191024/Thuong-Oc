@@ -1,6 +1,7 @@
 <template>
     <Head title="Login" />
     <div class="flex min-h-screen items-center justify-center bg-base-200 px-4 py-12 sm:px-6 lg:px-8">
+        <ThemeSwitcher class="fixed top-4 right-4 z-50 rounded-full bg-base-100 shadow-md" />
         <div class="card w-full max-w-sm shrink-0 bg-base-100 shadow-2xl rounded-xl">
             <form class="card-body" @submit.prevent="submit">
                 <h2 class="text-center text-lg leading-9 font-bold tracking-tight">Thương ốc</h2>
@@ -67,6 +68,7 @@
 
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import ThemeSwitcher from '../components/ThemeSwitcher.vue';
 
 const form = useForm({
     username: '',

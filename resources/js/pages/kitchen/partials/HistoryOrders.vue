@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-full flex-col gap-2">
-        <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
+        <div class="carousel w-full flex-1 space-x-4 rounded-box bg-base-200 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
                 <div class="grid h-full w-full grid-cols-3 grid-rows-2 gap-4 pl-4">
                     <OrderCard
@@ -18,7 +18,7 @@
                 <span class="loading loading-md loading-spinner"></span>
             </div>
             <div v-if="!loading && historyDetails.length === 0" class="flex h-full w-full items-center justify-center">
-                <p class="text-gray-500">Chưa có lịch sử đơn hàng</p>
+                <p class="text-base-content/60">Chưa có lịch sử đơn hàng</p>
             </div>
         </div>
         <div class="mb-2 flex justify-center gap-2" v-if="pages.length > 1">

@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-base-200">
         <Nav :tableNumber="0" />
 
         <div class="container mx-auto px-4 py-6">
@@ -7,11 +7,11 @@
                 <button class="btn btn-circle btn-sm" @click="goBack">
                     <ArrowLeftIcon class="size-5" />
                 </button>
-                <h1 class="text-2xl font-bold text-gray-800">Kho Voucher</h1>
+                <h1 class="text-2xl font-bold text-base-content">Kho Voucher</h1>
             </div>
 
-            <div v-if="vouchers.length === 0" class="flex flex-col items-center justify-center rounded-lg bg-white p-8 shadow">
-                <p class="text-gray-500">Bạn chưa có voucher nào.</p>
+            <div v-if="vouchers.length === 0" class="flex flex-col items-center justify-center rounded-lg bg-base-100 p-8 shadow">
+                <p class="text-base-content/60">Bạn chưa có voucher nào.</p>
             </div>
 
             <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -31,10 +31,10 @@
                             </span>
                         </div>
 
-                        <p class="text-sm text-gray-500" v-if="voucher.expires_at">
+                        <p class="text-sm text-base-content/60" v-if="voucher.expires_at">
                             Hết hạn: {{ formatDate(voucher.expires_at) }}
                         </p>
-                        <p class="text-sm text-gray-500" v-else>
+                        <p class="text-sm text-base-content/60" v-else>
                             Hết hạn: Vĩnh viễn
                         </p>
 
@@ -80,7 +80,7 @@ const formatCurrency = (value: number) => {
 };
 
 const goBack = () => {
-    let tableId = localStorage.getItem('tableId');
+    const tableId = localStorage.getItem('tableId');
     if (tableId) {
         router.visit(route('customer-menu.index', { tableId }));
     } else {

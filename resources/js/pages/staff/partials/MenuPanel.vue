@@ -29,7 +29,7 @@
                     <div
                         v-for="food in pinnedFoods"
                         :key="food.id"
-                        class="group relative flex min-w-28 cursor-pointer flex-col rounded-xl border border-base-200 bg-base-100 p-2 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                        class="group relative flex min-w-28 cursor-pointer flex-col rounded-xl border border-base-300/80 bg-base-100 p-2 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
                         @click="$emit('foodClick', food)"
                     >
                         <button
@@ -56,7 +56,7 @@
                     <div
                         v-for="menu in menus"
                         :key="menu.id"
-                        class="card cursor-pointer border border-base-200 bg-base-100 shadow-sm transition-all hover:scale-105 hover:shadow-md"
+                        class="card cursor-pointer border border-base-300/80 bg-base-100 shadow-sm transition-all hover:scale-105 hover:border-primary/50 hover:shadow-md"
                         @click="$emit('update:selectedMenu', menu)"
                     >
                         <div class="card-body items-center p-6 text-center">
@@ -74,7 +74,7 @@
                     <div
                         v-for="food in selectedMenu.foods"
                         :key="food.id"
-                        class="card-compact group card cursor-pointer border border-base-200 bg-base-100 shadow-sm transition-all hover:shadow-md"
+                        class="card-compact group card cursor-pointer border border-base-300/80 bg-base-100 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
                         @click="$emit('foodClick', food)"
                     >
                         <figure class="relative h-32 w-full overflow-hidden">

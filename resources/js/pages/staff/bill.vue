@@ -9,6 +9,7 @@
             <div class="flex-1">
                 <h1 class="text-xl font-bold">Hóa đơn - Bàn {{ table.table_number }}</h1>
             </div>
+            <ThemeSwitcher class="flex-none" />
             <div v-if="printers.length > 0" class="flex-none">
                 <div class="dropdown dropdown-end">
                     <div tabindex="0" role="button" class="btn gap-1 btn-ghost btn-sm">
@@ -108,6 +109,7 @@
 
 <script setup lang="ts">
 import ConfirmModal from '@/pages/components/ConfirmModal.vue';
+import ThemeSwitcher from '@/pages/components/ThemeSwitcher.vue';
 import { AppPageProps } from '@/types';
 import { ChevronLeftIcon, PrinterIcon } from '@heroicons/vue/24/outline';
 import type { PageProps } from '@inertiajs/core';

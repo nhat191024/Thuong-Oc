@@ -9,6 +9,7 @@
         <p class="max-w-[40vw] truncate text-xl font-bold text-white">{{ props.center_text }}</p>
         <div class="flex min-w-0 items-center justify-end gap-2">
             <slot name="actions"></slot>
+            <ThemeSwitcher class="text-white" />
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn m-1 rounded-4xl">{{ user.username }}</div>
                 <ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
@@ -23,6 +24,7 @@ import { AppPageProps } from '@/types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import ThemeSwitcher from './ThemeSwitcher.vue';
 
 interface Props {
     center_text: string;

@@ -34,7 +34,7 @@
                                     <h4 class="line-clamp-2 text-base font-bold">{{ dish.name }}</h4>
                                     <p class="font-bold whitespace-nowrap text-primary">{{ formatPrice(dish.price) }}</p>
                                 </div>
-                                <p class="line-clamp-1 text-sm text-gray-500">{{ dish.cookingMethod }}</p>
+                                <p class="line-clamp-1 text-sm text-base-content/60">{{ dish.cookingMethod }}</p>
                             </div>
 
                             <div class="mt-2 flex items-end justify-between gap-2">
@@ -64,7 +64,7 @@
             <!-- Footer -->
             <div class="safe-area-bottom border-t border-base-200 bg-base-100 p-4">
                 <div class="mb-4 flex items-center justify-between">
-                    <span class="text-base font-medium text-gray-500">Tổng cộng</span>
+                    <span class="text-base font-medium text-base-content/60">Tổng cộng</span>
                     <span class="text-2xl font-bold text-primary">{{ formatPrice(total) }}</span>
                 </div>
                 <button

@@ -1,17 +1,17 @@
 <template>
-    <div class="min-h-screen bg-gray-100 pb-20">
+    <div class="min-h-screen bg-base-200 pb-20">
         <StaffNav v-if="props.isStaff" center_text="Chi tiết đơn" use_back_button :back-url="route('history.index')" />
         <MenuNav v-else :tableNumber="0" table-name="" />
 
         <div class="container mx-auto px-4 py-6">
-            <Link :href="route('history.index')" class="mb-4 inline-flex items-center text-gray-600 hover:text-primary">
+            <Link :href="route('history.index')" class="mb-4 inline-flex items-center text-base-content/70 hover:text-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1 h-5 w-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
                 Quay lại
             </Link>
 
-            <div class="rounded-lg bg-white p-6 shadow-lg">
+            <div class="rounded-lg bg-base-100 p-6 shadow-lg">
                 <div class="border-b pb-4">
                     <div class="flex items-center justify-between">
                         <h1 class="text-xl font-bold">Chi tiết đơn #{{ bill.id }}</h1>
@@ -19,7 +19,7 @@
                             {{ getStatusText(bill.pay_status, bill.deleted_at) }}
                         </span>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">{{ formatDate(bill.created_at) }}</p>
+                    <p class="mt-1 text-sm text-base-content/60">{{ formatDate(bill.created_at) }}</p>
                     <p v-if="bill.deleted_at" class="mt-1 text-sm font-medium text-error">Thời gian xóa: {{ formatDate(bill.deleted_at) }}</p>
                     <div class="mt-2 flex gap-2">
                         <span class="badge badge-outline" v-if="bill.branch">{{ bill.branch.name }}</span>
@@ -46,7 +46,7 @@
                                         <div class="font-bold">
                                             {{ detail.dish?.food?.name || detail.custom_dish_name || 'Món không tên' }}
                                         </div>
-                                        <div class="text-xs text-gray-500" v-if="detail.note">Ghi chú: {{ detail.note }}</div>
+                                        <div class="text-xs text-base-content/60" v-if="detail.note">Ghi chú: {{ detail.note }}</div>
                                     </td>
                                     <td class="text-center">{{ detail.quantity }}</td>
                                     <td class="text-right">{{ formatCurrency(detail.price) }}</td>

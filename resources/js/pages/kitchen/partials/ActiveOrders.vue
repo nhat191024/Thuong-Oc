@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-full flex-col gap-2">
-        <div class="carousel w-full flex-1 space-x-4 rounded-box bg-neutral-100 p-4" ref="carouselRef" @scroll="handleScroll">
+        <div class="carousel w-full flex-1 space-x-4 rounded-box bg-base-200 p-4" ref="carouselRef" @scroll="handleScroll">
             <div v-for="(page, index) in pages" :key="index" class="carousel-item h-full w-full">
                 <TransitionGroup appear name="order-card" tag="div" class="grid h-full w-full grid-cols-3 grid-rows-2 gap-4 pl-4">
                     <OrderCard
@@ -15,7 +15,7 @@
                 </TransitionGroup>
             </div>
             <div v-if="displayedBillDetails.length === 0" class="flex h-full w-full items-center justify-center">
-                <p class="text-gray-500">Không có món ăn nào cần chế biến</p>
+                <p class="text-base-content/60">Không có món ăn nào cần chế biến</p>
             </div>
         </div>
         <div class="mb-2 flex justify-center gap-2" v-if="pages.length > 1">

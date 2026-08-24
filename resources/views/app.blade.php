@@ -10,6 +10,20 @@
     <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'ThuongOc') }}">
     <meta name="theme-color" content="#ffffff">
 
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem('thuongoc-theme');
+            const preference = ['light', 'dark', 'system'].includes(savedTheme) ? savedTheme : 'system';
+            const theme = preference === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : preference;
+
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+            document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#211b1a' : '#ffffff';
+        })();
+    </script>
+
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="48x48">
@@ -29,7 +43,7 @@
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased" style="margin-bottom: 0;">
+<body class="bg-base-200 font-sans text-base-content antialiased" style="margin-bottom: 0;">
     @inertia
 </body>
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-base-200">
         <StaffNav v-if="props.isStaff" center_text="Lịch sử đơn hàng" use_back_button :back-url="route('staff.tables')" />
         <MenuNav v-else :tableNumber="0" table-name="" />
 
@@ -8,11 +8,11 @@
                 <button class="btn btn-circle btn-sm" @click="goBack">
                     <ArrowLeftIcon class="size-5" />
                 </button>
-                <h1 class="text-2xl font-bold text-gray-800">Lịch sử đơn hàng</h1>
+                <h1 class="text-2xl font-bold text-base-content">Lịch sử đơn hàng</h1>
             </div>
 
-            <div v-if="bills.length === 0" class="flex flex-col items-center justify-center rounded-lg bg-white p-8 shadow">
-                <p class="text-gray-500">Bạn chưa có đơn hàng nào.</p>
+            <div v-if="bills.length === 0" class="flex flex-col items-center justify-center rounded-lg bg-base-100 p-8 shadow">
+                <p class="text-base-content/60">Bạn chưa có đơn hàng nào.</p>
             </div>
 
             <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -29,7 +29,7 @@
                                 {{ getStatusText(bill.pay_status, bill.deleted_at) }}
                             </span>
                         </div>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-sm text-base-content/60">
                             {{ formatDate(bill.created_at) }}
                         </p>
                         <p v-if="bill.deleted_at" class="text-sm font-medium text-error">Thời gian xóa: {{ formatDate(bill.deleted_at) }}</p>

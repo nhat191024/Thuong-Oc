@@ -1,18 +1,21 @@
-import '../css/app.css';
 import 'vue3-toastify/dist/index.css';
+import '../css/app.css';
 
 import { registerSW } from 'virtual:pwa-register';
 
 import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import type { DefineComponent } from 'vue';
-import { createApp, h } from 'vue';
-import { ZiggyVue } from 'ziggy-js';
-import { createPinia } from 'pinia';
 import { configureEcho } from '@laravel/echo-vue';
 import Echo from 'laravel-echo';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { createPinia } from 'pinia';
 import Pusher from 'pusher-js';
+import type { DefineComponent } from 'vue';
+import { createApp, h } from 'vue';
 import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify';
+import { ZiggyVue } from 'ziggy-js';
+import { initializeTheme } from './composables/useTheme';
+
+initializeTheme();
 
 window.Pusher = Pusher;
 
@@ -48,6 +51,7 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(Vue3Toastify, {
                 autoClose: 3000,
+                theme: 'auto',
             } as ToastContainerOptions)
             .mount(el);
     },
