@@ -4,8 +4,9 @@
             <template #actions>
                 <Link :href="route('history.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200"> Lịch sử đơn </Link>
                 <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200">
-                    Quản lý tồn kho
+                    Quản lý hết món
                 </Link>
+                <Link :href="route('staff.inventory.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200"> Kho ốc </Link>
             </template>
         </Nav>
 

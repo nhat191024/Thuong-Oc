@@ -13,7 +13,9 @@ use App\Enums\PayStatus;
 use App\Enums\BillDetailStatus;
 
 use App\Services\KitchenPrintJobService;
+use App\Services\FoodInventoryService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
@@ -95,25 +97,56 @@ class KitchenController extends Controller
             ],
         ]);
 
-        if (! $billDetail->bill()->exists()) {
-            return back()->with('error', 'Đơn đã bị xóa, không thể cập nhật món.');
-        }
+        $result = DB::transaction(function () use ($request, $billDetail): ?array {
+            $lockedBillDetail = BillDetail::query()
+                ->with(['dish', 'bill'])
+                ->lockForUpdate()
+                ->find($billDetail->id);
 
-        $wasUpdated = BillDetail::query()
-            ->whereKey($billDetail->id)
-            ->where('status', '!=', BillDetailStatus::CANCELLED->value)
-            ->update(['status' => $request->status]);
+            if ($lockedBillDetail === null || $lockedBillDetail->bill === null) {
+                return null;
+            }
 
-        if ($wasUpdated === 0) {
+            if ($lockedBillDetail->bill->branch_id !== $request->user()->branch_id) {
+                abort(403);
+            }
+
+            if ($lockedBillDetail->status === BillDetailStatus::CANCELLED) {
+                return null;
+            }
+
+            $requestedStatus = $request->enum('status', BillDetailStatus::class);
+            $transitionedToDone = $requestedStatus === BillDetailStatus::DONE
+                && $lockedBillDetail->status !== BillDetailStatus::DONE;
+
+            $lockedBillDetail->status = $requestedStatus;
+            $lockedBillDetail->save();
+
+            if ($transitionedToDone) {
+                app(FoodInventoryService::class)->consumeCompletedBillDetail(
+                    billDetail: $lockedBillDetail,
+                    branchId: $lockedBillDetail->bill->branch_id,
+                    createdByUserId: $request->user()->id,
+                );
+            }
+
+            $lockedBillDetail->bill->recalculateTotal();
+
+            return [
+                'bill_detail' => $lockedBillDetail,
+                'transitioned_to_done' => $transitionedToDone,
+            ];
+        });
+
+        if ($result === null) {
             return back()->with('error', 'Món đã bị hủy bởi quản lý.');
         }
 
-        $billDetail->refresh()->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
+        /** @var BillDetail $billDetail */
+        $billDetail = $result['bill_detail'];
+        $billDetail->loadMissing(['dish.food', 'dish.cookingMethod', 'bill.table']);
 
-        $bill = $billDetail->bill;
-        $bill->recalculateTotal();
-
-        if ($request->status === BillDetailStatus::DONE->value) {
+        if ($result['transitioned_to_done']) {
             $kitchen = $this->resolveKitchenForBillDetail(
                 $billDetail,
                 $request->integer('kitchen_id') ?: null,

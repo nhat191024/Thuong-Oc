@@ -55,16 +55,14 @@ class FoodForm
                                     ->toArray()
                             )
                             ->getSearchResultsUsing(
-                                fn(string $search): array =>
-                                CookingMethod::query()
+                                fn (string $search): array => CookingMethod::query()
                                     ->where('name', 'like', "%{$search}%")
                                     ->limit(50)
                                     ->pluck('name', 'id')
                                     ->toArray()
                             )
                             ->getOptionLabelUsing(
-                                fn($value): ?string =>
-                                CookingMethod::whereId($value)->value('name')
+                                fn ($value): ?string => CookingMethod::whereId($value)->value('name')
                             )
                             ->searchable()
                             ->preload(true)
@@ -75,6 +73,13 @@ class FoodForm
                             ->numeric()
                             ->default(0)
                             ->prefix('₫'),
+                        TextInput::make('ingredient_quantity_kg')
+                            ->label(__('Khối lượng ốc mỗi phần'))
+                            ->helperText(__('Để trống nếu chưa thiết lập định mức.'))
+                            ->numeric()
+                            ->minValue(0.001)
+                            ->step(0.001)
+                            ->suffix('kg'),
                         TextInput::make('note')
                             ->label(__('Ghi chú'))
                             ->placeholder(__('Nhập ghi chú cho cách chế biến'))

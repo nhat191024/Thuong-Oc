@@ -7,20 +7,24 @@ use App\Services\MenuService;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $food_id
  * @property int $cooking_method_id
  * @property int $additional_price
+ * @property numeric-string|null $ingredient_quantity_kg
  * @property string|null $note
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BillDetail> $billDetails
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, BillDetail> $billDetails
  * @property-read int|null $bill_details_count
- * @property-read \App\Models\CookingMethod|null $cookingMethod
- * @property-read \App\Models\Food|null $food
+ * @property-read CookingMethod|null $cookingMethod
+ * @property-read Food|null $food
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish onlyTrashed()
@@ -35,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dish withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Dish extends Model
@@ -50,10 +55,23 @@ class Dish extends Model
         'food_id',
         'cooking_method_id',
         'additional_price',
+        'ingredient_quantity_kg',
         'note',
     ];
 
-    //model boot method
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'ingredient_quantity_kg' => 'decimal:3',
+        ];
+    }
+
+    // model boot method
     protected static function booted(): void
     {
         static::saved(function () {
@@ -73,7 +91,7 @@ class Dish extends Model
         });
     }
 
-    //Model Relations
+    // Model Relations
     public function food()
     {
         return $this->belongsTo(Food::class);

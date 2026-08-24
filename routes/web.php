@@ -47,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('tables');
         Route::get('/stock', [StaffController::class, 'stockIndex'])->name('stock.index');
         Route::patch('/stock/{food}', [StaffController::class, 'updateStock'])->name('stock.update');
+        Route::get('/inventory', [StaffController::class, 'inventoryIndex'])->name('inventory.index');
+        Route::get('/inventory/movements', [StaffController::class, 'inventoryMovementIndex'])->name('inventory.movements.index');
+        Route::post('/inventory/{food}/movements', [StaffController::class, 'storeInventoryMovement'])->name('inventory.movements.store');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
         Route::get('/table/{tableId}/bill', [StaffController::class, 'showBill'])->name('table.bill');
         Route::delete('/table/{tableId}/bill', [StaffController::class, 'destroyBill'])

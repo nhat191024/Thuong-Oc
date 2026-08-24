@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Table;
 use App\Models\Branch;
 use App\Models\BranchFoodStock;
+use App\Models\FoodStockMovement;
 use App\Models\BillDetail;
 use App\Models\Category;
 use App\Models\Food;
@@ -29,6 +30,7 @@ use App\Settings\AppSettings;
 
 use App\Models\Printer;
 use App\Http\Requests\UpdateStaffFoodStockRequest;
+use App\Http\Requests\StoreStaffFoodStockMovementRequest;
 use App\Http\Requests\CancelStaffBillDetailsRequest;
 use App\Http\Requests\ReduceStaffBillDetailQuantityRequest;
 use App\Services\BillPrintService;
@@ -43,6 +45,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\Bill;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Response;
 
 class StaffController extends Controller
 {
@@ -56,7 +61,7 @@ class StaffController extends Controller
     /**
      * Show staff dashboard
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index()
     {
@@ -72,7 +77,7 @@ class StaffController extends Controller
         ]);
     }
 
-    public function stockIndex(): \Inertia\Response
+    public function stockIndex(): Response
     {
         $branchId = Auth::user()->branch_id;
         $branchName = Branch::whereId($branchId)->value('name');
@@ -104,7 +109,70 @@ class StaffController extends Controller
         ]);
     }
 
-    public function updateStock(UpdateStaffFoodStockRequest $request, Food $food): \Illuminate\Http\RedirectResponse
+    public function inventoryIndex(): Response
+    {
+        $branchId = Auth::user()->branch_id;
+        $branchName = Branch::whereId($branchId)->value('name');
+
+        $foods = Food::query()
+            ->with(['category:id,name'])
+            ->whereHas('dishes')
+            ->leftJoin('branch_food_stocks', function ($join) use ($branchId): void {
+                $join->on('branch_food_stocks.food_id', '=', 'foods.id')
+                    ->where('branch_food_stocks.branch_id', '=', $branchId);
+            })
+            ->orderBy('foods.id')
+            ->select('foods.*')
+            ->selectRaw('COALESCE(branch_food_stocks.is_out_of_stock, 0) as stock_is_out_of_stock')
+            ->selectRaw('branch_food_stocks.id as branch_food_stock_id')
+            ->selectRaw('COALESCE(branch_food_stocks.is_inventory_tracked, 0) as stock_is_inventory_tracked')
+            ->selectRaw('COALESCE(branch_food_stocks.quantity_in_kg, 0) as stock_quantity_in_kg')
+            ->selectRaw('branch_food_stocks.last_restocked_at as stock_last_restocked_at')
+            ->get();
+
+        $stockIds = $foods->pluck('branch_food_stock_id')->filter()->values();
+
+        $latestRestocks = FoodStockMovement::query()
+            ->whereIn('branch_food_stock_id', $stockIds)
+            ->where('type', FoodStockMovement::TYPE_RESTOCK)
+            ->latest('occurred_at')
+            ->get()
+            ->unique('branch_food_stock_id')
+            ->keyBy('branch_food_stock_id');
+
+        $usedToday = FoodStockMovement::query()
+            ->whereIn('branch_food_stock_id', $stockIds)
+            ->where('type', FoodStockMovement::TYPE_USAGE)
+            ->whereDate('occurred_at', today())
+            ->selectRaw('branch_food_stock_id, SUM(quantity_in_kg) as total_quantity_in_kg')
+            ->groupBy('branch_food_stock_id')
+            ->pluck('total_quantity_in_kg', 'branch_food_stock_id');
+
+        $foods = $foods->map(function (Food $food) use ($latestRestocks, $usedToday): array {
+            $stockId = $food->getAttribute('branch_food_stock_id');
+            $latestRestock = $stockId ? $latestRestocks->get($stockId) : null;
+
+            return [
+                'id' => $food->id,
+                'name' => $food->name,
+                'price' => $food->price,
+                'category_name' => $food->category?->name ?? __('Chưa phân loại'),
+                'is_out_of_stock' => (bool) $food->stock_is_out_of_stock,
+                'is_inventory_tracked' => (bool) $food->stock_is_inventory_tracked,
+                'quantity_in_kg' => (float) $food->stock_quantity_in_kg,
+                'used_today_in_kg' => (float) ($usedToday->get($stockId) ?? 0),
+                'last_restock_quantity_in_kg' => $latestRestock ? (float) $latestRestock->quantity_in_kg : null,
+                'last_restocked_at' => $food->stock_last_restocked_at,
+            ];
+        });
+
+        return Inertia::render('staff/inventory', [
+            'branchName' => $branchName,
+            'foods' => $foods,
+        ]);
+    }
+
+    public function updateStock(UpdateStaffFoodStockRequest $request, Food $food): RedirectResponse
     {
         $branchId = Auth::user()->branch_id;
 
@@ -125,11 +193,110 @@ class StaffController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
+    public function inventoryMovementIndex(): Response
+    {
+        $branchId = Auth::user()->branch_id;
+        $branchName = Branch::whereId($branchId)->value('name');
+
+        $movements = FoodStockMovement::query()
+            ->with([
+                'stock.food:id,name',
+                'createdBy:id,username',
+            ])
+            ->whereHas('stock', fn ($query) => $query->where('branch_id', $branchId))
+            ->latest('occurred_at')
+            ->latest('id')
+            ->paginate(50)
+            ->withQueryString()
+            ->through(fn (FoodStockMovement $movement): array => [
+                'id' => $movement->id,
+                'food_name' => $movement->stock->food?->name ?? __('Món đã xóa'),
+                'type' => $movement->type,
+                'quantity_in_kg' => (float) $movement->quantity_in_kg,
+                'balance_before_kg' => (float) $movement->balance_before_kg,
+                'balance_after_kg' => (float) $movement->balance_after_kg,
+                'bill_detail_id' => $movement->bill_detail_id,
+                'created_by' => $movement->createdBy?->username,
+                'note' => $movement->note,
+                'occurred_at' => $movement->occurred_at?->toIso8601String(),
+            ]);
+
+        return Inertia::render('staff/inventoryHistory', [
+            'branchName' => $branchName,
+            'movements' => $movements,
+        ]);
+    }
+
+    public function storeInventoryMovement(
+        StoreStaffFoodStockMovementRequest $request,
+        Food $food
+    ): RedirectResponse {
+        $branchId = Auth::user()->branch_id;
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($branchId, $food, $validated): void {
+            $stock = BranchFoodStock::query()
+                ->where('branch_id', $branchId)
+                ->where('food_id', $food->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($stock === null) {
+                $stock = BranchFoodStock::create([
+                    'branch_id' => $branchId,
+                    'food_id' => $food->id,
+                    'is_inventory_tracked' => true,
+                    'quantity_in_kg' => 0,
+                ]);
+            }
+
+            $balanceBefore = (float) $stock->quantity_in_kg;
+            $submittedQuantity = (float) $validated['quantity_in_kg'];
+            $isRestock = $validated['type'] === FoodStockMovement::TYPE_RESTOCK;
+            $balanceAfter = $isRestock
+                ? $balanceBefore + $submittedQuantity
+                : $submittedQuantity;
+
+            if (! $isRestock && abs($balanceAfter - $balanceBefore) < 0.0005) {
+                throw ValidationException::withMessages([
+                    'quantity_in_kg' => __('Tồn thực tế mới phải khác tồn hiện tại.'),
+                ]);
+            }
+
+            $stock->is_inventory_tracked = true;
+            $stock->quantity_in_kg = $balanceAfter;
+
+            if ($isRestock) {
+                $stock->last_restocked_at = now();
+            }
+
+            $stock->save();
+
+            FoodStockMovement::create([
+                'branch_food_stock_id' => $stock->id,
+                'type' => $validated['type'],
+                'quantity_in_kg' => $isRestock
+                    ? $submittedQuantity
+                    : abs($balanceAfter - $balanceBefore),
+                'balance_before_kg' => $balanceBefore,
+                'balance_after_kg' => $balanceAfter,
+                'created_by_user_id' => Auth::id(),
+                'note' => $validated['note'] ?? null,
+                'occurred_at' => now(),
+            ]);
+        });
+
+        $message = $validated['type'] === FoodStockMovement::TYPE_RESTOCK
+            ? __('Đã nhập thêm tồn kho.')
+            : __('Đã điều chỉnh tồn kho.');
+
+        return redirect()->back()->with('success', $message);
+    }
+
     /**
      * Show details for a specific table
      *
-     * @param string $tableId
-     * @return \Inertia\Response
+     * @return Response
      */
     public function showTable(string $tableId)
     {
@@ -151,7 +318,7 @@ class StaffController extends Controller
                 ->has('food.dishes')
                 ->orderBy('order')
                 ->get()
-                ->map(fn($cat) => [
+                ->map(fn ($cat) => [
                     'id' => $cat->id,
                     'name' => $cat->name,
                 ]);
@@ -163,7 +330,7 @@ class StaffController extends Controller
             ->where('is_active', TableActiveStatus::INACTIVE)
             ->orderBy('table_number', 'asc')
             ->get()
-            ->map(fn($t) => [
+            ->map(fn ($t) => [
                 'id' => $t->id,
                 'name' => $t->name,
                 'table_number' => $t->table_number,
@@ -174,7 +341,7 @@ class StaffController extends Controller
             ->where('id', '!=', $tableId)
             ->orderBy('table_number', 'asc')
             ->get()
-            ->map(fn($t) => [
+            ->map(fn ($t) => [
                 'id' => $t->id,
                 'name' => $t->name,
                 'table_number' => $t->table_number,
@@ -199,12 +366,11 @@ class StaffController extends Controller
     /**
      * Format current order for a table
      *
-     * @param Table $table
-     * @return array
+     * @param  Table  $table
      */
     private function formatCurrentOrder($table): array
     {
-        if ($table->is_active !== TableActiveStatus::ACTIVE || !$table->bill) {
+        if ($table->is_active !== TableActiveStatus::ACTIVE || ! $table->bill) {
             return [];
         }
 
@@ -213,12 +379,12 @@ class StaffController extends Controller
                 if ($detail->dish_id) {
                     return "dish_{$detail->dish_id}_{$detail->note}";
                 }
+
                 return "custom_{$detail->custom_dish_name}_{$detail->price}_{$detail->note}";
             })
             ->map(function ($details) use ($table) {
                 $detail = $details->first();
-                /** @var \App\Models\BillDetail $detail */
-
+                /** @var BillDetail $detail */
                 if ($detail->dish_id && $detail->dish) {
                     return [
                         'billDetailIds' => $details->pluck('id')->all(),
@@ -256,8 +422,7 @@ class StaffController extends Controller
     /**
      * Show bill for a specific table
      *
-     * @param string $tableId
-     * @return \Inertia\Response
+     * @return Response
      */
     public function showBill(string $tableId)
     {
@@ -278,7 +443,7 @@ class StaffController extends Controller
         $totalAmount = 0;
 
         if ($table->is_active === TableActiveStatus::ACTIVE && $table->bill) {
-            $billDetails = $table->bill->billDetails->map(fn($detail) => [
+            $billDetails = $table->bill->billDetails->map(fn ($detail) => [
                 'name' => $detail->dish ? $detail->dish->food->name : $detail->custom_dish_name,
                 'quantity' => $detail->quantity,
                 'price' => $detail->price,
@@ -290,7 +455,7 @@ class StaffController extends Controller
             $totalAmount = $billDetails->sum('total');
         }
 
-        $paymentMethods = collect(PaymentMethods::cases())->map(fn($method) => [
+        $paymentMethods = collect(PaymentMethods::cases())->map(fn ($method) => [
             'value' => $method->value,
             'label' => $method->label(),
         ]);
@@ -350,9 +515,9 @@ class StaffController extends Controller
         });
     }
 
-    public function cancelBillDetails(CancelStaffBillDetailsRequest $request, string $tableId): \Illuminate\Http\RedirectResponse
+    public function cancelBillDetails(CancelStaffBillDetailsRequest $request, string $tableId): RedirectResponse
     {
-        return DB::transaction(function () use ($request, $tableId): \Illuminate\Http\RedirectResponse {
+        return DB::transaction(function () use ($request, $tableId): RedirectResponse {
             $table = Table::query()
                 ->where('branch_id', Auth::user()->branch_id)
                 ->lockForUpdate()
@@ -394,9 +559,9 @@ class StaffController extends Controller
         });
     }
 
-    public function reduceBillDetailQuantity(ReduceStaffBillDetailQuantityRequest $request, string $tableId): \Illuminate\Http\RedirectResponse
+    public function reduceBillDetailQuantity(ReduceStaffBillDetailQuantityRequest $request, string $tableId): RedirectResponse
     {
-        return DB::transaction(function () use ($request, $tableId): \Illuminate\Http\RedirectResponse {
+        return DB::transaction(function () use ($request, $tableId): RedirectResponse {
             $table = Table::query()
                 ->where('branch_id', Auth::user()->branch_id)
                 ->lockForUpdate()
@@ -492,9 +657,7 @@ class StaffController extends Controller
     /**
      * Attach customer to bill by phone number
      *
-     * @param Request $request
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function attachCustomer(Request $request, string $tableId)
     {
@@ -509,19 +672,19 @@ class StaffController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
         $customer = Customer::wherePhone($phone)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             if ($name) {
                 if (Customer::whereUsername($phone)->exists()) {
                     return redirect()->back()->with('error', 'Tài khoản đã tồn tại.');
                 }
 
-                $customer = new Customer();
+                $customer = new Customer;
                 $customer->name = $name;
                 $customer->phone = $phone;
                 $customer->username = $phone;
@@ -545,15 +708,14 @@ class StaffController extends Controller
     /**
      * Remove customer from the bill
      *
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function removeCustomer(string $tableId)
     {
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
@@ -565,10 +727,6 @@ class StaffController extends Controller
 
     /**
      * Apply discount code for a specific table
-     *
-     * @param Request $request
-     * @param string $tableId
-
      */
     public function applyDiscount(Request $request, string $tableId)
     {
@@ -579,10 +737,10 @@ class StaffController extends Controller
         $code = $request->input('code');
         $table = Table::findOrFail($tableId);
 
-        /** @var \App\Models\Bill $bill */
+        /** @var Bill $bill */
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
@@ -590,7 +748,7 @@ class StaffController extends Controller
 
         $voucher = Voucher::redeemVoucher($bill->total, code: $code, userId: $bill->customer_id);
 
-        if (!$voucher->status) {
+        if (! $voucher->status) {
             return redirect()->back()->with('error', $voucher->message);
         }
 
@@ -608,20 +766,19 @@ class StaffController extends Controller
     /**
      * Remove discount code for a specific table
      *
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function removeDiscount(string $tableId)
     {
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán.');
         }
 
         // Check if voucher exists before removing
-        if (!$bill->voucher_id) {
+        if (! $bill->voucher_id) {
             return redirect()->back()->with('error', 'Hóa đơn chưa áp dụng mã giảm giá.');
         }
 
@@ -634,9 +791,7 @@ class StaffController extends Controller
     /**
      * Process payment for a specific table
      *
-     * @param ProcessPaymentRequest $requests
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse|\Inertia\Response|\Symfony\Component\HttpFoundation\Response
+     * @return RedirectResponse|Response|\Symfony\Component\HttpFoundation\Response
      */
     public function processPayment(ProcessPaymentRequest $requests, string $tableId)
     {
@@ -645,7 +800,7 @@ class StaffController extends Controller
         $table = Table::findOrFail($tableId);
         $bill = $table->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Không tìm thấy hóa đơn chưa thanh toán cho bàn này.');
         }
 
@@ -695,7 +850,7 @@ class StaffController extends Controller
             return redirect()->route('payment.result', [
                 'orderCode' => $bill->id,
                 'status' => 'PAID',
-                'amount' => $bill->final_total ?? $bill->total
+                'amount' => $bill->final_total ?? $bill->total,
             ]);
         } elseif ($paymentMethod === PaymentMethods::QR_CODE->value) {
 
@@ -729,12 +884,12 @@ class StaffController extends Controller
 
             $timestamp = time();
             $randomNum = rand(1000, 9999);
-            $billId = $bill->id . $timestamp . $randomNum;
+            $billId = $bill->id.$timestamp.$randomNum;
 
             $data = [
                 'billId' => $billId,
-                'billCode' => (string)$bill->id,
-                'amount' => (int)$total,
+                'billCode' => (string) $bill->id,
+                'amount' => (int) $total,
                 'items' => $items,
                 'buyerName' => 'Khách hàng',
             ];
@@ -765,14 +920,12 @@ class StaffController extends Controller
     /**
      * Merge bill from current table into another active table's bill
      *
-     * @param Request $request
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function mergeTable(Request $request, string $tableId)
     {
         $request->validate([
-            'target_table_id' => 'required|exists:tables,id|different:' . $tableId,
+            'target_table_id' => 'required|exists:tables,id|different:'.$tableId,
         ]);
 
         $targetTableId = $request->input('target_table_id');
@@ -786,11 +939,11 @@ class StaffController extends Controller
         $sourceBill = $sourceTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
         $targetBill = $targetTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$sourceBill) {
+        if (! $sourceBill) {
             return redirect()->back()->with('error', 'Bàn hiện tại không có hóa đơn để gộp.');
         }
 
-        if (!$targetBill) {
+        if (! $targetBill) {
             return redirect()->back()->with('error', 'Bàn đích không có hóa đơn đang chờ thanh toán.');
         }
 
@@ -813,9 +966,7 @@ class StaffController extends Controller
     /**
      * Move bill to another table
      *
-     * @param Request $request
-     * @param string $tableId
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function moveTable(Request $request, string $tableId)
     {
@@ -833,7 +984,7 @@ class StaffController extends Controller
 
         $bill = $currentTable->bill()->where('pay_status', PayStatus::UNPAID)->first();
 
-        if (!$bill) {
+        if (! $bill) {
             return redirect()->back()->with('error', 'Bàn hiện tại không có hóa đơn để chuyển.');
         }
 
