@@ -2,11 +2,18 @@
     <div class="flex h-screen flex-col">
         <Nav :center_text="'Chi nhánh ' + props.branchName">
             <template #actions>
-                <Link :href="route('history.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200"> Lịch sử đơn </Link>
-                <Link :href="route('staff.stock.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200">
-                    Quản lý hết món
-                </Link>
-                <Link :href="route('staff.inventory.index')" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200"> Kho ốc </Link>
+                <div class="dropdown dropdown-end">
+                    <button tabindex="0" type="button" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200">
+                        <Squares2X2Icon class="size-4" />
+                        Quản lý
+                        <ChevronDownIcon class="size-4" />
+                    </button>
+                    <ul tabindex="-1" class="dropdown-content menu z-50 mt-2 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-lg">
+                        <li><Link :href="route('history.index')">Lịch sử đơn</Link></li>
+                        <li><Link :href="route('staff.stock.index')">Quản lý hết món</Link></li>
+                        <li><Link :href="route('staff.inventory.index')">Kho ốc</Link></li>
+                    </ul>
+                </div>
             </template>
         </Nav>
 
@@ -41,7 +48,7 @@
 <script setup lang="ts">
 import { AppPageProps } from '@/types';
 import { Table } from '@/types/table';
-import { TableCellsIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, Squares2X2Icon, TableCellsIcon } from '@heroicons/vue/24/outline';
 import type { PageProps } from '@inertiajs/core';
 import { Link, usePage } from '@inertiajs/vue3';
 import Nav from '../components/nav.vue';
