@@ -15,7 +15,17 @@ Schedule::command('reports:refresh-dish-sales')
     ->withoutOverlapping()
     ->onOneServer();
 
+Schedule::command('reports:refresh-table-sales')
+    ->dailyAt('01:15')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('reports:cleanup-dish-sales')
     ->dailyAt('01:30')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('reports:cleanup-table-sales')
+    ->dailyAt('01:45')
     ->withoutOverlapping()
     ->onOneServer();
