@@ -7,6 +7,8 @@ it('stores inventory balances per food and branch', function () {
     expect(Schema::hasColumns('branch_food_stocks', [
         'is_inventory_tracked',
         'quantity_in_kg',
+        'red_threshold_kg',
+        'yellow_threshold_kg',
         'last_restocked_at',
     ]))->toBeTrue();
 
@@ -34,8 +36,11 @@ it('stores inventory balances per food and branch', function () {
         'updated_at' => now(),
     ]);
 
-    expect((float) DB::table('branch_food_stocks')->where('id', $stockId)->value('quantity_in_kg'))
-        ->toBe(300.0);
+    $stock = DB::table('branch_food_stocks')->where('id', $stockId)->first();
+
+    expect((float) $stock->quantity_in_kg)->toBe(300.0)
+        ->and((float) $stock->red_threshold_kg)->toBe(10.0)
+        ->and((float) $stock->yellow_threshold_kg)->toBe(20.0);
 });
 
 it('stores an auditable history of stock movements', function () {

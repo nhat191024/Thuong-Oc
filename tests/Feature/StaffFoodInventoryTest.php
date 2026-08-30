@@ -165,3 +165,104 @@ it('orders inventory foods by ascending id', function () {
             ->where('foods.0.id', $firstFood->id)
             ->where('foods.1.id', $secondFood->id));
 });
+
+it('updates inventory thresholds only for the staff branch', function () {
+    $staffBranch = Branch::create(['name' => 'Chi nhánh nhân viên']);
+    $otherBranch = Branch::create(['name' => 'Chi nhánh khác']);
+    $staff = createInventoryStaff($staffBranch);
+    $food = createInventoryFood('Ốc ngưỡng riêng');
+    $staffStock = BranchFoodStock::create([
+        'branch_id' => $staffBranch->id,
+        'food_id' => $food->id,
+        'is_inventory_tracked' => true,
+        'quantity_in_kg' => 15,
+    ]);
+    $otherStock = BranchFoodStock::create([
+        'branch_id' => $otherBranch->id,
+        'food_id' => $food->id,
+        'is_inventory_tracked' => true,
+        'quantity_in_kg' => 15,
+    ]);
+
+    $this->actingAs($staff)->patch(route('staff.inventory.thresholds.update', $food), [
+        'red_threshold_kg' => 12.5,
+        'yellow_threshold_kg' => 25,
+    ])->assertRedirect();
+
+    expect($staffStock->fresh()->red_threshold_kg)->toBe('12.500')
+        ->and($staffStock->fresh()->yellow_threshold_kg)->toBe('25.000')
+        ->and($otherStock->fresh()->red_threshold_kg)->toBe('10.000')
+        ->and($otherStock->fresh()->yellow_threshold_kg)->toBe('20.000')
+        ->and(FoodStockMovement::query()->count())->toBe(0);
+});
+
+it('validates inventory threshold values', function (array $thresholds, array $errors) {
+    $branch = Branch::create(['name' => 'Chi nhánh validation']);
+    $staff = createInventoryStaff($branch);
+    $food = createInventoryFood('Ốc validation '.fake()->unique()->word());
+
+    $this->actingAs($staff)
+        ->from(route('staff.inventory.index'))
+        ->patch(route('staff.inventory.thresholds.update', $food), $thresholds)
+        ->assertRedirect(route('staff.inventory.index'))
+        ->assertSessionHasErrors($errors);
+})->with([
+    'negative red threshold' => [
+        ['red_threshold_kg' => -1, 'yellow_threshold_kg' => 20],
+        ['red_threshold_kg'],
+    ],
+    'equal thresholds' => [
+        ['red_threshold_kg' => 10, 'yellow_threshold_kg' => 10],
+        ['yellow_threshold_kg'],
+    ],
+    'yellow below red' => [
+        ['red_threshold_kg' => 20, 'yellow_threshold_kg' => 10],
+        ['yellow_threshold_kg'],
+    ],
+]);
+
+it('returns per-food thresholds and counts only tracked red inventory for the staff branch', function () {
+    $branch = Branch::create(['name' => 'Chi nhánh cảnh báo']);
+    $otherBranch = Branch::create(['name' => 'Chi nhánh không cảnh báo']);
+    $staff = createInventoryStaff($branch);
+    $redFood = createInventoryFood('Ốc đỏ');
+    $yellowFood = createInventoryFood('Ốc vàng');
+    $greenFood = createInventoryFood('Ốc xanh');
+    $untrackedFood = createInventoryFood('Ốc chưa theo dõi');
+
+    foreach ([
+        [$redFood, true, 9.999],
+        [$yellowFood, true, 10],
+        [$greenFood, true, 20],
+        [$untrackedFood, false, -5],
+    ] as [$food, $tracked, $quantity]) {
+        BranchFoodStock::create([
+            'branch_id' => $branch->id,
+            'food_id' => $food->id,
+            'is_inventory_tracked' => $tracked,
+            'quantity_in_kg' => $quantity,
+            'red_threshold_kg' => 10,
+            'yellow_threshold_kg' => 20,
+        ]);
+    }
+
+    BranchFoodStock::create([
+        'branch_id' => $otherBranch->id,
+        'food_id' => $greenFood->id,
+        'is_inventory_tracked' => true,
+        'quantity_in_kg' => -10,
+    ]);
+
+    $this->actingAs($staff)->get(route('staff.tables'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('staff/index')
+            ->where('redInventoryCount', 1));
+
+    $this->actingAs($staff)->get(route('staff.inventory.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('staff/inventory')
+            ->where('foods.0.red_threshold_kg', 10)
+            ->where('foods.0.yellow_threshold_kg', 20));
+});

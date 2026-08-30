@@ -22,3 +22,36 @@ it('groups staff navigation actions into a tablet-friendly management menu', fun
         ->and($component)->toContain("route('staff.stock.index')")
         ->and($component)->toContain("route('staff.inventory.index')");
 });
+
+it('uses green yellow and red levels for kilogram inventory', function () {
+    $component = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/inventory.vue');
+
+    expect($component)->toContain('food.quantity_in_kg < food.red_threshold_kg')
+        ->and($component)->toContain('food.quantity_in_kg < food.yellow_threshold_kg')
+        ->and($component)->toContain('Cài ngưỡng')
+        ->and($component)->toContain("route('staff.inventory.thresholds.update'")
+        ->and($component)->toContain('border-success bg-success/5')
+        ->and($component)->toContain('border-warning bg-warning/5')
+        ->and($component)->toContain('border-error bg-error/5');
+});
+
+it('shows inventory alerts on the staff management entry points', function () {
+    $component = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/index.vue');
+
+    expect(substr_count($component, 'props.redInventoryCount > 0'))->toBe(2)
+        ->and(substr_count($component, 'ExclamationTriangleIcon'))->toBeGreaterThanOrEqual(3)
+        ->and($component)->toContain('{{ props.redInventoryCount }}');
+});
+
+it('filters and sorts inventory by red yellow and green levels', function () {
+    $component = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/inventory.vue');
+
+    expect($component)->toContain('v-model="levelFilter"')
+        ->and($component)->toContain('Đỏ — Thiếu hụt')
+        ->and($component)->toContain('Vàng — Sắp hết')
+        ->and($component)->toContain('Xanh — Ổn định')
+        ->and($component)->toContain('red: 0')
+        ->and($component)->toContain('yellow: 1')
+        ->and($component)->toContain('green: 2')
+        ->and($component)->toContain('firstFood.id - secondFood.id');
+});

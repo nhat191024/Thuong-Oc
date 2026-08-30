@@ -6,12 +6,24 @@
                     <button tabindex="0" type="button" class="btn rounded-4xl bg-base-100 text-primary btn-sm hover:bg-base-200">
                         <Squares2X2Icon class="size-4" />
                         Quản lý
+                        <span v-if="props.redInventoryCount > 0" class="badge badge-sm text-white badge-error">
+                            <ExclamationTriangleIcon class="size-3.5" />
+                            {{ props.redInventoryCount }}
+                        </span>
                         <ChevronDownIcon class="size-4" />
                     </button>
                     <ul tabindex="-1" class="dropdown-content menu z-50 mt-2 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-lg">
                         <li><Link :href="route('history.index')">Lịch sử đơn</Link></li>
                         <li><Link :href="route('staff.stock.index')">Quản lý hết món</Link></li>
-                        <li><Link :href="route('staff.inventory.index')">Kho ốc</Link></li>
+                        <li>
+                            <Link :href="route('staff.inventory.index')">
+                                Kho ốc
+                                <span v-if="props.redInventoryCount > 0" class="ml-auto badge badge-sm text-white badge-error">
+                                    <ExclamationTriangleIcon class="size-3.5" />
+                                    {{ props.redInventoryCount }}
+                                </span>
+                            </Link>
+                        </li>
                     </ul>
                 </div>
             </template>
@@ -48,7 +60,7 @@
 <script setup lang="ts">
 import { AppPageProps } from '@/types';
 import { Table } from '@/types/table';
-import { ChevronDownIcon, Squares2X2Icon, TableCellsIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, ExclamationTriangleIcon, Squares2X2Icon, TableCellsIcon } from '@heroicons/vue/24/outline';
 import type { PageProps } from '@inertiajs/core';
 import { Link, usePage } from '@inertiajs/vue3';
 import Nav from '../components/nav.vue';
@@ -56,6 +68,7 @@ import Nav from '../components/nav.vue';
 interface Props {
     tables: Table[];
     branchName: string;
+    redInventoryCount: number;
 }
 
 const props = defineProps<Props>();

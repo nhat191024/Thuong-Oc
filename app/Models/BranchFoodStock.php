@@ -39,6 +39,8 @@ class BranchFoodStock extends Model
         'is_out_of_stock',
         'is_inventory_tracked',
         'quantity_in_kg',
+        'red_threshold_kg',
+        'yellow_threshold_kg',
         'last_restocked_at',
     ];
 
@@ -53,6 +55,8 @@ class BranchFoodStock extends Model
             'is_out_of_stock' => 'boolean',
             'is_inventory_tracked' => 'boolean',
             'quantity_in_kg' => 'decimal:3',
+            'red_threshold_kg' => 'decimal:3',
+            'yellow_threshold_kg' => 'decimal:3',
             'last_restocked_at' => 'datetime',
         ];
     }

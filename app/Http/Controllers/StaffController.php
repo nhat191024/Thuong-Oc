@@ -30,6 +30,7 @@ use App\Settings\AppSettings;
 
 use App\Models\Printer;
 use App\Http\Requests\UpdateStaffFoodStockRequest;
+use App\Http\Requests\UpdateStaffFoodStockThresholdRequest;
 use App\Http\Requests\StoreStaffFoodStockMovementRequest;
 use App\Http\Requests\CancelStaffBillDetailsRequest;
 use App\Http\Requests\ReduceStaffBillDetailQuantityRequest;
@@ -70,10 +71,16 @@ class StaffController extends Controller
         $tables = Table::whereBranchId($branchId)->orderBy('table_number', 'asc')->get();
         $tables = TableResource::collection($tables)->resolve();
         $branchName = Branch::whereId($branchId)->value('name');
+        $redInventoryCount = BranchFoodStock::query()
+            ->where('branch_id', $branchId)
+            ->where('is_inventory_tracked', true)
+            ->whereColumn('quantity_in_kg', '<', 'red_threshold_kg')
+            ->count();
 
         return Inertia::render('staff/index', [
             'tables' => $tables,
             'branchName' => $branchName,
+            'redInventoryCount' => $redInventoryCount,
         ]);
     }
 
@@ -127,6 +134,8 @@ class StaffController extends Controller
             ->selectRaw('branch_food_stocks.id as branch_food_stock_id')
             ->selectRaw('COALESCE(branch_food_stocks.is_inventory_tracked, 0) as stock_is_inventory_tracked')
             ->selectRaw('COALESCE(branch_food_stocks.quantity_in_kg, 0) as stock_quantity_in_kg')
+            ->selectRaw('COALESCE(branch_food_stocks.red_threshold_kg, 10) as stock_red_threshold_kg')
+            ->selectRaw('COALESCE(branch_food_stocks.yellow_threshold_kg, 20) as stock_yellow_threshold_kg')
             ->selectRaw('branch_food_stocks.last_restocked_at as stock_last_restocked_at')
             ->get();
 
@@ -160,6 +169,8 @@ class StaffController extends Controller
                 'is_out_of_stock' => (bool) $food->stock_is_out_of_stock,
                 'is_inventory_tracked' => (bool) $food->stock_is_inventory_tracked,
                 'quantity_in_kg' => (float) $food->stock_quantity_in_kg,
+                'red_threshold_kg' => (float) $food->stock_red_threshold_kg,
+                'yellow_threshold_kg' => (float) $food->stock_yellow_threshold_kg,
                 'used_today_in_kg' => (float) ($usedToday->get($stockId) ?? 0),
                 'last_restock_quantity_in_kg' => $latestRestock ? (float) $latestRestock->quantity_in_kg : null,
                 'last_restocked_at' => $food->stock_last_restocked_at,
@@ -191,6 +202,26 @@ class StaffController extends Controller
             : __('Đã đánh dấu còn món.');
 
         return redirect()->back()->with('success', $message);
+    }
+
+    public function updateInventoryThresholds(
+        UpdateStaffFoodStockThresholdRequest $request,
+        Food $food
+    ): RedirectResponse {
+        $validated = $request->validated();
+
+        BranchFoodStock::updateOrCreate(
+            [
+                'branch_id' => Auth::user()->branch_id,
+                'food_id' => $food->id,
+            ],
+            [
+                'red_threshold_kg' => $validated['red_threshold_kg'],
+                'yellow_threshold_kg' => $validated['yellow_threshold_kg'],
+            ]
+        );
+
+        return redirect()->back()->with('success', __('Đã cập nhật ngưỡng tồn kho.'));
     }
 
     public function inventoryMovementIndex(): Response
