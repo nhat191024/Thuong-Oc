@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Categories\Resources\Food\Schemas;
 
 use App\Models\CookingMethod;
+use App\Services\InventoryUnitService;
 
 use Filament\Schemas\Schema;
 
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Schemas\Components\Utilities\Get;
 
 class FoodForm
 {
@@ -27,6 +29,21 @@ class FoodForm
                     ->placeholder(__('Nhập giá thực phẩm'))
                     ->required()
                     ->numeric()
+                    ->prefix('₫'),
+                Select::make('inventory_unit_id')
+                    ->label(__('Đơn vị tồn kho'))
+                    ->options(fn (): array => InventoryUnitService::options())
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->native(false),
+                TextInput::make('purchase_price')
+                    ->label(__('Giá nhập trên mỗi đơn vị'))
+                    ->helperText(__('Giá này được dùng để tính thành tiền khi nhân viên nhập kho.'))
+                    ->required()
+                    ->numeric()
+                    ->integer()
+                    ->minValue(0)
                     ->prefix('₫'),
                 Textarea::make('note')
                     ->label(__('Ghi chú'))
@@ -73,13 +90,17 @@ class FoodForm
                             ->numeric()
                             ->default(0)
                             ->prefix('₫'),
-                        TextInput::make('ingredient_quantity_kg')
-                            ->label(__('Khối lượng ốc mỗi phần'))
+                        TextInput::make('ingredient_quantity')
+                            ->label(__('Lượng nguyên liệu mỗi phần'))
                             ->helperText(__('Để trống nếu chưa thiết lập định mức.'))
                             ->numeric()
                             ->minValue(0.001)
                             ->step(0.001)
-                            ->suffix('kg'),
+                            ->suffix(function (Get $get): ?string {
+                                $unitId = $get('../../inventory_unit_id');
+
+                                return InventoryUnitService::all()->firstWhere('id', (int) $unitId)?->symbol;
+                            }),
                         TextInput::make('note')
                             ->label(__('Ghi chú'))
                             ->placeholder(__('Nhập ghi chú cho cách chế biến'))

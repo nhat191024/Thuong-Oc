@@ -18,9 +18,13 @@ class FoodStockMovement extends Model
     protected $fillable = [
         'branch_food_stock_id',
         'type',
-        'quantity_in_kg',
-        'balance_before_kg',
-        'balance_after_kg',
+        'unit_name_snapshot',
+        'unit_symbol_snapshot',
+        'quantity',
+        'balance_before',
+        'balance_after',
+        'unit_price',
+        'total_cost',
         'bill_detail_id',
         'created_by_user_id',
         'note',
@@ -35,9 +39,11 @@ class FoodStockMovement extends Model
     protected function casts(): array
     {
         return [
-            'quantity_in_kg' => 'decimal:3',
-            'balance_before_kg' => 'decimal:3',
-            'balance_after_kg' => 'decimal:3',
+            'quantity' => 'decimal:3',
+            'balance_before' => 'decimal:3',
+            'balance_after' => 'decimal:3',
+            'unit_price' => 'integer',
+            'total_cost' => 'integer',
             'occurred_at' => 'datetime',
         ];
     }

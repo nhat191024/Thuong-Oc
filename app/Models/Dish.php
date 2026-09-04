@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int $food_id
  * @property int $cooking_method_id
  * @property int $additional_price
- * @property numeric-string|null $ingredient_quantity_kg
+ * @property numeric-string|null $ingredient_quantity
  * @property string|null $note
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
@@ -55,7 +55,7 @@ class Dish extends Model
         'food_id',
         'cooking_method_id',
         'additional_price',
-        'ingredient_quantity_kg',
+        'ingredient_quantity',
         'note',
     ];
 
@@ -67,7 +67,7 @@ class Dish extends Model
     protected function casts(): array
     {
         return [
-            'ingredient_quantity_kg' => 'decimal:3',
+            'ingredient_quantity' => 'decimal:3',
         ];
     }
 

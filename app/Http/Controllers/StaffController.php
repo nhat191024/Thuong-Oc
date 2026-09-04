@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\FoodStockMovementsExport;
+use App\Http\Requests\ExportStaffFoodStockMovementsRequest;
 use Inertia\Inertia;
 
 use App\Models\Table;
@@ -49,6 +51,8 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Bill;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StaffController extends Controller
 {
@@ -74,7 +78,7 @@ class StaffController extends Controller
         $redInventoryCount = BranchFoodStock::query()
             ->where('branch_id', $branchId)
             ->where('is_inventory_tracked', true)
-            ->whereColumn('quantity_in_kg', '<', 'red_threshold_kg')
+            ->whereColumn('quantity', '<', 'red_threshold')
             ->count();
 
         return Inertia::render('staff/index', [
@@ -90,7 +94,7 @@ class StaffController extends Controller
         $branchName = Branch::whereId($branchId)->value('name');
 
         $foods = Food::query()
-            ->with(['category:id,name'])
+            ->with(['category:id,name', 'inventoryUnit:id,name,symbol'])
             ->whereHas('dishes')
             ->leftJoin('branch_food_stocks', function ($join) use ($branchId): void {
                 $join->on('branch_food_stocks.food_id', '=', 'foods.id')
@@ -122,7 +126,7 @@ class StaffController extends Controller
         $branchName = Branch::whereId($branchId)->value('name');
 
         $foods = Food::query()
-            ->with(['category:id,name'])
+            ->with(['category:id,name', 'inventoryUnit:id,name,symbol'])
             ->whereHas('dishes')
             ->leftJoin('branch_food_stocks', function ($join) use ($branchId): void {
                 $join->on('branch_food_stocks.food_id', '=', 'foods.id')
@@ -133,9 +137,9 @@ class StaffController extends Controller
             ->selectRaw('COALESCE(branch_food_stocks.is_out_of_stock, 0) as stock_is_out_of_stock')
             ->selectRaw('branch_food_stocks.id as branch_food_stock_id')
             ->selectRaw('COALESCE(branch_food_stocks.is_inventory_tracked, 0) as stock_is_inventory_tracked')
-            ->selectRaw('COALESCE(branch_food_stocks.quantity_in_kg, 0) as stock_quantity_in_kg')
-            ->selectRaw('COALESCE(branch_food_stocks.red_threshold_kg, 10) as stock_red_threshold_kg')
-            ->selectRaw('COALESCE(branch_food_stocks.yellow_threshold_kg, 20) as stock_yellow_threshold_kg')
+            ->selectRaw('COALESCE(branch_food_stocks.quantity, 0) as stock_quantity')
+            ->selectRaw('COALESCE(branch_food_stocks.red_threshold, 10) as stock_red_threshold')
+            ->selectRaw('COALESCE(branch_food_stocks.yellow_threshold, 20) as stock_yellow_threshold')
             ->selectRaw('branch_food_stocks.last_restocked_at as stock_last_restocked_at')
             ->get();
 
@@ -153,9 +157,9 @@ class StaffController extends Controller
             ->whereIn('branch_food_stock_id', $stockIds)
             ->where('type', FoodStockMovement::TYPE_USAGE)
             ->whereDate('occurred_at', today())
-            ->selectRaw('branch_food_stock_id, SUM(quantity_in_kg) as total_quantity_in_kg')
+            ->selectRaw('branch_food_stock_id, SUM(quantity) as total_quantity')
             ->groupBy('branch_food_stock_id')
-            ->pluck('total_quantity_in_kg', 'branch_food_stock_id');
+            ->pluck('total_quantity', 'branch_food_stock_id');
 
         $foods = $foods->map(function (Food $food) use ($latestRestocks, $usedToday): array {
             $stockId = $food->getAttribute('branch_food_stock_id');
@@ -168,11 +172,14 @@ class StaffController extends Controller
                 'category_name' => $food->category?->name ?? __('Chưa phân loại'),
                 'is_out_of_stock' => (bool) $food->stock_is_out_of_stock,
                 'is_inventory_tracked' => (bool) $food->stock_is_inventory_tracked,
-                'quantity_in_kg' => (float) $food->stock_quantity_in_kg,
-                'red_threshold_kg' => (float) $food->stock_red_threshold_kg,
-                'yellow_threshold_kg' => (float) $food->stock_yellow_threshold_kg,
-                'used_today_in_kg' => (float) ($usedToday->get($stockId) ?? 0),
-                'last_restock_quantity_in_kg' => $latestRestock ? (float) $latestRestock->quantity_in_kg : null,
+                'quantity' => (float) $food->stock_quantity,
+                'red_threshold' => (float) $food->stock_red_threshold,
+                'yellow_threshold' => (float) $food->stock_yellow_threshold,
+                'unit_name' => $food->inventoryUnit?->name,
+                'unit_symbol' => $food->inventoryUnit?->symbol,
+                'purchase_price' => $food->purchase_price,
+                'used_today' => (float) ($usedToday->get($stockId) ?? 0),
+                'last_restock_quantity' => $latestRestock ? (float) $latestRestock->quantity : null,
                 'last_restocked_at' => $food->stock_last_restocked_at,
             ];
         });
@@ -216,8 +223,8 @@ class StaffController extends Controller
                 'food_id' => $food->id,
             ],
             [
-                'red_threshold_kg' => $validated['red_threshold_kg'],
-                'yellow_threshold_kg' => $validated['yellow_threshold_kg'],
+                'red_threshold' => $validated['red_threshold'],
+                'yellow_threshold' => $validated['yellow_threshold'],
             ]
         );
 
@@ -243,9 +250,13 @@ class StaffController extends Controller
                 'id' => $movement->id,
                 'food_name' => $movement->stock->food?->name ?? __('Món đã xóa'),
                 'type' => $movement->type,
-                'quantity_in_kg' => (float) $movement->quantity_in_kg,
-                'balance_before_kg' => (float) $movement->balance_before_kg,
-                'balance_after_kg' => (float) $movement->balance_after_kg,
+                'unit_name' => $movement->unit_name_snapshot,
+                'unit_symbol' => $movement->unit_symbol_snapshot,
+                'quantity' => (float) $movement->quantity,
+                'balance_before' => (float) $movement->balance_before,
+                'balance_after' => (float) $movement->balance_after,
+                'unit_price' => $movement->unit_price,
+                'total_cost' => $movement->total_cost,
                 'bill_detail_id' => $movement->bill_detail_id,
                 'created_by' => $movement->createdBy?->username,
                 'note' => $movement->note,
@@ -258,12 +269,38 @@ class StaffController extends Controller
         ]);
     }
 
+    public function exportInventoryMovements(ExportStaffFoodStockMovementsRequest $request): BinaryFileResponse
+    {
+        $validated = $request->validated();
+        $branchId = (int) Auth::user()->branch_id;
+        $branchName = Branch::whereId($branchId)->value('name') ?? 'chi-nhanh';
+        $fileName = 'lich-su-kho-'.str($branchName)->slug().'-'.now()->format('Ymd-His').'.xlsx';
+
+        return Excel::download(
+            new FoodStockMovementsExport(
+                branchId: $branchId,
+                search: $validated['search'] ?? null,
+                type: $validated['type'] ?? null,
+            ),
+            $fileName,
+        );
+    }
+
     public function storeInventoryMovement(
         StoreStaffFoodStockMovementRequest $request,
         Food $food
     ): RedirectResponse {
         $branchId = Auth::user()->branch_id;
         $validated = $request->validated();
+
+        $food->loadMissing('inventoryUnit');
+
+        if ($validated['type'] === FoodStockMovement::TYPE_RESTOCK
+            && ($food->inventoryUnit === null || $food->purchase_price === null)) {
+            throw ValidationException::withMessages([
+                'quantity' => __('Admin cần cấu hình đơn vị tồn kho và giá nhập cho loại thực phẩm này trước.'),
+            ]);
+        }
 
         DB::transaction(function () use ($branchId, $food, $validated): void {
             $stock = BranchFoodStock::query()
@@ -277,12 +314,12 @@ class StaffController extends Controller
                     'branch_id' => $branchId,
                     'food_id' => $food->id,
                     'is_inventory_tracked' => true,
-                    'quantity_in_kg' => 0,
+                    'quantity' => 0,
                 ]);
             }
 
-            $balanceBefore = (float) $stock->quantity_in_kg;
-            $submittedQuantity = (float) $validated['quantity_in_kg'];
+            $balanceBefore = (float) $stock->quantity;
+            $submittedQuantity = (float) $validated['quantity'];
             $isRestock = $validated['type'] === FoodStockMovement::TYPE_RESTOCK;
             $balanceAfter = $isRestock
                 ? $balanceBefore + $submittedQuantity
@@ -290,12 +327,12 @@ class StaffController extends Controller
 
             if (! $isRestock && abs($balanceAfter - $balanceBefore) < 0.0005) {
                 throw ValidationException::withMessages([
-                    'quantity_in_kg' => __('Tồn thực tế mới phải khác tồn hiện tại.'),
+                    'quantity' => __('Tồn thực tế mới phải khác tồn hiện tại.'),
                 ]);
             }
 
             $stock->is_inventory_tracked = true;
-            $stock->quantity_in_kg = $balanceAfter;
+            $stock->quantity = $balanceAfter;
 
             if ($isRestock) {
                 $stock->last_restocked_at = now();
@@ -306,11 +343,15 @@ class StaffController extends Controller
             FoodStockMovement::create([
                 'branch_food_stock_id' => $stock->id,
                 'type' => $validated['type'],
-                'quantity_in_kg' => $isRestock
+                'unit_name_snapshot' => $food->inventoryUnit?->name,
+                'unit_symbol_snapshot' => $food->inventoryUnit?->symbol,
+                'quantity' => $isRestock
                     ? $submittedQuantity
                     : abs($balanceAfter - $balanceBefore),
-                'balance_before_kg' => $balanceBefore,
-                'balance_after_kg' => $balanceAfter,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'unit_price' => $isRestock ? $food->purchase_price : null,
+                'total_cost' => $isRestock ? (int) round($submittedQuantity * $food->purchase_price) : null,
                 'created_by_user_id' => Auth::id(),
                 'note' => $validated['note'] ?? null,
                 'occurred_at' => now(),

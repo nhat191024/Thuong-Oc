@@ -24,7 +24,7 @@ class StoreStaffFoodStockMovementRequest extends FormRequest
     {
         return [
             'type' => ['required', Rule::in(['restock', 'adjustment'])],
-            'quantity_in_kg' => [
+            'quantity' => [
                 'required',
                 'numeric',
                 'decimal:0,3',
@@ -43,8 +43,8 @@ class StoreStaffFoodStockMovementRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'quantity_in_kg.gt' => __('Khối lượng nhập thêm phải lớn hơn 0 kg.'),
-            'quantity_in_kg.decimal' => __('Khối lượng chỉ được có tối đa 3 chữ số thập phân.'),
+            'quantity.gt' => __('Số lượng nhập thêm phải lớn hơn 0.'),
+            'quantity.decimal' => __('Số lượng chỉ được có tối đa 3 chữ số thập phân.'),
         ];
     }
 }

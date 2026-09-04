@@ -6,6 +6,7 @@ use App\Enums\CacheKeys;
 use App\Services\MenuService;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,6 +15,9 @@ use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 
 /**
  * @property int $id
@@ -25,16 +29,17 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string|null $note
  * @property int $sold_count
  * @property int $order
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchFoodStock> $branchFoodStocks
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, BranchFoodStock> $branchFoodStocks
  * @property-read int|null $branch_food_stocks_count
- * @property-read \App\Models\Category|null $category
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Dish> $dishes
+ * @property-read Category|null $category
+ * @property-read Collection<int, Dish> $dishes
  * @property-read int|null $dishes_count
- * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, Media> $media
+ * @property-read MediaCollection<int, Media> $media
  * @property-read int|null $media_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food onlyTrashed()
@@ -53,11 +58,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Food withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Food extends Model implements HasMedia
 {
-    use SoftDeletes, InteractsWithMedia;
+    use InteractsWithMedia, SoftDeletes;
 
     protected $table = 'foods';
 
@@ -68,8 +74,10 @@ class Food extends Model implements HasMedia
      */
     protected $fillable = [
         'category_id',
+        'inventory_unit_id',
         'name',
         'price',
+        'purchase_price',
         'discount_price',
         'is_favorite',
         'note',
@@ -97,7 +105,7 @@ class Food extends Model implements HasMedia
             ->queued();
     }
 
-    //model boot method
+    // model boot method
     protected static function booted(): void
     {
         static::saved(function () {
@@ -126,7 +134,7 @@ class Food extends Model implements HasMedia
         Media::deleted($clearCacheIfFood);
     }
 
-    //Model Relations
+    // Model Relations
     public function dishes()
     {
         return $this->hasMany(Dish::class);
@@ -140,5 +148,10 @@ class Food extends Model implements HasMedia
     public function branchFoodStocks()
     {
         return $this->hasMany(BranchFoodStock::class);
+    }
+
+    public function inventoryUnit(): BelongsTo
+    {
+        return $this->belongsTo(InventoryUnit::class);
     }
 }

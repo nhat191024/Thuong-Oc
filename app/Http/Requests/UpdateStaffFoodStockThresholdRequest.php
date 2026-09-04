@@ -22,18 +22,18 @@ class UpdateStaffFoodStockThresholdRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'red_threshold_kg' => [
+            'red_threshold' => [
                 'required',
                 'numeric',
                 'decimal:0,3',
                 'between:0,999999999.998',
             ],
-            'yellow_threshold_kg' => [
+            'yellow_threshold' => [
                 'required',
                 'numeric',
                 'decimal:0,3',
                 'between:0.001,999999999.999',
-                'gt:red_threshold_kg',
+                'gt:red_threshold',
             ],
         ];
     }
@@ -46,10 +46,10 @@ class UpdateStaffFoodStockThresholdRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'red_threshold_kg.between' => __('Ngưỡng đỏ phải lớn hơn hoặc bằng 0 kg.'),
-            'red_threshold_kg.decimal' => __('Ngưỡng đỏ chỉ được có tối đa 3 chữ số thập phân.'),
-            'yellow_threshold_kg.gt' => __('Ngưỡng vàng phải lớn hơn ngưỡng đỏ.'),
-            'yellow_threshold_kg.decimal' => __('Ngưỡng vàng chỉ được có tối đa 3 chữ số thập phân.'),
+            'red_threshold.between' => __('Ngưỡng đỏ phải lớn hơn hoặc bằng 0.'),
+            'red_threshold.decimal' => __('Ngưỡng đỏ chỉ được có tối đa 3 chữ số thập phân.'),
+            'yellow_threshold.gt' => __('Ngưỡng vàng phải lớn hơn ngưỡng đỏ.'),
+            'yellow_threshold.decimal' => __('Ngưỡng vàng chỉ được có tối đa 3 chữ số thập phân.'),
         ];
     }
 }

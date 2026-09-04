@@ -13,11 +13,11 @@ class FoodInventoryService
         int $branchId,
         ?int $createdByUserId = null,
     ): ?FoodStockMovement {
-        $billDetail->loadMissing('dish');
+        $billDetail->loadMissing('dish.food.inventoryUnit');
 
         $dish = $billDetail->dish;
 
-        if ($dish === null || $dish->ingredient_quantity_kg === null) {
+        if ($dish === null || $dish->ingredient_quantity === null) {
             return null;
         }
 
@@ -30,7 +30,7 @@ class FoodInventoryService
             return $existingMovement;
         }
 
-        $quantityUsed = round((float) $dish->ingredient_quantity_kg * $billDetail->quantity, 3);
+        $quantityUsed = round((float) $dish->ingredient_quantity * $billDetail->quantity, 3);
 
         if ($quantityUsed <= 0) {
             return null;
@@ -47,23 +47,25 @@ class FoodInventoryService
                 'branch_id' => $branchId,
                 'food_id' => $dish->food_id,
                 'is_inventory_tracked' => true,
-                'quantity_in_kg' => 0,
+                'quantity' => 0,
             ]);
         }
 
-        $balanceBefore = (float) $stock->quantity_in_kg;
+        $balanceBefore = (float) $stock->quantity;
         $balanceAfter = round($balanceBefore - $quantityUsed, 3);
 
         $stock->is_inventory_tracked = true;
-        $stock->quantity_in_kg = $balanceAfter;
+        $stock->quantity = $balanceAfter;
         $stock->save();
 
         return FoodStockMovement::create([
             'branch_food_stock_id' => $stock->id,
             'type' => FoodStockMovement::TYPE_USAGE,
-            'quantity_in_kg' => $quantityUsed,
-            'balance_before_kg' => $balanceBefore,
-            'balance_after_kg' => $balanceAfter,
+            'unit_name_snapshot' => $dish->food?->inventoryUnit?->name,
+            'unit_symbol_snapshot' => $dish->food?->inventoryUnit?->symbol,
+            'quantity' => $quantityUsed,
+            'balance_before' => $balanceBefore,
+            'balance_after' => $balanceAfter,
             'bill_detail_id' => $billDetail->id,
             'created_by_user_id' => $createdByUserId,
             'note' => __('Tiêu hao khi bếp hoàn thành :quantity phần.', [

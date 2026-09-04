@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/stock/{food}', [StaffController::class, 'updateStock'])->name('stock.update');
         Route::get('/inventory', [StaffController::class, 'inventoryIndex'])->name('inventory.index');
         Route::get('/inventory/movements', [StaffController::class, 'inventoryMovementIndex'])->name('inventory.movements.index');
+        Route::get('/inventory/movements/export', [StaffController::class, 'exportInventoryMovements'])->name('inventory.movements.export');
         Route::patch('/inventory/{food}/thresholds', [StaffController::class, 'updateInventoryThresholds'])->name('inventory.thresholds.update');
         Route::post('/inventory/{food}/movements', [StaffController::class, 'storeInventoryMovement'])->name('inventory.movements.store');
         Route::get('/table/{tableId}', [StaffController::class, 'showTable'])->name('table.show');
