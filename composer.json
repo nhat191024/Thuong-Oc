@@ -20,6 +20,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.11",
+        "maatwebsite/excel": "4.0",
         "mike42/escpos-php": "^4.0",
         "payos/payos": "^1.0",
         "predis/predis": "^3.2",
