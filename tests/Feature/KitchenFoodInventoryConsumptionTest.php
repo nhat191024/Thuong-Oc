@@ -11,6 +11,7 @@ use App\Models\CookingMethod;
 use App\Models\Dish;
 use App\Models\Food;
 use App\Models\FoodStockMovement;
+use App\Models\InventoryUnit;
 use App\Models\Table;
 use App\Models\User;
 use App\Services\KitchenPrintJobService;
@@ -34,10 +35,13 @@ function createKitchenInventoryUser(Branch $branch): User
 function createKitchenInventoryOrder(Branch $branch, ?float $quantityPerPortion, int $portions = 100): array
 {
     $category = Category::create(['name' => fake()->unique()->word(), 'order' => 1]);
+    $unit = InventoryUnit::where('symbol', 'kg')->firstOrFail();
     $food = Food::create([
         'category_id' => $category->id,
+        'inventory_unit_id' => $unit->id,
         'name' => fake()->unique()->word(),
         'price' => 100000,
+        'purchase_price' => 50000,
         'order' => 1,
     ]);
     $method = CookingMethod::create(['name' => fake()->unique()->word()]);
@@ -45,7 +49,7 @@ function createKitchenInventoryOrder(Branch $branch, ?float $quantityPerPortion,
         'food_id' => $food->id,
         'cooking_method_id' => $method->id,
         'additional_price' => 0,
-        'ingredient_quantity_kg' => $quantityPerPortion,
+        'ingredient_quantity' => $quantityPerPortion,
     ]);
     $table = Table::create([
         'name' => 'Bàn bếp',
@@ -73,7 +77,7 @@ it('deducts ingredient stock only when the kitchen completes the dish', function
         'food_id' => $order['food']->id,
         'is_out_of_stock' => false,
         'is_inventory_tracked' => true,
-        'quantity_in_kg' => 300,
+        'quantity' => 300,
     ]);
 
     $this->mock(KitchenPrintJobService::class)
@@ -87,17 +91,19 @@ it('deducts ingredient stock only when the kitchen completes the dish', function
 
     $stock->refresh();
 
-    expect($stock->quantity_in_kg)->toBe('250.000')
+    expect($stock->quantity)->toBe('250.000')
         ->and($stock->is_out_of_stock)->toBeFalse();
 
     $this->assertDatabaseHas('food_stock_movements', [
         'branch_food_stock_id' => $stock->id,
         'type' => FoodStockMovement::TYPE_USAGE,
-        'quantity_in_kg' => 50,
-        'balance_before_kg' => 300,
-        'balance_after_kg' => 250,
+        'quantity' => 50,
+        'balance_before' => 300,
+        'balance_after' => 250,
         'bill_detail_id' => $order['billDetail']->id,
         'created_by_user_id' => $user->id,
+        'unit_name_snapshot' => 'Kilogram',
+        'unit_symbol_snapshot' => 'kg',
     ]);
 });
 
@@ -109,7 +115,7 @@ it('does not deduct the same completed bill detail twice', function () {
         'branch_id' => $branch->id,
         'food_id' => $order['food']->id,
         'is_inventory_tracked' => true,
-        'quantity_in_kg' => 10,
+        'quantity' => 10,
     ]);
 
     $this->mock(KitchenPrintJobService::class)
@@ -121,7 +127,7 @@ it('does not deduct the same completed bill detail twice', function () {
     $this->actingAs($user)->post(route('kitchen.bill-detail.update-status', $order['billDetail']), $payload)->assertRedirect();
     $this->actingAs($user)->post(route('kitchen.bill-detail.update-status', $order['billDetail']), $payload)->assertRedirect();
 
-    expect($stock->fresh()->quantity_in_kg)->toBe('9.000')
+    expect($stock->fresh()->quantity)->toBe('9.000')
         ->and(FoodStockMovement::whereBillDetailId($order['billDetail']->id)->count())->toBe(1);
 });
 
@@ -137,7 +143,7 @@ it('allows completion to take stock below zero without turning the food off', fu
 
     $stock = BranchFoodStock::whereBranchId($branch->id)->whereFoodId($order['food']->id)->firstOrFail();
 
-    expect($stock->quantity_in_kg)->toBe('-2.500')
+    expect($stock->quantity)->toBe('-2.500')
         ->and($stock->is_out_of_stock)->toBeFalse();
 });
 
@@ -163,13 +169,13 @@ it('does not deduct inventory when the kitchen cancels instead of completing the
         'branch_id' => $branch->id,
         'food_id' => $order['food']->id,
         'is_inventory_tracked' => true,
-        'quantity_in_kg' => 10,
+        'quantity' => 10,
     ]);
 
     $this->actingAs($user)->post(route('kitchen.bill-detail.update-status', $order['billDetail']), [
         'status' => BillDetailStatus::CANCELLED->value,
     ])->assertRedirect();
 
-    expect($stock->fresh()->quantity_in_kg)->toBe('10.000')
+    expect($stock->fresh()->quantity)->toBe('10.000')
         ->and(FoodStockMovement::whereBillDetailId($order['billDetail']->id)->exists())->toBeFalse();
 });

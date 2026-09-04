@@ -4,11 +4,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 it('stores inventory balances per food and branch', function () {
+    expect(Schema::hasColumns('foods', [
+        'inventory_unit_id',
+        'purchase_price',
+    ]))->toBeTrue();
+
     expect(Schema::hasColumns('branch_food_stocks', [
         'is_inventory_tracked',
-        'quantity_in_kg',
-        'red_threshold_kg',
-        'yellow_threshold_kg',
+        'quantity',
+        'red_threshold',
+        'yellow_threshold',
         'last_restocked_at',
     ]))->toBeTrue();
 
@@ -30,7 +35,7 @@ it('stores inventory balances per food and branch', function () {
         'branch_id' => $branchId,
         'food_id' => $foodId,
         'is_inventory_tracked' => true,
-        'quantity_in_kg' => 300,
+        'quantity' => 300,
         'last_restocked_at' => now(),
         'created_at' => now(),
         'updated_at' => now(),
@@ -38,18 +43,22 @@ it('stores inventory balances per food and branch', function () {
 
     $stock = DB::table('branch_food_stocks')->where('id', $stockId)->first();
 
-    expect((float) $stock->quantity_in_kg)->toBe(300.0)
-        ->and((float) $stock->red_threshold_kg)->toBe(10.0)
-        ->and((float) $stock->yellow_threshold_kg)->toBe(20.0);
+    expect((float) $stock->quantity)->toBe(300.0)
+        ->and((float) $stock->red_threshold)->toBe(10.0)
+        ->and((float) $stock->yellow_threshold)->toBe(20.0);
 });
 
 it('stores an auditable history of stock movements', function () {
     expect(Schema::hasColumns('food_stock_movements', [
         'branch_food_stock_id',
         'type',
-        'quantity_in_kg',
-        'balance_before_kg',
-        'balance_after_kg',
+        'quantity',
+        'balance_before',
+        'balance_after',
+        'unit_name_snapshot',
+        'unit_symbol_snapshot',
+        'unit_price',
+        'total_cost',
         'bill_detail_id',
         'created_by_user_id',
         'note',
@@ -74,7 +83,7 @@ it('stores an auditable history of stock movements', function () {
         'branch_id' => $branchId,
         'food_id' => $foodId,
         'is_inventory_tracked' => true,
-        'quantity_in_kg' => 250,
+        'quantity' => 250,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -82,9 +91,9 @@ it('stores an auditable history of stock movements', function () {
     DB::table('food_stock_movements')->insert([
         'branch_food_stock_id' => $stockId,
         'type' => 'usage',
-        'quantity_in_kg' => 50,
-        'balance_before_kg' => 300,
-        'balance_after_kg' => 250,
+        'quantity' => 50,
+        'balance_before' => 300,
+        'balance_after' => 250,
         'note' => 'Đã bán 100 phần, mỗi phần 0.5 kg.',
         'occurred_at' => now(),
         'created_at' => now(),
@@ -94,6 +103,6 @@ it('stores an auditable history of stock movements', function () {
     $movement = DB::table('food_stock_movements')->first();
 
     expect($movement->type)->toBe('usage')
-        ->and((float) $movement->quantity_in_kg)->toBe(50.0)
-        ->and((float) $movement->balance_after_kg)->toBe(250.0);
+        ->and((float) $movement->quantity)->toBe(50.0)
+        ->and((float) $movement->balance_after)->toBe(250.0);
 });

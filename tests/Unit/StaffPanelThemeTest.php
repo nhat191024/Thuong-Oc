@@ -23,16 +23,28 @@ it('groups staff navigation actions into a tablet-friendly management menu', fun
         ->and($component)->toContain("route('staff.inventory.index')");
 });
 
-it('uses green yellow and red levels for kilogram inventory', function () {
+it('uses green yellow and red levels for inventory units', function () {
     $component = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/inventory.vue');
 
-    expect($component)->toContain('food.quantity_in_kg < food.red_threshold_kg')
-        ->and($component)->toContain('food.quantity_in_kg < food.yellow_threshold_kg')
+    expect($component)->toContain('food.quantity < food.red_threshold')
+        ->and($component)->toContain('food.quantity < food.yellow_threshold')
         ->and($component)->toContain('Cài ngưỡng')
         ->and($component)->toContain("route('staff.inventory.thresholds.update'")
         ->and($component)->toContain('border-success bg-success/5')
         ->and($component)->toContain('border-warning bg-warning/5')
         ->and($component)->toContain('border-error bg-error/5');
+});
+
+it('shows dynamic inventory units and restock costs', function () {
+    $inventory = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/inventory.vue');
+    $history = file_get_contents(dirname(__DIR__, 2).'/resources/js/pages/staff/inventoryHistory.vue');
+
+    expect($inventory)->toContain('food.unit_symbol')
+        ->and($inventory)->toContain('estimatedTotalCost')
+        ->and($inventory)->toContain('purchase_price')
+        ->and($history)->toContain('item.unit_price')
+        ->and($history)->toContain('item.total_cost')
+        ->and($history)->toContain('item.unit_symbol');
 });
 
 it('shows inventory alerts on the staff management entry points', function () {
