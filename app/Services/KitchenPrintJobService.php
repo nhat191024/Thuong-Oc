@@ -73,14 +73,14 @@ class KitchenPrintJobService
      */
     private function buildJob(BillDetail $billDetail): array
     {
-        $tableNumber = $billDetail->bill->table->table_number ?? 'N/A';
+        $tableName = $billDetail->bill->table->name ?? 'N/A';
         $dishName = $billDetail->dish?->food?->name
             ?? $billDetail->custom_dish_name
             ?? 'Món ăn';
 
         return [
             'request_id' => (string) Str::uuid7(),
-            'table_number' => $tableNumber,
+            'table_number' => $tableName,
             'dish_name' => $dishName,
             'cooking_method' => $billDetail->dish?->cookingMethod?->name,
             'quantity' => $billDetail->quantity,
