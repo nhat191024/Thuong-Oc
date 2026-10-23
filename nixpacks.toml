@@ -1,4 +1,5 @@
 [phases.setup]
+nixpkgsArchive = "ee62357e90778a37aa7aa4a646e7ccd4fdb643b3"
 nixPkgs = [
     "(php84.withExtensions ({ enabled, all, ... }: enabled ++ (with all; [ zip pdo_mysql gd bcmath intl pcntl exif opcache imagick redis ])))",
     "nginx",
@@ -11,6 +12,7 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
+    "php -r \"if (version_compare(PHP_VERSION, '8.4.27', '<')) { fwrite(STDERR, 'PHP 8.4.27 or newer is required for security fixes.'.PHP_EOL); exit(1); }\"",
     "mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx",
     "composer install --ignore-platform-reqs --no-interaction --no-scripts --no-dev",
     "npm ci",
