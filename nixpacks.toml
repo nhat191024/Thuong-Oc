@@ -1,5 +1,5 @@
 [phases.setup]
-nixpkgsArchive = "ee62357e90778a37aa7aa4a646e7ccd4fdb643b3"
+nixpkgsArchive = "a5fc1be5b6c2d0c934143b57363aef9a15cce508"
 nixPkgs = [
     "(php84.withExtensions ({ enabled, all, ... }: enabled ++ (with all; [ zip pdo_mysql gd bcmath intl pcntl exif opcache imagick redis ])))",
     "nginx",

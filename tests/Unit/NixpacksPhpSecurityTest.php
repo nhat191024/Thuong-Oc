@@ -2,11 +2,11 @@
 
 use Symfony\Component\Process\Process;
 
-it('pins the PHP runtime and Composer to the patched PHP 8.4 package set', function () {
+it('pins PHP and Composer to the PHP 8.4.27 package set with the filter test fix', function () {
     $configuration = file_get_contents(dirname(__DIR__, 2).'/nixpacks.toml');
 
     expect($configuration)
-        ->toContain('nixpkgsArchive = "ee62357e90778a37aa7aa4a646e7ccd4fdb643b3"')
+        ->toContain('nixpkgsArchive = "a5fc1be5b6c2d0c934143b57363aef9a15cce508"')
         ->toContain('(php84.withExtensions')
         ->toContain('"php84Packages.composer"');
 });
